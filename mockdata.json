@@ -1037,6 +1037,85 @@
       },
       "read_at": null,
       "created_at": "2024-12-28T09:00:00Z"
+    },
+    {
+      "id": "notif-770e8400-e29b-41d4-a716-446655440096",
+      "user_id": "880e8400-e29b-41d4-a716-446655440003",
+      "type": "profile",
+      "title": "Profile Verification Approved",
+      "message": "Congratulations! Your alumni profile has been verified by the admin team.",
+      "link": "/profile/880e8400-e29b-41d4-a716-446655440003",
+      "is_read": false,
+      "priority": "high",
+      "metadata": {
+        "verification_status": "approved"
+      },
+      "read_at": null,
+      "created_at": "2024-12-28T15:30:00Z"
+    },
+    {
+      "id": "notif-880e8400-e29b-41d4-a716-446655440097",
+      "user_id": "880e8400-e29b-41d4-a716-446655440003",
+      "type": "mentorship",
+      "title": "Session Reminder",
+      "message": "Your mentorship session with Sarah Johnson starts in 1 hour",
+      "link": "/mentorship/sessions/session-110e8400-e29b-41d4-a716-446655440040",
+      "is_read": false,
+      "priority": "high",
+      "metadata": {
+        "mentor_name": "Sarah Johnson",
+        "session_time": "2025-01-15T16:00:00Z"
+      },
+      "read_at": null,
+      "created_at": "2024-12-28T15:00:00Z"
+    },
+    {
+      "id": "notif-990e8400-e29b-41d4-a716-446655440098",
+      "user_id": "660e8400-e29b-41d4-a716-446655440001",
+      "type": "mentorship",
+      "title": "New Mentorship Request",
+      "message": "John Doe has requested you as a mentor. Review their profile and respond.",
+      "link": "/mentorship/dashboard",
+      "is_read": false,
+      "priority": "high",
+      "metadata": {
+        "student_name": "John Doe",
+        "request_id": "req-new-456"
+      },
+      "read_at": null,
+      "created_at": "2024-12-28T14:20:00Z"
+    },
+    {
+      "id": "notif-aa0e8400-e29b-41d4-a716-446655440099",
+      "user_id": "660e8400-e29b-41d4-a716-446655440001",
+      "type": "event",
+      "title": "New Event Registration",
+      "message": "5 new people have registered for your event 'Career Growth Workshop'",
+      "link": "/events/event-110e8400-e29b-41d4-a716-446655440050",
+      "is_read": true,
+      "priority": "medium",
+      "metadata": {
+        "event_title": "Career Growth Workshop",
+        "new_registrations": 5
+      },
+      "read_at": "2024-12-28T10:00:00Z",
+      "created_at": "2024-12-28T09:45:00Z"
+    },
+    {
+      "id": "notif-bb0e8400-e29b-41d4-a716-446655440100",
+      "user_id": "bb0e8400-e29b-41d4-a716-446655440006",
+      "type": "forum",
+      "title": "Someone Liked Your Post",
+      "message": "Emily Rodriguez liked your post 'Best Resources for Learning React'",
+      "link": "/forum/posts/post-new-789",
+      "is_read": true,
+      "priority": "low",
+      "metadata": {
+        "post_title": "Best Resources for Learning React",
+        "liker_name": "Emily Rodriguez"
+      },
+      "read_at": "2024-12-27T20:00:00Z",
+      "created_at": "2024-12-27T19:45:00Z"
     }
   ],
 

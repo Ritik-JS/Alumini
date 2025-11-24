@@ -39,6 +39,10 @@ import EventAttendees from '@/page/events/EventAttendees';
 import Forum from '@/page/forum/Forum';
 import PostDetails from '@/page/forum/PostDetails';
 
+// Notification Pages
+import Notifications from '@/page/notifications/Notifications';
+import NotificationPreferences from '@/page/notifications/NotificationPreferences';
+
 // Dashboards (Role-specific)
 import StudentDashboard from '@/page/StudentDashboard';
 import AlumniDashboard from '@/page/AlumniDashboard';
@@ -247,6 +251,24 @@ function App() {
             element={
               <ProtectedRoute>
                 <PostDetails />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Notification Routes - Protected */}
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <Notifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings/notifications"
+            element={
+              <ProtectedRoute>
+                <NotificationPreferences />
               </ProtectedRoute>
             }
           />

@@ -13,6 +13,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Menu, X, Bell, User, LogOut, Settings, LayoutDashboard } from 'lucide-react';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 const MainNavbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -31,6 +32,7 @@ const MainNavbar = () => {
     { name: 'Jobs', path: '/jobs' },
     { name: 'Events', path: '/events' },
     { name: 'Mentorship', path: '/mentorship' },
+    { name: 'Forum', path: '/forum' },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -73,12 +75,7 @@ const MainNavbar = () => {
             {isAuthenticated ? (
               <>
                 {/* Notification Bell */}
-                <button className="relative p-2 text-gray-600 hover:text-blue-600 transition-colors">
-                  <Bell className="w-5 h-5" />
-                  <Badge className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 bg-red-500">
-                    3
-                  </Badge>
-                </button>
+                <NotificationBell />
 
                 {/* User Dropdown */}
                 <DropdownMenu>
@@ -108,9 +105,9 @@ const MainNavbar = () => {
                       <User className="mr-2 h-4 w-4" />
                       My Profile
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/settings')}>
+                    <DropdownMenuItem onClick={() => navigate('/settings/notifications')}>
                       <Settings className="mr-2 h-4 w-4" />
-                      Settings
+                      Notification Settings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="text-red-600">
