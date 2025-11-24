@@ -6,6 +6,33 @@ This workflow outlines the complete frontend development for the Alumni Portal, 
 ## 🗄️ Database & API Reference
 **IMPORTANT**: The backend uses a MySQL 8.0 / MariaDB 10.5+ database. Complete schema is available in `/app/database_schema.sql`. 
 
+### Mock Data for Development
+**NEW**: A comprehensive mock data file is available at `/app/mockdata.json` for frontend development. This file contains:
+- **Realistic sample data** covering all database tables and features
+- **Consistent data structures** matching the backend API responses
+- **Proper relationships** between entities (foreign keys, references)
+- **Complete coverage** of all 10 development phases
+- **Easy integration** - can be imported and used during development, then seamlessly switched to real backend
+
+**Usage**: Import the mock data in your frontend code during development:
+```javascript
+import mockData from '../../../mockdata.json';
+
+// Use mock data during development
+const users = mockData.users;
+const jobs = mockData.jobs;
+const events = mockData.events;
+// ... etc
+```
+
+**When to use mock data**:
+- During initial frontend development before backend is ready
+- For testing UI components independently
+- For creating realistic demos and prototypes
+- As reference for data structure and field names
+
+**Switching to real backend**: Simply replace mock data imports with actual API calls. The data structure remains the same, ensuring smooth transition.
+
 ### API Integration Guidelines
 1. **Base URL**: All API calls use the backend URL from environment variable `REACT_APP_BACKEND_URL`
 2. **API Prefix**: All endpoints are prefixed with `/api` (e.g., `/api/auth/login`)
@@ -52,6 +79,7 @@ Refer to Backend Workflow for detailed endpoint specifications for each phase.
    - Configure axios interceptors for API calls
    - Set up authentication context/state management
    - Configure protected route wrapper
+   - **Import mock data**: Use `/app/mockdata.json` for development and testing
 
 2. **Navigation Components**
    - Create MainNavbar component:
