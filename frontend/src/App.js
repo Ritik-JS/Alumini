@@ -28,6 +28,17 @@ import MentorProfile from '@/page/mentorship/MentorProfile';
 import MentorshipDashboard from '@/page/mentorship/MentorshipDashboard';
 import SessionDetails from '@/page/mentorship/SessionDetails';
 
+// Event Pages
+import Events from '@/page/events/Events';
+import EventDetails from '@/page/events/EventDetails';
+import CreateEvent from '@/page/events/CreateEvent';
+import ManageEvents from '@/page/events/ManageEvents';
+import EventAttendees from '@/page/events/EventAttendees';
+
+// Forum Pages
+import Forum from '@/page/forum/Forum';
+import PostDetails from '@/page/forum/PostDetails';
+
 // Dashboards (Role-specific)
 import StudentDashboard from '@/page/StudentDashboard';
 import AlumniDashboard from '@/page/AlumniDashboard';
@@ -176,6 +187,66 @@ function App() {
             element={
               <ProtectedRoute>
                 <SessionDetails />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Event Routes - Protected */}
+          <Route
+            path="/events"
+            element={
+              <ProtectedRoute>
+                <Events />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events/create"
+            element={
+              <ProtectedRoute>
+                <CreateEvent />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events/manage"
+            element={
+              <ProtectedRoute>
+                <ManageEvents />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events/:eventId/attendees"
+            element={
+              <ProtectedRoute>
+                <EventAttendees />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events/:eventId"
+            element={
+              <ProtectedRoute>
+                <EventDetails />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Forum Routes - Protected */}
+          <Route
+            path="/forum"
+            element={
+              <ProtectedRoute>
+                <Forum />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/forum/posts/:postId"
+            element={
+              <ProtectedRoute>
+                <PostDetails />
               </ProtectedRoute>
             }
           />
