@@ -3,6 +3,44 @@
 ## Overview
 This workflow outlines the complete backend development for the Alumni Portal, divided into phases of 4-5 credits each. Each phase builds upon the previous one and includes testing checkpoints.
 
+## 🗄️ Database Schema
+**IMPORTANT**: A comprehensive MySQL 8.0 / MariaDB 10.5+ compatible database schema is available in `/app/database_schema.sql`. This schema covers all phases and must be imported before starting backend development.
+
+### Database Setup Instructions
+1. **Using MySQL 8.0 CLI**:
+   ```bash
+   mysql -u root -p < /app/database_schema.sql
+   ```
+
+2. **Using MariaDB CLI**:
+   ```bash
+   mariadb -u root -p < /app/database_schema.sql
+   ```
+
+3. **Connection Configuration**:
+   - Database Name: `alumni_portal`
+   - Default Character Set: `utf8mb4`
+   - Collation: `utf8mb4_unicode_ci`
+   - Update your backend `.env` file with MySQL/MariaDB connection string
+
+### Schema Overview
+The database schema includes:
+- ✅ 40+ normalized tables covering all features
+- ✅ Foreign key relationships and constraints
+- ✅ Optimized indexes for query performance
+- ✅ JSON columns for flexible data storage
+- ✅ Triggers for automatic data updates
+- ✅ Stored procedures for complex operations
+- ✅ Views for common complex queries
+- ✅ Initial data seeding for badges and config
+
+### Note for LLM API Integration
+When using MySQL/MariaDB with the backend:
+- Replace MongoDB connection code with MySQL connector (e.g., `mysql-connector-python` or `aiomysql` for async)
+- Use SQL queries instead of MongoDB queries
+- Leverage stored procedures for complex operations
+- JSON columns support flexible schemas similar to MongoDB documents
+
 ---
 
 ## 📋 PHASE 1: Core Authentication & User Management System (4-5 credits)
@@ -15,9 +53,11 @@ This workflow outlines the complete backend development for the Alumni Portal, d
 
 ### Tasks
 1. **Database Models & Schema**
-   - Create User model with fields: id, email, password_hash, role, is_verified, created_at, updated_at
-   - Create EmailVerification model for OTP storage
-   - Create PasswordReset model for reset tokens
+   - **Tables**: `users`, `email_verifications`, `password_resets` (already defined in `/app/database_schema.sql`)
+   - User fields: id (UUID), email, password_hash, role, is_verified, is_active, last_login, timestamps
+   - EmailVerification fields: id, user_id, otp_code, expires_at, is_used
+   - PasswordReset fields: id, user_id, reset_token, expires_at, is_used
+   - **Note**: All primary keys use UUID format for better distribution
 
 2. **Authentication Endpoints**
    - POST `/api/auth/register` - User registration with email verification
@@ -61,13 +101,15 @@ This workflow outlines the complete backend development for the Alumni Portal, d
 
 ### Tasks
 1. **Database Models**
-   - Create AlumniProfile model with fields:
+   - **Tables**: `alumni_profiles`, `profile_verification_requests` (already defined in `/app/database_schema.sql`)
+   - AlumniProfile fields include:
      - Basic: photo_url, name, bio, headline
-     - Professional: current_company, current_role, experience_timeline (JSON)
+     - Professional: current_company, current_role, location, batch_year, experience_timeline (JSON)
      - Educational: education_details (JSON)
-     - Additional: skills (array), achievements (array), social_links (JSON)
+     - Additional: skills (JSON array), achievements (JSON array), social_links (JSON object)
      - Metadata: profile_completion_percentage, is_verified, verified_by, verified_at
-   - Create ProfileVerificationRequest model
+   - ProfileVerificationRequest fields: id, user_id, status, rejection_reason, reviewed_by, reviewed_at
+   - **Stored Procedure**: Use `calculate_profile_completion(user_id)` to auto-calculate completion %
 
 2. **Profile Management Endpoints**
    - POST `/api/profiles/create` - Create alumni profile
@@ -118,13 +160,12 @@ This workflow outlines the complete backend development for the Alumni Portal, d
 
 ### Tasks
 1. **Database Models**
-   - Create Job model with fields:
-     - title, description, company, location, job_type, experience_required
-     - skills_required (array), salary_range, apply_link, posted_by
-     - application_deadline, status (active/closed)
-   - Create JobApplication model:
-     - job_id, applicant_id, cv_url, cover_letter, status, applied_at
-     - viewed_at, response_message
+   - **Tables**: `jobs`, `job_applications` (already defined in `/app/database_schema.sql`)
+   - Job fields: id, title, description, company, location, job_type (ENUM), experience_required, skills_required (JSON), salary_range, apply_link, posted_by, application_deadline, status, views_count, applications_count
+   - JobApplication fields: id, job_id, applicant_id, cv_url, cover_letter, status (ENUM: pending, reviewed, shortlisted, rejected, accepted), viewed_at, response_message, applied_at
+   - **Triggers**: `after_job_application_insert` automatically updates applications_count
+   - **View**: `job_statistics` provides aggregated job performance metrics
+   - **Note**: Unique constraint on (job_id, applicant_id) prevents duplicate applications
 
 2. **Job Management Endpoints**
    - POST `/api/jobs/create` - Create job posting (Alumni/Recruiter only)
@@ -171,15 +212,15 @@ This workflow outlines the complete backend development for the Alumni Portal, d
 
 ### Tasks
 1. **Database Models**
-   - Create MentorProfile model:
-     - user_id, is_available, expertise_areas (array), max_mentees
-     - current_mentees_count, rating, total_sessions
-   - Create MentorshipRequest model:
-     - student_id, mentor_id, request_message, status, requested_at
-     - accepted_at, rejected_at, rejection_reason
-   - Create MentorshipSession model:
-     - mentorship_id, scheduled_date, duration, status, meeting_link
-     - notes, feedback, rating
+   - **Tables**: `mentor_profiles`, `mentorship_requests`, `mentorship_sessions` (already defined in `/app/database_schema.sql`)
+   - MentorProfile fields: id, user_id, is_available, expertise_areas (JSON array), max_mentees, current_mentees_count, rating (DECIMAL 3,2), total_sessions, total_reviews, mentorship_approach
+   - MentorshipRequest fields: id, student_id, mentor_id, request_message, goals, preferred_topics (JSON), status (ENUM), rejection_reason, timestamps
+   - MentorshipSession fields: id, mentorship_request_id, scheduled_date, duration, status (ENUM), meeting_link, agenda, notes, feedback, rating (1-5)
+   - **Triggers**: 
+     - `after_mentorship_accept` updates mentor's current_mentees_count
+     - `after_session_feedback` automatically recalculates mentor rating
+   - **View**: `mentor_statistics` provides mentor performance overview
+   - **Note**: Unique constraint on (student_id, mentor_id, status) prevents duplicate active requests
 
 2. **Mentor Management Endpoints**
    - POST `/api/mentors/register` - Register as mentor (Alumni only)
@@ -231,17 +272,19 @@ This workflow outlines the complete backend development for the Alumni Portal, d
 
 ### Tasks
 1. **Database Models**
-   - Create Event model:
-     - title, description, event_type, location, is_virtual, meeting_link
-     - start_date, end_date, registration_deadline, max_attendees
-     - created_by, banner_image, status
-   - Create EventRSVP model:
-     - event_id, user_id, status (attending/maybe/not_attending), rsvp_date
-   - Create ForumPost model:
-     - title, content, author_id, tags (array), likes_count, comments_count
-     - created_at, updated_at, is_pinned
-   - Create ForumComment model:
-     - post_id, author_id, content, likes_count, parent_comment_id
+   - **Tables**: `events`, `event_rsvps`, `forum_posts`, `forum_comments`, `post_likes`, `comment_likes` (already defined in `/app/database_schema.sql`)
+   - Event fields: id, title, description, event_type (ENUM), location, is_virtual, meeting_link, start_date, end_date, registration_deadline, max_attendees, current_attendees_count, banner_image, created_by, status (ENUM), views_count
+   - EventRSVP fields: id, event_id, user_id, status (ENUM: attending, maybe, not_attending), rsvp_date
+   - ForumPost fields: id, title, content, author_id, tags (JSON array), likes_count, comments_count, views_count, is_pinned, is_deleted, timestamps
+   - ForumComment fields: id, post_id, author_id, parent_comment_id, content, likes_count, is_deleted, timestamps
+   - **Triggers**: 
+     - `after_event_rsvp` updates event's current_attendees_count
+     - `after_post_like_insert` updates post likes_count
+     - `after_comment_insert` updates post comments_count
+   - **Note**: 
+     - Unique constraints on RSVP (event_id, user_id) and likes prevent duplicates
+     - parent_comment_id enables nested comment threads
+     - FULLTEXT indexes on title/content for better search performance
 
 2. **Event Management Endpoints**
    - POST `/api/events/create` - Create event (Admin/Alumni only)
@@ -295,12 +338,13 @@ This workflow outlines the complete backend development for the Alumni Portal, d
 
 ### Tasks
 1. **Database Models**
-   - Create Notification model:
-     - user_id, type, title, message, link, is_read, priority
-     - created_at, read_at, metadata (JSON)
-   - Create NotificationPreference model:
-     - user_id, email_notifications, push_notifications
-     - notification_types (JSON object with enable/disable flags)
+   - **Tables**: `notifications`, `notification_preferences`, `email_queue` (already defined in `/app/database_schema.sql`)
+   - Notification fields: id, user_id, type (ENUM: profile, mentorship, job, event, forum, system, verification), title, message, link, is_read, priority (ENUM: low, medium, high), metadata (JSON), read_at, created_at
+   - NotificationPreference fields: id, user_id, email_notifications, push_notifications, notification_types (JSON object), notification_frequency (ENUM: instant, daily, weekly), quiet_hours_start, quiet_hours_end
+   - EmailQueue fields: id, recipient_email, subject, body, template_name, status (ENUM), retry_count, error_message, scheduled_at, sent_at
+   - **Stored Procedure**: `send_notification(user_id, type, title, message, link, priority)` for consistent notification creation
+   - **Indexes**: Composite index on (user_id, is_read, created_at) for efficient unread queries
+   - **Note**: email_queue table enables async email processing with retry logic
 
 2. **Notification Endpoints**
    - GET `/api/notifications` - Get user's notifications (paginated)
@@ -356,11 +400,15 @@ This workflow outlines the complete backend development for the Alumni Portal, d
 
 ### Tasks
 1. **Database Models**
-   - Create AdminAction model (audit log):
-     - admin_id, action_type, target_type, target_id, description
-     - metadata (JSON), timestamp
-   - Create SystemMetric model:
-     - metric_name, metric_value, recorded_at
+   - **Tables**: `admin_actions`, `system_metrics`, `content_flags`, `system_config` (already defined in `/app/database_schema.sql`)
+   - AdminAction fields: id, admin_id, action_type (ENUM), target_type, target_id, description, metadata (JSON), ip_address, timestamp
+   - SystemMetric fields: id, metric_name, metric_value (DECIMAL), metric_unit, category, recorded_at
+   - ContentFlags fields: id, content_type (ENUM), content_id, flagged_by, reason, status (ENUM), reviewed_by, reviewed_at
+   - SystemConfig fields: id, config_key (UNIQUE), config_value, config_type, description, is_public, updated_by
+   - **Note**: 
+     - admin_actions provides complete audit trail of all admin operations
+     - system_metrics stores time-series data for analytics dashboards
+     - Initial system config values are seeded automatically
 
 2. **Admin Dashboard Endpoints**
    - GET `/api/admin/dashboard/metrics` - Get key metrics:
@@ -430,11 +478,17 @@ This workflow outlines the complete backend development for the Alumni Portal, d
 
 ### Tasks
 1. **Database Models**
-   - Create UserInterest model:
-     - user_id, interest_tags (array), interaction_history (JSON)
-     - last_updated
-   - Create EngagementScore model:
-     - user_id, score, contributions (JSON), rank, last_calculated
+   - **Tables**: `user_interests`, `engagement_scores`, `contribution_history`, `badges`, `user_badges` (already defined in `/app/database_schema.sql`)
+   - UserInterest fields: id, user_id, interest_tags (JSON), interaction_history (JSON), preferred_industries (JSON), preferred_locations (JSON), last_updated
+   - EngagementScore fields: id, user_id, total_score, contributions (JSON object with breakdown), rank_position, level (string), last_calculated
+   - ContributionHistory fields: id, user_id, contribution_type (ENUM), points_earned, description, created_at
+   - Badges fields: id, name (UNIQUE), description, icon_url, requirements (JSON), rarity (ENUM), points
+   - UserBadges fields: id, user_id, badge_id, earned_at
+   - **Stored Procedure**: `update_engagement_score(user_id)` calculates and updates engagement metrics automatically
+   - **View**: `engagement_leaderboard` provides ranked list of top contributors
+   - **Note**: 
+     - 8 default badges are pre-seeded in the database
+     - Engagement score updates can be triggered after significant user actions
 
 2. **Smart Matching Endpoints**
    - POST `/api/matching/mentor-suggestions` - Get mentor suggestions:
@@ -491,59 +545,64 @@ This workflow outlines the complete backend development for the Alumni Portal, d
 
 ### Tasks
 1. **Skill Graph Engine**
-   - Database Models:
-     - Create SkillGraph model for relationships
-     - Create IndustryConnection model
+   - **Tables**: `skill_graph` (already defined in `/app/database_schema.sql`)
+   - SkillGraph fields: id, skill_name (UNIQUE), related_skills (JSON array), industry_connections (JSON array), alumni_count, job_count, popularity_score
    - Endpoints:
      - GET `/api/skill-graph/network` - Get skill network data
      - GET `/api/skill-graph/paths` - Find career paths by skill
      - GET `/api/skill-graph/clusters` - Get skill clusters
+   - **Note**: Skill graph auto-populates from alumni profiles and job postings
 
 2. **Career Path Predictor**
-   - Database Models:
-     - Create CareerPath model with historical data
-     - Create CareerPrediction model
+   - **Tables**: `career_paths`, `career_predictions` (already defined in `/app/database_schema.sql`)
+   - CareerPath fields: id, user_id, from_role, to_role, from_company, to_company, transition_duration_months, skills_acquired (JSON), transition_date, success_rating (1-5), notes
+   - CareerPrediction fields: id, user_id, current_role, predicted_roles (JSON array with probability), recommended_skills (JSON), similar_alumni (JSON), confidence_score
    - Endpoints:
-     - POST `/api/career/predict` - Predict career trajectory
+     - POST `/api/career/predict` - Predict career trajectory using ML algorithms
      - GET `/api/career/paths/{skill}` - Common paths for skill
      - GET `/api/career/transitions` - Popular career transitions
+   - **Note**: Predictions based on historical career path data from alumni
 
 3. **Alumni Engagement Score (AES)**
-   - Database Models:
-     - Extend EngagementScore with detailed metrics
-     - Create ContributionHistory model
+   - **Tables**: `engagement_scores`, `contribution_history`, `badges`, `user_badges` (already defined)
+   - Use existing engagement system with stored procedure `update_engagement_score(user_id)`
    - Endpoints:
-     - GET `/api/aes/rankings` - Get AES leaderboard
+     - GET `/api/aes/rankings` - Get AES leaderboard (can use `engagement_leaderboard` view)
      - GET `/api/aes/user/{user_id}` - Get user AES details
      - GET `/api/aes/badges` - Get achievement badges
+   - **Note**: Engagement scores auto-calculate from profile, mentorship, jobs, events, and forum activity
 
 4. **Digital Alumni ID Card**
-   - Database Models:
-     - Create AlumniCard model with QR code data
+   - **Tables**: `alumni_cards` (already defined in `/app/database_schema.sql`)
+   - AlumniCard fields: id, user_id (UNIQUE), card_number (UNIQUE), qr_code_data (encrypted), issue_date, expiry_date, is_active, verification_count, last_verified
    - Endpoints:
-     - POST `/api/alumni-card/generate` - Generate digital ID
+     - POST `/api/alumni-card/generate` - Generate digital ID with QR code
      - GET `/api/alumni-card/{user_id}` - Get alumni card
-     - POST `/api/alumni-card/verify` - Verify card via QR
+     - POST `/api/alumni-card/verify` - Verify card via QR code scan
+   - **Note**: QR code contains encrypted verification data; card_number format: ALM-YYYY-XXXXX
 
 5. **Talent & Opportunity Heatmap**
-   - Database Models:
-     - Create GeographicData aggregation
+   - **Tables**: `geographic_data` (already defined in `/app/database_schema.sql`)
+   - GeographicData fields: id, location_name (UNIQUE), country, city, latitude, longitude, alumni_count, jobs_count, top_skills (JSON), top_companies (JSON), top_industries (JSON), last_updated
    - Endpoints:
-     - GET `/api/heatmap/talent` - Talent distribution by location
+     - GET `/api/heatmap/talent` - Talent distribution by location with coordinates
      - GET `/api/heatmap/opportunities` - Job opportunities by location
      - GET `/api/heatmap/industries` - Industry distribution
+   - **Note**: Data aggregated from alumni profiles and job locations; includes lat/long for map visualization
 
 6. **Knowledge Capsules System**
-   - Database Models:
-     - Create KnowledgeCapsule model:
-       - title, content, author_id, category, tags, duration
-       - likes_count, views_count, is_featured
+   - **Tables**: `knowledge_capsules`, `capsule_bookmarks`, `capsule_likes` (already defined in `/app/database_schema.sql`)
+   - KnowledgeCapsule fields: id, title, content, author_id, category (ENUM), tags (JSON), duration_minutes, featured_image, likes_count, views_count, bookmarks_count, is_featured
    - Endpoints:
      - POST `/api/capsules/create` - Create capsule (Alumni only)
-     - GET `/api/capsules` - List capsules with filters
-     - GET `/api/capsules/{capsule_id}` - Get capsule
-     - POST `/api/capsules/{capsule_id}/like` - Like capsule
-     - GET `/api/capsules/trending` - Get trending capsules
+     - GET `/api/capsules` - List capsules with filters (category, tags, featured)
+     - GET `/api/capsules/{capsule_id}` - Get capsule details
+     - POST `/api/capsules/{capsule_id}/like` - Like/unlike capsule
+     - POST `/api/capsules/{capsule_id}/bookmark` - Bookmark capsule
+     - GET `/api/capsules/trending` - Get trending capsules (by views/likes)
+   - **Note**: 
+     - FULLTEXT index on title/content enables powerful search
+     - Separate tables for likes and bookmarks with unique constraints
 
 ### Testing Checkpoints
 - Test skill graph data generation

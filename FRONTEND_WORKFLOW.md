@@ -3,6 +3,39 @@
 ## Overview
 This workflow outlines the complete frontend development for the Alumni Portal, divided into phases of 4-5 credits each. Each phase creates production-ready UI components with proper state management and API integration.
 
+## 🗄️ Database & API Reference
+**IMPORTANT**: The backend uses a MySQL 8.0 / MariaDB 10.5+ database. Complete schema is available in `/app/database_schema.sql`. 
+
+### API Integration Guidelines
+1. **Base URL**: All API calls use the backend URL from environment variable `REACT_APP_BACKEND_URL`
+2. **API Prefix**: All endpoints are prefixed with `/api` (e.g., `/api/auth/login`)
+3. **Authentication**: JWT tokens stored in localStorage/cookies, sent in Authorization header
+4. **Data Format**: 
+   - Request/Response: JSON format
+   - Date fields: ISO 8601 format (YYYY-MM-DDTHH:mm:ssZ)
+   - IDs: UUID format (36 characters with hyphens)
+   - Arrays/Objects: Some fields use JSON format (skills, tags, metadata)
+5. **Error Handling**: Consistent error response format with status codes
+6. **Pagination**: List endpoints support `page`, `limit`, `sort`, and `filter` query parameters
+
+### Key Data Models (Frontend Reference)
+- **User**: id, email, role (student/alumni/recruiter/admin), is_verified
+- **AlumniProfile**: id, user_id, name, photo_url, bio, headline, skills (array), batch_year, etc.
+- **Job**: id, title, company, location, job_type, skills_required (array), status
+- **Event**: id, title, event_type, start_date, is_virtual, max_attendees
+- **MentorshipRequest**: id, student_id, mentor_id, status (pending/accepted/rejected)
+- **Notification**: id, user_id, type, title, message, is_read
+
+### API Endpoint Conventions
+All endpoints follow RESTful conventions:
+- `GET /api/resource` - List resources
+- `GET /api/resource/{id}` - Get single resource
+- `POST /api/resource` - Create resource
+- `PUT /api/resource/{id}` - Update resource
+- `DELETE /api/resource/{id}` - Delete resource
+
+Refer to Backend Workflow for detailed endpoint specifications for each phase.
+
 ---
 
 ## 📋 PHASE 1: Core Layout & Authentication UI (4-5 credits)
