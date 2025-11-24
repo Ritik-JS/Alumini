@@ -180,22 +180,26 @@ export const getUserById = async (userId) => {
   return users.find(u => u.id === userId);
 };
 
-export default {
+// Export the entire service as a named export
+export const mockProfileService = {
   getProfileByUserId,
   getProfileById,
   updateProfile,
   createProfile,
+  getAllJobs,
+  getJobsByPostedBy,
   getJobApplicationsByUser,
+  getApplicationsForJob,
+  getAllMentorProfiles,
+  getMentorProfileByUserId,
   getMentorshipRequestsByStudent,
   getMentorshipRequestsByMentor,
-  getMentorProfileByUserId,
-  getAllMentorProfiles,
   getMentorshipSessions,
-  getJobsByPostedBy,
-  getAllJobs,
-  getApplicationsForJob,
   getUpcomingEvents,
   getEventRSVPsByUser,
   getSystemStats,
   getUserById,
 };
+
+// Default export
+export default mockProfileService;
