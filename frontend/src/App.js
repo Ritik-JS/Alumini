@@ -11,6 +11,8 @@ import ResetPassword from '@/page/auth/ResetPassword';
 
 // Main Pages
 import Home from '@/page/Home';
+import AlumniDirectory from '@/page/AlumniDirectory';
+import ProfileView from '@/page/ProfileView';
 
 // Dashboards (Role-specific)
 import StudentDashboard from '@/page/StudentDashboard';
@@ -53,6 +55,24 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+          {/* Alumni Directory - Protected */}
+          <Route
+            path="/directory"
+            element={
+              <ProtectedRoute>
+                <AlumniDirectory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/:userId"
+            element={
+              <ProtectedRoute>
+                <ProfileView />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Protected Dashboard Routes */}
           <Route
