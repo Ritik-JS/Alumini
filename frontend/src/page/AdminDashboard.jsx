@@ -1,0 +1,285 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { mockProfileService } from '@/services/mockProfileService';
+import MainNavbar from '@/components/layout/MainNavbar';
+import Sidebar from '@/components/layout/Sidebar';
+import Footer from '@/components/layout/Footer';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Users, Briefcase, Calendar, AlertCircle, TrendingUp, CheckCircle, UserCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import mockData from '@/mockdata.json';
+
+const AdminDashboard = () => {
+  const { user } = useAuth();
+  const [systemStats, setSystemStats] = useState(null);
+  const [pendingVerifications, setPendingVerifications] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [stats, verifications] = await Promise.all([
+          mockProfileService.getSystemStats(),
+          mockProfileService.getPendingVerifications(),
+        ]);
+
+        setSystemStats(stats);
+        setPendingVerifications(verifications);
+
+        // Mock recent activity
+        const activity = [
+          { id: 1, type: 'user', message: 'New user registered: maria.garcia@alumni.edu', time: '5 minutes ago' },
+          { id: 2, type: 'job', message: 'New job posted: Senior Full-Stack Engineer', time: '1 hour ago' },
+          { id: 3, type: 'event', message: 'Event created: Tech Career Fair 2025', time: '2 hours ago' },
+          { id: 4, type: 'verification', message: 'Profile verification requested', time: '3 hours ago' },
+          { id: 5, type: 'user', message: 'User login: david.kim@techcorp.com', time: '4 hours ago' },
+        ];
+        setRecentActivity(activity);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user.id]);
+
+  const stats = [
+    {
+      title: 'Total Users',
+      value: systemStats?.totalUsers || 0,
+      icon: Users,
+      change: '+12% this month',
+      changeType: 'positive',
+    },
+    {
+      title: 'Verified Alumni',
+      value: systemStats?.verifiedAlumni || 0,
+      icon: UserCheck,
+      change: `${systemStats?.totalUsers || 0} total users`,
+      changeType: 'neutral',
+    },
+    {
+      title: 'Active Jobs',
+      value: systemStats?.activeJobs || 0,
+      icon: Briefcase,
+      change: 'Currently active',
+      changeType: 'positive',
+    },
+    {
+      title: 'Upcoming Events',
+      value: systemStats?.upcomingEvents || 0,
+      icon: Calendar,
+      change: 'Scheduled',
+      changeType: 'neutral',
+    },
+  ];
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <MainNavbar />
+      
+      <div className="flex flex-1">
+        <Sidebar />
+        
+        <main className="flex-1 p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Welcome Section */}
+            <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-lg p-6 text-white">
+              <h1 className="text-3xl font-bold">Admin Dashboard 🛡️</h1>
+              <p className="mt-2 opacity-90">
+                System overview and management controls
+              </p>
+            </div>
+
+            {/* Pending Verifications Alert */}
+            {pendingVerifications.length > 0 && (
+              <Card className="border-yellow-200 bg-yellow-50">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-yellow-600" />
+                    <CardTitle className="text-yellow-900">
+                      {pendingVerifications.length} Pending Verification{pendingVerifications.length !== 1 ? 's' : ''}
+                    </CardTitle>
+                  </div>
+                  <CardDescription className="text-yellow-700">
+                    Alumni profiles waiting for verification
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button asChild size="sm" className="bg-yellow-600 hover:bg-yellow-700">
+                    <Link to="/admin/verifications">Review Verifications</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {stats.map((stat, index) => {
+                const Icon = stat.icon;
+                return (
+                  <Card key={index}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        {stat.title}
+                      </CardTitle>
+                      <Icon className="h-4 w-4 text-gray-600" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{stat.value}</div>
+                      <p className={`text-xs mt-1 ${
+                        stat.changeType === 'positive' ? 'text-green-600' :
+                        stat.changeType === 'negative' ? 'text-red-600' :
+                        'text-gray-600'
+                      }`}>
+                        {stat.change}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+                <CardDescription>Common administrative tasks</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Link to="/admin/users" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-red-500 transition-all">
+                    <Users className="h-8 w-8 text-blue-600 mb-2" />
+                    <div className="text-sm font-medium text-gray-900">Manage Users</div>
+                    <div className="text-xs text-gray-500 mt-1">View and edit users</div>
+                  </Link>
+                  <Link to="/admin/verifications" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-red-500 transition-all">
+                    <CheckCircle className="h-8 w-8 text-green-600 mb-2" />
+                    <div className="text-sm font-medium text-gray-900">Verifications</div>
+                    <div className="text-xs text-gray-500 mt-1">Approve profiles</div>
+                  </Link>
+                  <Link to="/admin/moderation" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-red-500 transition-all">
+                    <AlertCircle className="h-8 w-8 text-yellow-600 mb-2" />
+                    <div className="text-sm font-medium text-gray-900">Moderation</div>
+                    <div className="text-xs text-gray-500 mt-1">Review flagged content</div>
+                  </Link>
+                  <Link to="/admin/analytics" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-red-500 transition-all">
+                    <TrendingUp className="h-8 w-8 text-purple-600 mb-2" />
+                    <div className="text-sm font-medium text-gray-900">Analytics</div>
+                    <div className="text-xs text-gray-500 mt-1">View platform stats</div>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Pending Verifications */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pending Verifications</CardTitle>
+                  <CardDescription>Alumni profiles awaiting approval</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {pendingVerifications.length > 0 ? (
+                    <div className="space-y-3">
+                      {pendingVerifications.slice(0, 5).map(profile => {
+                        const profileUser = mockData.users?.find(u => u.id === profile.user_id);
+                        return (
+                          <div key={profile.id} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={profile.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileUser?.email}`}
+                                alt={profile.name}
+                                className="h-10 w-10 rounded-full"
+                              />
+                              <div>
+                                <p className="font-medium text-sm">{profile.name}</p>
+                                <p className="text-xs text-gray-500">{profileUser?.email}</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" className="text-green-600">Approve</Button>
+                              <Button size="sm" variant="outline" className="text-red-600">Reject</Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <Button asChild variant="outline" className="w-full" size="sm">
+                        <Link to="/admin/verifications">View All</Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <CheckCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="text-sm">No pending verifications</p>
+                      <p className="text-xs mt-1">All profiles are verified</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                  <CardDescription>Latest platform actions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {recentActivity.map(activity => (
+                      <div key={activity.id} className="flex items-start gap-3 p-2">
+                        <div className={`w-2 h-2 rounded-full mt-2 ${
+                          activity.type === 'user' ? 'bg-blue-600' :
+                          activity.type === 'job' ? 'bg-green-600' :
+                          activity.type === 'event' ? 'bg-purple-600' :
+                          'bg-yellow-600'
+                        }`}></div>
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-900">{activity.message}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{activity.time}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* User Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle>User Distribution</CardTitle>
+                <CardDescription>Users by role</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {['student', 'alumni', 'recruiter', 'admin'].map(role => {
+                    const count = mockData.users?.filter(u => u.role === role).length || 0;
+                    const percentage = systemStats?.totalUsers > 0 
+                      ? Math.round((count / systemStats.totalUsers) * 100) 
+                      : 0;
+                    return (
+                      <div key={role} className="text-center p-4 border rounded-lg">
+                        <div className="text-2xl font-bold capitalize text-gray-900">{count}</div>
+                        <div className="text-sm text-gray-600 mt-1 capitalize">{role}s</div>
+                        <div className="text-xs text-gray-500 mt-1">{percentage}%</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+      
+      <Footer />
+    </div>
+  );
+};
+
+export default AdminDashboard;

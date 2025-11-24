@@ -4,16 +4,42 @@ import { Toaster } from 'sonner';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
 // Auth Pages
-import Login from '@/pages/auth/Login';
-import Register from '@/pages/auth/Register';
-import ForgotPassword from '@/pages/auth/ForgotPassword';
-import ResetPassword from '@/pages/auth/ResetPassword';
+import Login from '@/page/auth/Login';
+import Register from '@/page/auth/Register';
+import ForgotPassword from '@/page/auth/ForgotPassword';
+import ResetPassword from '@/page/auth/ResetPassword';
 
 // Main Pages
-import Dashboard from '@/pages/Dashboard';
-import Home from '@/pages/Home';
+import Home from '@/page/Home';
+
+// Dashboards (Role-specific)
+import StudentDashboard from '@/page/StudentDashboard';
+import AlumniDashboard from '@/page/AlumniDashboard';
+import RecruiterDashboard from '@/page/RecruiterDashboard';
+import AdminDashboard from '@/page/AdminDashboard';
 
 import '@/App.css';
+
+// Dashboard router component - redirects to role-specific dashboard
+const DashboardRouter = () => {
+  const userData = localStorage.getItem('user');
+  if (!userData) return <Navigate to="/login" replace />;
+  
+  const user = JSON.parse(userData);
+  
+  switch (user.role) {
+    case 'student':
+      return <Navigate to="/dashboard/student" replace />;
+    case 'alumni':
+      return <Navigate to="/dashboard/alumni" replace />;
+    case 'recruiter':
+      return <Navigate to="/dashboard/recruiter" replace />;
+    case 'admin':
+      return <Navigate to="/dashboard/admin" replace />;
+    default:
+      return <Navigate to="/" replace />;
+  }
+};
 
 function App() {
   return (
@@ -28,12 +54,44 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-          {/* Protected Routes */}
+          {/* Protected Dashboard Routes */}
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <DashboardRouter />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/student"
+            element={
+              <ProtectedRoute>
+                <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/alumni"
+            element={
+              <ProtectedRoute>
+                <AlumniDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/recruiter"
+            element={
+              <ProtectedRoute>
+                <RecruiterDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/admin"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />
