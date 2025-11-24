@@ -22,6 +22,12 @@ import PostJob from '@/page/jobs/PostJob';
 import ManageJobs from '@/page/jobs/ManageJobs';
 import ApplicationsManager from '@/page/jobs/ApplicationsManager';
 
+// Mentorship Pages
+import FindMentors from '@/page/mentorship/FindMentors';
+import MentorProfile from '@/page/mentorship/MentorProfile';
+import MentorshipDashboard from '@/page/mentorship/MentorshipDashboard';
+import SessionDetails from '@/page/mentorship/SessionDetails';
+
 // Dashboards (Role-specific)
 import StudentDashboard from '@/page/StudentDashboard';
 import AlumniDashboard from '@/page/AlumniDashboard';
@@ -128,6 +134,48 @@ function App() {
             element={
               <ProtectedRoute>
                 <ApplicationsManager />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Mentorship Routes - Protected */}
+          <Route
+            path="/mentorship"
+            element={
+              <ProtectedRoute>
+                <Navigate to="/mentorship/find" replace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mentorship/find"
+            element={
+              <ProtectedRoute>
+                <FindMentors />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mentorship/mentor/:userId"
+            element={
+              <ProtectedRoute>
+                <MentorProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mentorship/dashboard"
+            element={
+              <ProtectedRoute>
+                <MentorshipDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mentorship/sessions/:sessionId"
+            element={
+              <ProtectedRoute>
+                <SessionDetails />
               </ProtectedRoute>
             }
           />
