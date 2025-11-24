@@ -14,6 +14,14 @@ import Home from '@/page/Home';
 import AlumniDirectory from '@/page/AlumniDirectory';
 import ProfileView from '@/page/ProfileView';
 
+// Job Pages
+import Jobs from '@/page/jobs/Jobs';
+import JobDetails from '@/page/jobs/JobDetails';
+import MyApplications from '@/page/jobs/MyApplications';
+import PostJob from '@/page/jobs/PostJob';
+import ManageJobs from '@/page/jobs/ManageJobs';
+import ApplicationsManager from '@/page/jobs/ApplicationsManager';
+
 // Dashboards (Role-specific)
 import StudentDashboard from '@/page/StudentDashboard';
 import AlumniDashboard from '@/page/AlumniDashboard';
@@ -70,6 +78,56 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProfileView />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Job Routes - Protected */}
+          <Route
+            path="/jobs"
+            element={
+              <ProtectedRoute>
+                <Jobs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/jobs/:jobId"
+            element={
+              <ProtectedRoute>
+                <JobDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/jobs/my-applications"
+            element={
+              <ProtectedRoute>
+                <MyApplications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/jobs/post"
+            element={
+              <ProtectedRoute>
+                <PostJob />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/jobs/manage"
+            element={
+              <ProtectedRoute>
+                <ManageJobs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/jobs/:jobId/applications"
+            element={
+              <ProtectedRoute>
+                <ApplicationsManager />
               </ProtectedRoute>
             }
           />
