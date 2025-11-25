@@ -31,6 +31,7 @@ const Jobs = lazy(() => import('@/page/jobs/Jobs'));
 const JobDetails = lazy(() => import('@/page/jobs/JobDetails'));
 const MyApplications = lazy(() => import('@/page/jobs/MyApplications'));
 const PostJob = lazy(() => import('@/page/jobs/PostJob'));
+const EditJob = lazy(() => import('@/page/jobs/EditJob'));
 const ManageJobs = lazy(() => import('@/page/jobs/ManageJobs'));
 const ApplicationsManager = lazy(() => import('@/page/jobs/ApplicationsManager'));
 const JobApplicationsManager = lazy(() => import('@/page/jobs/JobApplicationsManager'));
@@ -184,6 +185,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <PostJob />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/jobs/edit/:jobId"
+            element={
+              <ProtectedRoute>
+                <EditJob />
               </ProtectedRoute>
             }
           />
