@@ -74,13 +74,22 @@ const Events = () => {
               </p>
             </div>
             {canCreateEvent && (
-              <Button 
-                onClick={() => navigate('/events/create')}
-                data-testid="create-event-button"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Event
-              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={() => navigate('/events/create')}
+                  data-testid="create-event-button"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Event
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/events/manage')}
+                  data-testid="manage-events-button"
+                >
+                  Manage My Events
+                </Button>
+              </div>
             )}
           </div>
 
@@ -173,19 +182,6 @@ const Events = () => {
             )}
           </TabsContent>
         </Tabs>
-
-        {/* Manage Events Link */}
-        {canCreateEvent && (
-          <div className="mt-8 text-center">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/events/manage')}
-              data-testid="manage-events-button"
-            >
-              Manage My Events
-            </Button>
-          </div>
-        )}
       </div>
     </MainLayout>
   );

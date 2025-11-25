@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Progress } from '@/components/ui/progress';
-import { Loader2, Mail, Lock, Check, UserCircle, Briefcase, GraduationCap } from 'lucide-react';
+import { Loader2, Mail, Lock, Check, UserCircle, Briefcase, GraduationCap, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Register = () => {
@@ -119,6 +119,21 @@ const Register = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
+          {/* Back Button */}
+          <div className="flex items-center mb-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+              data-testid="back-to-home-button"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Button>
+          </div>
+          
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-2xl">A</span>
