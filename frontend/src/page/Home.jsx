@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Footer from '@/components/layout/Footer';
 import { StaggerContainer, StaggerItem } from '@/components/animations/StaggerChildren';
-import { ArrowRight, Users, Briefcase, Calendar, Award, MessageSquare, UserCheck, Target, Heart, TrendingUp } from 'lucide-react';
+import { ArrowRight, Users, Briefcase, Calendar, Award, MessageSquare, UserCheck, Target, Heart, TrendingUp, Network, Route, Map, CreditCard, BookOpen, BarChart3, Sparkles } from 'lucide-react';
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
@@ -71,6 +71,51 @@ const Home = () => {
       icon: TrendingUp,
       title: 'Continuous Learning',
       description: 'Providing access to resources, events, and knowledge that help our community stay ahead in their careers.',
+    },
+  ];
+
+  const innovativeFeatures = [
+    {
+      icon: Network,
+      title: 'Skill Graph AI',
+      description: 'Skill matching + relationship network model',
+      marketValue: 'Smart talent discovery',
+      gradient: 'from-blue-500 to-cyan-500',
+    },
+    {
+      icon: Route,
+      title: 'Career Path Engine',
+      description: 'Predictive role-transition algorithm',
+      marketValue: 'Student success insights',
+      gradient: 'from-purple-500 to-pink-500',
+    },
+    {
+      icon: Map,
+      title: 'Talent Heatmap',
+      description: 'Spatio-temporal career intelligence',
+      marketValue: 'Recruiter targeting',
+      gradient: 'from-orange-500 to-red-500',
+    },
+    {
+      icon: CreditCard,
+      title: 'Digital Alumni ID',
+      description: 'Dynamic credential verification + QR security',
+      marketValue: 'Trusted identity layer',
+      gradient: 'from-green-500 to-emerald-500',
+    },
+    {
+      icon: BookOpen,
+      title: 'Knowledge Capsules',
+      description: 'Content validation tied to skill graph',
+      marketValue: 'Micro-learning marketplace',
+      gradient: 'from-indigo-500 to-blue-500',
+    },
+    {
+      icon: BarChart3,
+      title: 'Engagement Scoring',
+      description: 'Contribution impact measurement',
+      marketValue: 'Gamification & retention',
+      gradient: 'from-yellow-500 to-orange-500',
     },
   ];
 
@@ -162,29 +207,6 @@ const Home = () => {
               </>
             )}
           </div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="pt-8"
-          >
-            <p className="text-sm text-gray-500 mb-4">Trusted by alumni worldwide</p>
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-8 opacity-70">
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-blue-600" data-testid="stat-alumni">5,000+</div>
-                <div className="text-sm text-gray-600">Alumni</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-blue-600" data-testid="stat-jobs">500+</div>
-                <div className="text-sm text-gray-600">Jobs Posted</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-blue-600" data-testid="stat-events">200+</div>
-                <div className="text-sm text-gray-600">Events</div>
-              </div>
-            </div>
-          </motion.div>
         </motion.div>
       </section>
 
@@ -209,6 +231,61 @@ const Home = () => {
                   </div>
                   <div className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</div>
                   <div className="text-gray-600">{stat.label}</div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Innovative Features Section */}
+      <section className="py-20 px-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" data-testid="innovative-features-section">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full mb-6">
+              <Sparkles className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-medium text-blue-400">Next-Generation Innovation</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6" data-testid="innovative-features-title">
+              Patentable Technology Stack
+            </h2>
+            <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+              Revolutionary features that set us apart with cutting-edge algorithms and intelligent systems
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {innovativeFeatures.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="relative group"
+                  data-testid={`innovative-feature-${feature.title.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl blur-xl" 
+                       style={{ background: `linear-gradient(to bottom right, ${feature.gradient})` }}></div>
+                  <div className="relative bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-8 rounded-2xl hover:border-gray-600 transition-all duration-300 h-full">
+                    <div className={`w-14 h-14 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center mb-6 shadow-lg`}>
+                      <Icon className="w-7 h-7 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-3">{feature.title}</h3>
+                    <p className="text-gray-400 mb-4 text-sm leading-relaxed">{feature.description}</p>
+                    <div className="flex items-start gap-2 pt-4 border-t border-gray-700">
+                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-1.5 flex-shrink-0"></div>
+                      <p className="text-blue-400 font-medium text-sm">{feature.marketValue}</p>
+                    </div>
+                  </div>
                 </motion.div>
               );
             })}
