@@ -11,7 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Users, Briefcase, Calendar, MessageSquare, Award, TrendingUp, Eye } from 'lucide-react';
+import { Users, Briefcase, Calendar, MessageSquare, Award, TrendingUp, Eye, FileText, UserCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import mockData from '@/mockdata.json';
@@ -157,25 +157,25 @@ const StudentDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Link to="/mentorship/find" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-blue-500 transition-all">
+                  <Link to="/mentorship/find" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-blue-500 transition-all" data-testid="find-mentor-btn">
                     <Users className="h-8 w-8 text-blue-600 mb-2" />
                     <div className="text-sm font-medium text-gray-900">Find a Mentor</div>
                     <div className="text-xs text-gray-500 mt-1">Connect with experienced alumni</div>
                   </Link>
-                  <Link to="/jobs" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-blue-500 transition-all">
+                  <Link to="/mentorship/dashboard" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-purple-500 transition-all" data-testid="my-mentorship-btn">
+                    <UserCheck className="h-8 w-8 text-purple-600 mb-2" />
+                    <div className="text-sm font-medium text-gray-900">My Mentorship</div>
+                    <div className="text-xs text-gray-500 mt-1">View sessions and requests</div>
+                  </Link>
+                  <Link to="/jobs" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-green-500 transition-all" data-testid="browse-jobs-btn">
                     <Briefcase className="h-8 w-8 text-green-600 mb-2" />
                     <div className="text-sm font-medium text-gray-900">Browse Jobs</div>
                     <div className="text-xs text-gray-500 mt-1">Find your next opportunity</div>
                   </Link>
-                  <Link to="/jobs/my-applications" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-blue-500 transition-all">
-                    <Award className="h-8 w-8 text-purple-600 mb-2" />
+                  <Link to="/jobs/my-applications" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-orange-500 transition-all" data-testid="my-applications-btn">
+                    <FileText className="h-8 w-8 text-orange-600 mb-2" />
                     <div className="text-sm font-medium text-gray-900">My Applications</div>
                     <div className="text-xs text-gray-500 mt-1">Track your applications</div>
-                  </Link>
-                  <Link to="/events" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-blue-500 transition-all">
-                    <Calendar className="h-8 w-8 text-orange-600 mb-2" />
-                    <div className="text-sm font-medium text-gray-900">Upcoming Events</div>
-                    <div className="text-xs text-gray-500 mt-1">Join workshops and meetups</div>
                   </Link>
                 </div>
               </CardContent>
@@ -198,6 +198,7 @@ const StudentDashboard = () => {
                             key={app.id} 
                             className="flex items-start justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                             onClick={() => navigate(`/jobs/${app.job_id}`)}
+                            data-testid={`application-${app.id}`}
                           >
                             <div className="flex-1">
                               <p className="font-medium text-sm">{job?.title || 'Job Title'}</p>
@@ -213,13 +214,13 @@ const StudentDashboard = () => {
                                 </span>
                               </div>
                             </div>
-                            <Button size="sm" variant="ghost">
+                            <Button size="sm" variant="ghost" data-testid={`view-application-${app.id}`}>
                               <Eye className="h-4 w-4" />
                             </Button>
                           </div>
                         );
                       })}
-                      <Button asChild variant="outline" className="w-full" size="sm">
+                      <Button asChild variant="outline" className="w-full" size="sm" data-testid="view-all-applications-btn">
                         <Link to="/jobs/my-applications">View All Applications</Link>
                       </Button>
                     </div>
@@ -312,7 +313,7 @@ const StudentDashboard = () => {
                               <p className="text-xs text-gray-500">Status: {session.status}</p>
                             </div>
                           </div>
-                          <Button size="sm" asChild>
+                          <Button size="sm" asChild data-testid={`view-session-${session.id}`}>
                             <Link to="/mentorship/dashboard">View Details</Link>
                           </Button>
                         </div>
