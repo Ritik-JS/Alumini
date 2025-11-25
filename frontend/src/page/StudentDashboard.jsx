@@ -1,24 +1,34 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockProfileService } from '@/services/mockProfileService';
+import { createMentorshipRequest } from '@/services/mockMentorshipService';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Users, Briefcase, Calendar, MessageSquare, Award, TrendingUp } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Users, Briefcase, Calendar, MessageSquare, Award, TrendingUp, Eye } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import mockData from '@/mockdata.json';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [applications, setApplications] = useState([]);
   const [mentorshipRequests, setMentorshipRequests] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [recommendedMentors, setRecommendedMentors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMentor, setSelectedMentor] = useState(null);
+  const [connectDialogOpen, setConnectDialogOpen] = useState(false);
+  const [requestMessage, setRequestMessage] = useState('');
+  const [requestGoals, setRequestGoals] = useState('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -51,6 +61,49 @@ const StudentDashboard = () => {
 
     loadData();
   }, [user.id]);
+
+  const handleConnectClick = (mentor) => {
+    setSelectedMentor(mentor);
+    setConnectDialogOpen(true);
+    setRequestMessage('');
+    setRequestGoals('');
+  };
+
+  const handleSendRequest = async () => {
+    if (!requestMessage.trim() || !requestGoals.trim()) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    try {
+      const result = await createMentorshipRequest({
+        student_id: user.id,
+        mentor_id: selectedMentor.user_id,
+        request_message: requestMessage,
+        goals: requestGoals,
+        preferred_topics: [],
+      });
+
+      if (result.success) {
+        toast.success('Mentorship request sent successfully!');
+        setConnectDialogOpen(false);
+        setRequestMessage('');
+        setRequestGoals('');
+        // Reload mentorship requests
+        const mentorRequests = await mockProfileService.getMentorshipRequestsByStudent(user.id);
+        setMentorshipRequests(mentorRequests);
+      } else {
+        toast.error('Failed to send request');
+      }
+    } catch (error) {
+      console.error('Error sending mentorship request:', error);
+      toast.error('An error occurred');
+    }
+  };
+
+  const handleViewMentorProfile = (mentorUserId) => {
+    navigate(`/mentorship/mentor/${mentorUserId}`);
+  };
 
   const profileCompletion = profile?.profile_completion_percentage || 0;
   const recentApplications = applications.slice(0, 3);
@@ -88,8 +141,8 @@ const StudentDashboard = () => {
                 <Progress value={profileCompletion} className="h-3" />
                 {profileCompletion < 100 && (
                   <div className="flex gap-2">
-                    <Button asChild size="sm">
-                      <Link to="/profile/edit">Complete Profile</Link>
+                    <Button asChild size="sm" data-testid="complete-profile-btn">
+                      <Link to="/profile">Complete Profile</Link>
                     </Button>
                   </div>
                 )}
@@ -103,7 +156,7 @@ const StudentDashboard = () => {
                 <CardDescription>Get started with these common tasks</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <Link to="/mentorship/find" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-blue-500 transition-all">
                     <Users className="h-8 w-8 text-blue-600 mb-2" />
                     <div className="text-sm font-medium text-gray-900">Find a Mentor</div>
@@ -114,8 +167,13 @@ const StudentDashboard = () => {
                     <div className="text-sm font-medium text-gray-900">Browse Jobs</div>
                     <div className="text-xs text-gray-500 mt-1">Find your next opportunity</div>
                   </Link>
+                  <Link to="/jobs/my-applications" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-blue-500 transition-all">
+                    <Award className="h-8 w-8 text-purple-600 mb-2" />
+                    <div className="text-sm font-medium text-gray-900">My Applications</div>
+                    <div className="text-xs text-gray-500 mt-1">Track your applications</div>
+                  </Link>
                   <Link to="/events" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-blue-500 transition-all">
-                    <Calendar className="h-8 w-8 text-purple-600 mb-2" />
+                    <Calendar className="h-8 w-8 text-orange-600 mb-2" />
                     <div className="text-sm font-medium text-gray-900">Upcoming Events</div>
                     <div className="text-xs text-gray-500 mt-1">Join workshops and meetups</div>
                   </Link>
@@ -136,7 +194,11 @@ const StudentDashboard = () => {
                       {recentApplications.map(app => {
                         const job = mockData.jobs?.find(j => j.id === app.job_id);
                         return (
-                          <div key={app.id} className="flex items-start justify-between p-3 border rounded-lg">
+                          <div 
+                            key={app.id} 
+                            className="flex items-start justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                            onClick={() => navigate(`/jobs/${app.job_id}`)}
+                          >
                             <div className="flex-1">
                               <p className="font-medium text-sm">{job?.title || 'Job Title'}</p>
                               <p className="text-xs text-gray-500">{job?.company || 'Company'}</p>
@@ -151,6 +213,9 @@ const StudentDashboard = () => {
                                 </span>
                               </div>
                             </div>
+                            <Button size="sm" variant="ghost">
+                              <Eye className="h-4 w-4" />
+                            </Button>
                           </div>
                         );
                       })}
@@ -181,6 +246,9 @@ const StudentDashboard = () => {
                     {recommendedMentors.map(mentor => {
                       const mentorUser = mockData.users?.find(u => u.id === mentor.user_id);
                       const mentorProfile = mockData.alumni_profiles?.find(p => p.user_id === mentor.user_id);
+                      const hasRequested = mentorshipRequests.some(r => r.mentor_id === mentor.user_id && r.status === 'pending');
+                      const isConnected = mentorshipRequests.some(r => r.mentor_id === mentor.user_id && r.status === 'accepted');
+                      
                       return (
                         <div key={mentor.id} className="flex items-center justify-between p-3 border rounded-lg">
                           <div className="flex items-center gap-3">
@@ -194,7 +262,25 @@ const StudentDashboard = () => {
                               <p className="text-xs text-gray-500">{mentorProfile?.current_role}</p>
                             </div>
                           </div>
-                          <Button size="sm" variant="outline">Connect</Button>
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleViewMentorProfile(mentor.user_id)}
+                              data-testid={`view-profile-${mentor.id}`}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleConnectClick(mentor)}
+                              disabled={hasRequested || isConnected}
+                              data-testid={`connect-btn-${mentor.id}`}
+                            >
+                              {isConnected ? 'Connected' : hasRequested ? 'Requested' : 'Connect'}
+                            </Button>
+                          </div>
                         </div>
                       );
                     })}
@@ -226,7 +312,9 @@ const StudentDashboard = () => {
                               <p className="text-xs text-gray-500">Status: {session.status}</p>
                             </div>
                           </div>
-                          <Button size="sm">View Details</Button>
+                          <Button size="sm" asChild>
+                            <Link to="/mentorship/dashboard">View Details</Link>
+                          </Button>
                         </div>
                       );
                     })}
@@ -237,6 +325,48 @@ const StudentDashboard = () => {
           </div>
         </main>
       </div>
+      
+      {/* Connect Dialog */}
+      <Dialog open={connectDialogOpen} onOpenChange={setConnectDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Request Mentorship</DialogTitle>
+            <DialogDescription>
+              Send a mentorship request to {selectedMentor && mockData.alumni_profiles?.find(p => p.user_id === selectedMentor.user_id)?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="message">Message *</Label>
+              <Textarea
+                id="message"
+                placeholder="Introduce yourself and explain why you'd like this person as a mentor..."
+                value={requestMessage}
+                onChange={(e) => setRequestMessage(e.target.value)}
+                rows={4}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="goals">Your Goals *</Label>
+              <Textarea
+                id="goals"
+                placeholder="What do you hope to achieve with this mentorship?"
+                value={requestGoals}
+                onChange={(e) => setRequestGoals(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConnectDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendRequest}>
+              Send Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>

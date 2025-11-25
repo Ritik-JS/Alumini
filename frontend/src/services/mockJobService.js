@@ -1,69 +1,54 @@
 // Mock Job Service for Alumni Portal
 // This provides mock data and API calls for job-related features
 
+import mockData from '../mockdata.json';
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-// Mock jobs data
-const mockJobs = [
-  {
-    id: '1',
-    title: 'Senior Software Engineer',
-    company: 'Tech Corp',
-    location: 'San Francisco, CA',
-    job_type: 'full-time',
-    description: 'We are looking for an experienced software engineer...',
-    experience_required: '5+ years',
-    skills_required: ['JavaScript', 'React', 'Node.js', 'Python'],
-    salary_range: '$120,000 - $160,000',
-    posted_by: 'user-1',
-    status: 'active',
-    created_at: new Date().toISOString(),
-    applications_count: 15,
-    views_count: 120,
-  },
-  {
-    id: '2',
-    title: 'Product Manager',
-    company: 'Innovation Labs',
-    location: 'New York, NY',
-    job_type: 'full-time',
-    description: 'Seeking a product manager to lead our team...',
-    experience_required: '3+ years',
-    skills_required: ['Product Management', 'Agile', 'Data Analysis'],
-    salary_range: '$100,000 - $140,000',
-    posted_by: 'user-2',
-    status: 'active',
-    created_at: new Date().toISOString(),
-    applications_count: 23,
-    views_count: 200,
-  },
-];
+// Storage key
+const JOBS_KEY = 'jobs';
+const JOB_APPLICATIONS_KEY = 'job_applications';
 
-// Mock applications data
-const mockApplications = [
-  {
-    id: 'app-1',
-    job_id: '1',
-    applicant_id: 'current-user',
-    status: 'pending',
-    applied_at: new Date().toISOString(),
-    job: mockJobs[0],
-  },
-];
+// Helper to get data from localStorage or fallback to mock data
+const getStoredData = (key, fallback) => {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : fallback;
+  } catch (error) {
+    console.error(`Error reading ${key} from localStorage:`, error);
+    return fallback;
+  }
+};
+
+// Helper to save data to localStorage
+const saveData = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error(`Error saving ${key} to localStorage:`, error);
+  }
+};
+
+// Get all jobs
+const getAllJobsData = () => {
+  return getStoredData(JOBS_KEY, mockData.jobs || []);
+};
+
+// Get all applications
+const getAllApplicationsData = () => {
+  return getStoredData(JOB_APPLICATIONS_KEY, mockData.job_applications || []);
+};
 
 // Job Service API
 export const jobService = {
   // Get all jobs with optional filters
   async getAllJobs(filters = {}) {
     try {
-      // TODO: Replace with real API call
-      // const response = await fetch(`${BACKEND_URL}/api/jobs?${new URLSearchParams(filters)}`);
-      // return await response.json();
-      
+      const jobs = getAllJobsData();
       return {
         success: true,
-        data: mockJobs,
-        total: mockJobs.length,
+        data: jobs,
+        total: jobs.length,
       };
     } catch (error) {
       console.error('Error fetching jobs:', error);
@@ -74,11 +59,8 @@ export const jobService = {
   // Get job by ID
   async getJobById(jobId) {
     try {
-      // TODO: Replace with real API call
-      // const response = await fetch(`${BACKEND_URL}/api/jobs/${jobId}`);
-      // return await response.json();
-      
-      const job = mockJobs.find(j => j.id === jobId);
+      const jobs = getAllJobsData();
+      const job = jobs.find(j => j.id === jobId);
       return {
         success: true,
         data: job || null,
@@ -92,22 +74,17 @@ export const jobService = {
   // Create new job
   async createJob(jobData) {
     try {
-      // TODO: Replace with real API call
-      // const response = await fetch(`${BACKEND_URL}/api/jobs`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(jobData),
-      // });
-      // return await response.json();
-      
+      const jobs = getAllJobsData();
       const newJob = {
         id: `job-${Date.now()}`,
         ...jobData,
         created_at: new Date().toISOString(),
         applications_count: 0,
         views_count: 0,
+        status: 'active'
       };
-      mockJobs.push(newJob);
+      jobs.push(newJob);
+      saveData(JOBS_KEY, jobs);
       return { success: true, data: newJob };
     } catch (error) {
       console.error('Error creating job:', error);
@@ -118,8 +95,14 @@ export const jobService = {
   // Update job
   async updateJob(jobId, jobData) {
     try {
-      // TODO: Replace with real API call
-      return { success: true, data: { id: jobId, ...jobData } };
+      const jobs = getAllJobsData();
+      const index = jobs.findIndex(j => j.id === jobId);
+      if (index !== -1) {
+        jobs[index] = { ...jobs[index], ...jobData, updated_at: new Date().toISOString() };
+        saveData(JOBS_KEY, jobs);
+        return { success: true, data: jobs[index] };
+      }
+      return { success: false, error: 'Job not found' };
     } catch (error) {
       console.error('Error updating job:', error);
       return { success: false, error: error.message };
@@ -129,7 +112,9 @@ export const jobService = {
   // Delete job
   async deleteJob(jobId) {
     try {
-      // TODO: Replace with real API call
+      const jobs = getAllJobsData();
+      const filtered = jobs.filter(j => j.id !== jobId);
+      saveData(JOBS_KEY, filtered);
       return { success: true, message: 'Job deleted successfully' };
     } catch (error) {
       console.error('Error deleting job:', error);
@@ -140,15 +125,17 @@ export const jobService = {
   // Apply for job
   async applyForJob(jobId, applicationData) {
     try {
-      // TODO: Replace with real API call
+      const applications = getAllApplicationsData();
       const application = {
         id: `app-${Date.now()}`,
         job_id: jobId,
         ...applicationData,
         status: 'pending',
         applied_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
-      mockApplications.push(application);
+      applications.push(application);
+      saveData(JOB_APPLICATIONS_KEY, applications);
       return { success: true, data: application };
     } catch (error) {
       console.error('Error applying for job:', error);
@@ -157,10 +144,11 @@ export const jobService = {
   },
 
   // Get my applications
-  async getMyApplications() {
+  async getMyApplications(userId) {
     try {
-      // TODO: Replace with real API call
-      return { success: true, data: mockApplications };
+      const applications = getAllApplicationsData();
+      const userApps = applications.filter(app => app.applicant_id === userId);
+      return { success: true, data: userApps };
     } catch (error) {
       console.error('Error fetching applications:', error);
       return { success: false, error: error.message, data: [] };
@@ -170,9 +158,9 @@ export const jobService = {
   // Get applications for a specific job (for recruiters)
   async getJobApplications(jobId) {
     try {
-      // TODO: Replace with real API call
-      const applications = mockApplications.filter(app => app.job_id === jobId);
-      return { success: true, data: applications };
+      const applications = getAllApplicationsData();
+      const jobApps = applications.filter(app => app.job_id === jobId);
+      return { success: true, data: jobApps };
     } catch (error) {
       console.error('Error fetching job applications:', error);
       return { success: false, error: error.message, data: [] };
@@ -182,11 +170,19 @@ export const jobService = {
   // Update application status (for recruiters)
   async updateApplicationStatus(applicationId, status, message = '') {
     try {
-      // TODO: Replace with real API call
-      return {
-        success: true,
-        data: { id: applicationId, status, response_message: message },
-      };
+      const applications = getAllApplicationsData();
+      const index = applications.findIndex(app => app.id === applicationId);
+      if (index !== -1) {
+        applications[index] = {
+          ...applications[index],
+          status,
+          response_message: message,
+          updated_at: new Date().toISOString()
+        };
+        saveData(JOB_APPLICATIONS_KEY, applications);
+        return { success: true, data: applications[index] };
+      }
+      return { success: false, error: 'Application not found' };
     } catch (error) {
       console.error('Error updating application:', error);
       return { success: false, error: error.message };
@@ -194,10 +190,11 @@ export const jobService = {
   },
 
   // Get jobs posted by current user
-  async getMyJobs() {
+  async getMyJobs(userId) {
     try {
-      // TODO: Replace with real API call
-      return { success: true, data: mockJobs.slice(0, 2) };
+      const jobs = getAllJobsData();
+      const userJobs = jobs.filter(j => j.posted_by === userId);
+      return { success: true, data: userJobs };
     } catch (error) {
       console.error('Error fetching my jobs:', error);
       return { success: false, error: error.message, data: [] };
@@ -207,51 +204,112 @@ export const jobService = {
 
 // Utility functions
 export const hasUserApplied = (jobId, userId) => {
-  return mockApplications.some(app => app.job_id === jobId && app.applicant_id === userId);
+  const applications = getAllApplicationsData();
+  return applications.some(app => app.job_id === jobId && app.applicant_id === userId);
 };
 
-export const filterJobs = (jobs, filters) => {
+export const filterJobs = (filters = {}) => {
+  const jobs = getAllJobsData();
   return jobs.filter(job => {
-    if (filters.location && !job.location.toLowerCase().includes(filters.location.toLowerCase())) {
-      return false;
+    // Search filter
+    if (filters.search && filters.search.trim()) {
+      const searchLower = filters.search.toLowerCase();
+      const matchTitle = job.title?.toLowerCase().includes(searchLower);
+      const matchCompany = job.company?.toLowerCase().includes(searchLower);
+      const matchDescription = job.description?.toLowerCase().includes(searchLower);
+      if (!matchTitle && !matchCompany && !matchDescription) return false;
     }
-    if (filters.job_type && job.job_type !== filters.job_type) {
-      return false;
+
+    // Location filter
+    if (filters.locations && filters.locations.length > 0) {
+      if (!filters.locations.some(loc => job.location?.toLowerCase().includes(loc.toLowerCase()))) {
+        return false;
+      }
     }
-    if (filters.company && !job.company.toLowerCase().includes(filters.company.toLowerCase())) {
-      return false;
+
+    // Job type filter
+    if (filters.jobTypes && filters.jobTypes.length > 0) {
+      if (!filters.jobTypes.includes(job.job_type)) {
+        return false;
+      }
     }
+
+    // Company filter
+    if (filters.companies && filters.companies.length > 0) {
+      if (!filters.companies.some(comp => job.company?.toLowerCase().includes(comp.toLowerCase()))) {
+        return false;
+      }
+    }
+
+    // Skills filter
+    if (filters.skills && filters.skills.length > 0) {
+      if (!filters.skills.some(skill => job.skills_required?.includes(skill))) {
+        return false;
+      }
+    }
+
+    // Experience level filter
+    if (filters.experienceLevels && filters.experienceLevels.length > 0) {
+      if (!filters.experienceLevels.some(exp => job.experience_required?.toLowerCase().includes(exp.toLowerCase()))) {
+        return false;
+      }
+    }
+
     return true;
   });
 };
 
-export const sortJobs = (jobs, sortBy = 'date') => {
+export const sortJobs = (jobs, sortBy = 'recent') => {
   const sorted = [...jobs];
-  if (sortBy === 'date') {
-    sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  } else if (sortBy === 'applications') {
-    sorted.sort((a, b) => b.applications_count - a.applications_count);
+  switch (sortBy) {
+    case 'recent':
+    case 'date':
+      sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      break;
+    case 'applications':
+      sorted.sort((a, b) => (b.applications_count || 0) - (a.applications_count || 0));
+      break;
+    case 'views':
+      sorted.sort((a, b) => (b.views_count || 0) - (a.views_count || 0));
+      break;
+    case 'company':
+      sorted.sort((a, b) => (a.company || '').localeCompare(b.company || ''));
+      break;
+    default:
+      break;
   }
   return sorted;
 };
 
-export const paginateResults = (items, page = 1, perPage = 10) => {
+export const paginateResults = (items, page = 1, perPage = 12) => {
   const start = (page - 1) * perPage;
   const end = start + perPage;
-  return items.slice(start, end);
+  const paginatedItems = items.slice(start, end);
+  
+  return {
+    data: paginatedItems,
+    totalPages: Math.ceil(items.length / perPage),
+    totalResults: items.length,
+    currentPage: page,
+    hasMore: end < items.length,
+  };
 };
 
 export const submitApplication = jobService.applyForJob; // Alias
 
 export const getFilterOptions = () => {
-  const locations = [...new Set(mockJobs.map(j => j.location))];
-  const jobTypes = [...new Set(mockJobs.map(j => j.job_type))];
-  const companies = [...new Set(mockJobs.map(j => j.company))];
+  const jobs = getAllJobsData();
+  const locations = [...new Set(jobs.map(j => j.location).filter(Boolean))];
+  const jobTypes = [...new Set(jobs.map(j => j.job_type).filter(Boolean))];
+  const companies = [...new Set(jobs.map(j => j.company).filter(Boolean))];
+  const allSkills = jobs.flatMap(j => j.skills_required || []);
+  const skills = [...new Set(allSkills)];
   
   return {
     locations,
     jobTypes,
     companies,
+    skills,
   };
 };
 

@@ -144,12 +144,8 @@ const Settings = () => {
               <p className="mt-2 opacity-90">Manage your account settings and preferences</p>
             </div>
 
-            <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-                <TabsTrigger value="profile" data-testid="tab-profile">
-                  <User className="w-4 h-4 mr-2" />
-                  Profile
-                </TabsTrigger>
+            <Tabs defaultValue="privacy" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="privacy" data-testid="tab-privacy">
                   <Eye className="w-4 h-4 mr-2" />
                   Privacy
@@ -164,182 +160,12 @@ const Settings = () => {
                 </TabsTrigger>
               </TabsList>
 
-              {/* Profile Settings */}
-              <TabsContent value="profile" className="space-y-6 mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Profile Information</CardTitle>
-                    <CardDescription>Update your personal information</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input
-                        id="name"
-                        value={profileSettings.name}
-                        onChange={(e) =>
-                          setProfileSettings((prev) => ({ ...prev, name: e.target.value }))
-                        }
-                        data-testid="input-name"
-                        placeholder="Enter your full name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={profileSettings.email}
-                        disabled
-                        data-testid="input-email"
-                        placeholder="your.email@example.com"
-                        className="bg-gray-100"
-                      />
-                      <p className="text-xs text-gray-500">Email cannot be changed here. Contact admin if needed.</p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="headline">Professional Headline</Label>
-                      <Input
-                        id="headline"
-                        value={profileSettings.headline}
-                        onChange={(e) =>
-                          setProfileSettings((prev) => ({ ...prev, headline: e.target.value }))
-                        }
-                        data-testid="input-headline"
-                        placeholder="e.g., Senior Software Engineer at Tech Corp"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="bio">Bio</Label>
-                      <textarea
-                        id="bio"
-                        rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={profileSettings.bio}
-                        onChange={(e) =>
-                          setProfileSettings((prev) => ({ ...prev, bio: e.target.value }))
-                        }
-                        data-testid="input-bio"
-                        placeholder="Tell us about yourself..."
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="location">Location</Label>
-                      <Input
-                        id="location"
-                        value={profileSettings.location}
-                        onChange={(e) =>
-                          setProfileSettings((prev) => ({ ...prev, location: e.target.value }))
-                        }
-                        data-testid="input-location"
-                        placeholder="City, Country"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="batchYear">Batch Year</Label>
-                      <Input
-                        id="batchYear"
-                        type="number"
-                        value={profileSettings.batch_year}
-                        onChange={(e) =>
-                          setProfileSettings((prev) => ({ ...prev, batch_year: parseInt(e.target.value) || '' }))
-                        }
-                        data-testid="input-batch-year"
-                        placeholder="e.g., 2020"
-                      />
-                    </div>
-                    
-                    {/* Social Links stored in social_links JSON */}
-                    <div className="border-t pt-4 space-y-4">
-                      <h3 className="font-semibold text-sm text-gray-700">Social Links</h3>
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          value={profileSettings.social_links.phone}
-                          onChange={(e) =>
-                            setProfileSettings((prev) => ({ 
-                              ...prev, 
-                              social_links: { ...prev.social_links, phone: e.target.value }
-                            }))
-                          }
-                          data-testid="input-phone"
-                          placeholder="+1 (555) 000-0000"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="website">Website</Label>
-                        <Input
-                          id="website"
-                          type="url"
-                          value={profileSettings.social_links.website}
-                          onChange={(e) =>
-                            setProfileSettings((prev) => ({ 
-                              ...prev, 
-                              social_links: { ...prev.social_links, website: e.target.value }
-                            }))
-                          }
-                          data-testid="input-website"
-                          placeholder="https://yourwebsite.com"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="linkedin">LinkedIn</Label>
-                        <Input
-                          id="linkedin"
-                          type="url"
-                          value={profileSettings.social_links.linkedin}
-                          onChange={(e) =>
-                            setProfileSettings((prev) => ({ 
-                              ...prev, 
-                              social_links: { ...prev.social_links, linkedin: e.target.value }
-                            }))
-                          }
-                          data-testid="input-linkedin"
-                          placeholder="https://linkedin.com/in/yourprofile"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="github">GitHub</Label>
-                        <Input
-                          id="github"
-                          type="url"
-                          value={profileSettings.social_links.github}
-                          onChange={(e) =>
-                            setProfileSettings((prev) => ({ 
-                              ...prev, 
-                              social_links: { ...prev.social_links, github: e.target.value }
-                            }))
-                          }
-                          data-testid="input-github"
-                          placeholder="https://github.com/yourusername"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="twitter">Twitter</Label>
-                        <Input
-                          id="twitter"
-                          type="url"
-                          value={profileSettings.social_links.twitter}
-                          onChange={(e) =>
-                            setProfileSettings((prev) => ({ 
-                              ...prev, 
-                              social_links: { ...prev.social_links, twitter: e.target.value }
-                            }))
-                          }
-                          data-testid="input-twitter"
-                          placeholder="https://twitter.com/yourusername"
-                        />
-                      </div>
-                    </div>
-                    
-                    <Button onClick={handleProfileSave} data-testid="save-profile-btn">
-                      Save Changes
-                    </Button>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+              {/* Note: Profile editing has been moved to /profile page */}
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Note:</strong> To edit your profile information, please visit the <a href="/profile" className="underline font-medium">My Profile</a> page.
+                </p>
+              </div>
 
               {/* Privacy Settings */}
               <TabsContent value="privacy" className="space-y-6 mt-6">

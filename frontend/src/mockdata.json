@@ -412,6 +412,141 @@
       "verified_at": "2023-04-20T13:00:00Z",
       "created_at": "2023-04-18T09:30:00Z",
       "updated_at": "2024-12-05T11:20:00Z"
+    },
+    {
+      "id": "profile-880e8400-e29b-41d4-a716",
+      "user_id": "880e8400-e29b-41d4-a716-446655440003",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Emily",
+      "name": "Emily Rodriguez",
+      "bio": "Computer Science student passionate about web development and AI. Currently in my final year and looking for internship opportunities.",
+      "headline": "CS Student | Web Development Enthusiast",
+      "current_company": null,
+      "current_role": "Student",
+      "location": "Boston, MA",
+      "batch_year": 2025,
+      "experience_timeline": [],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Computer Science",
+          "start_year": 2021,
+          "end_year": 2025,
+          "achievements": "Dean's List, Hackathon Winner 2023"
+        }
+      ],
+      "skills": [
+        "JavaScript",
+        "React",
+        "Python",
+        "HTML",
+        "CSS",
+        "Git"
+      ],
+      "achievements": [
+        "First Place - University Hackathon 2023",
+        "Dean's List 2022-2024"
+      ],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/emilyrodriguez",
+        "github": "https://github.com/emilyrodriguez"
+      },
+      "cv_url": null,
+      "profile_completion_percentage": 65,
+      "is_verified": false,
+      "verified_by": null,
+      "verified_at": null,
+      "created_at": "2024-09-01T10:30:00Z",
+      "updated_at": "2024-12-15T09:00:00Z"
+    },
+    {
+      "id": "profile-bb0e8400-e29b-41d4-a716",
+      "user_id": "bb0e8400-e29b-41d4-a716-446655440006",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=James",
+      "name": "James Wilson",
+      "bio": "Aspiring product manager with a technical background. Love building products that solve real problems.",
+      "headline": "Student | Future Product Manager",
+      "current_company": null,
+      "current_role": "Student",
+      "location": "Austin, TX",
+      "batch_year": 2025,
+      "experience_timeline": [],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Computer Science",
+          "start_year": 2021,
+          "end_year": 2025,
+          "achievements": "Product Management Club President"
+        }
+      ],
+      "skills": [
+        "Product Management",
+        "JavaScript",
+        "React",
+        "Data Analysis"
+      ],
+      "achievements": [
+        "PM Club President",
+        "Case Competition Finalist"
+      ],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/jameswilson"
+      },
+      "cv_url": null,
+      "profile_completion_percentage": 55,
+      "is_verified": false,
+      "verified_by": null,
+      "verified_at": null,
+      "created_at": "2024-09-05T15:00:00Z",
+      "updated_at": "2024-12-10T11:30:00Z"
+    },
+    {
+      "id": "profile-ee0e8400-e29b-41d4-a716",
+      "user_id": "ee0e8400-e29b-41d4-a716-446655440009",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
+      "name": "Maria Garcia",
+      "bio": "Design student with a passion for creating beautiful user experiences. Interested in UX/UI design and front-end development.",
+      "headline": "Design Student | UX/UI Enthusiast",
+      "current_company": null,
+      "current_role": "Student",
+      "location": "Los Angeles, CA",
+      "batch_year": 2026,
+      "experience_timeline": [],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Fine Arts",
+          "field": "Interaction Design",
+          "start_year": 2022,
+          "end_year": 2026,
+          "achievements": "Best Portfolio Award 2023"
+        }
+      ],
+      "skills": [
+        "Figma",
+        "UI Design",
+        "UX Research",
+        "Prototyping",
+        "HTML",
+        "CSS"
+      ],
+      "achievements": [
+        "Best Portfolio Award",
+        "Design Intern at Local Startup"
+      ],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/mariagarcia",
+        "website": "https://mariagarcia.design"
+      },
+      "cv_url": null,
+      "profile_completion_percentage": 70,
+      "is_verified": false,
+      "verified_by": null,
+      "verified_at": null,
+      "created_at": "2024-09-10T13:30:00Z",
+      "updated_at": "2024-12-20T10:15:00Z"
     }
   ],
   "jobs": [
@@ -1767,49 +1902,23 @@
   "career_paths": [
     {
       "id": "path-001",
-      "starting_role": "Junior Developer",
-      "target_role": "Senior Software Engineer",
-      "alumni_count": 45,
-      "average_duration_months": 36,
-      "success_stories": [
-        {
-          "alumni_id": "660e8400-e29b-41d4-a716-446655440001",
-          "transition_time": "3 years",
-          "key_skills": [
-            "JavaScript",
-            "React",
-            "Node.js",
-            "System Design"
-          ],
-          "testimonial": "Focus on building real projects and contributing to open source. System design knowledge was crucial for the senior role."
-        }
-      ],
-      "recommended_skills": [
-        "Advanced JavaScript",
-        "System Design",
+      "starting_role": "Software Engineer",
+      "target_role": "Engineering Manager",
+      "transition_percentage": 35,
+      "avg_years": 5,
+      "common_skills": [
         "Leadership",
+        "Project Management",
+        "System Design",
         "Mentoring"
       ],
-      "typical_steps": [
+      "alumni_count": 42,
+      "success_stories": [
         {
-          "step": 1,
-          "title": "Master Core Technologies",
-          "duration": "6-12 months"
-        },
-        {
-          "step": 2,
-          "title": "Lead Small Projects",
-          "duration": "12-18 months"
-        },
-        {
-          "step": 3,
-          "title": "Develop System Design Skills",
-          "duration": "6-12 months"
-        },
-        {
-          "step": 4,
-          "title": "Mentor Junior Developers",
-          "duration": "6 months"
+          "alumni_id": "770e8400-e29b-41d4-a716-446655440002",
+          "alumni_name": "Michael Chen",
+          "journey": "Started as SWE at startup, became tech lead after 3 years, then EM at Google",
+          "timeline_years": 5
         }
       ]
     },
@@ -1817,194 +1926,205 @@
       "id": "path-002",
       "starting_role": "Software Engineer",
       "target_role": "Product Manager",
-      "alumni_count": 23,
-      "average_duration_months": 24,
-      "success_stories": [
-        {
-          "alumni_id": "770e8400-e29b-41d4-a716-446655440002",
-          "transition_time": "2 years",
-          "key_skills": [
-            "Product Thinking",
-            "User Research",
-            "Data Analysis",
-            "Stakeholder Management"
-          ],
-          "testimonial": "Understanding the technical side gave me an edge as a PM. Learn to think about problems from user and business perspectives."
-        }
-      ],
-      "recommended_skills": [
+      "transition_percentage": 18,
+      "avg_years": 4,
+      "common_skills": [
         "Product Strategy",
         "User Research",
-        "Data Analysis",
-        "Communication"
+        "Communication",
+        "Analytics"
       ],
-      "typical_steps": [
+      "alumni_count": 28,
+      "success_stories": [
         {
-          "step": 1,
-          "title": "Take On PM Responsibilities",
-          "duration": "6 months"
-        },
-        {
-          "step": 2,
-          "title": "Learn Product Frameworks",
-          "duration": "6 months"
-        },
-        {
-          "step": 3,
-          "title": "Lead Product Features",
-          "duration": "6-12 months"
-        },
-        {
-          "step": 4,
-          "title": "Transition to PM Role",
-          "duration": "6 months"
+          "alumni_id": "660e8400-e29b-41d4-a716-446655440001",
+          "alumni_name": "Sarah Johnson",
+          "journey": "SWE at Google, took PM courses, transitioned to PM role",
+          "timeline_years": 4
         }
       ]
     },
     {
       "id": "path-003",
       "starting_role": "UX Designer",
-      "target_role": "Lead UX Designer",
-      "alumni_count": 18,
-      "average_duration_months": 30,
-      "success_stories": [
-        {
-          "alumni_id": "aa0e8400-e29b-41d4-a716-446655440005",
-          "transition_time": "2.5 years",
-          "key_skills": [
-            "Design Systems",
-            "User Research",
-            "Accessibility",
-            "Team Leadership"
-          ],
-          "testimonial": "Build a strong portfolio and focus on accessibility. Leading design systems work accelerated my growth."
-        }
-      ],
-      "recommended_skills": [
+      "target_role": "Product Designer",
+      "transition_percentage": 45,
+      "avg_years": 3,
+      "common_skills": [
+        "UI Design",
         "Design Systems",
-        "Accessibility",
-        "User Research",
-        "Leadership"
+        "Prototyping",
+        "User Testing"
       ],
-      "typical_steps": [
-        {
-          "step": 1,
-          "title": "Master Design Tools",
-          "duration": "6 months"
-        },
-        {
-          "step": 2,
-          "title": "Lead Design Projects",
-          "duration": "12 months"
-        },
-        {
-          "step": 3,
-          "title": "Build Design System",
-          "duration": "6-12 months"
-        },
-        {
-          "step": 4,
-          "title": "Mentor Junior Designers",
-          "duration": "6 months"
-        }
-      ]
+      "alumni_count": 35,
+      "success_stories": []
+    },
+    {
+      "id": "path-004",
+      "starting_role": "Data Analyst",
+      "target_role": "Data Scientist",
+      "transition_percentage": 38,
+      "avg_years": 3,
+      "common_skills": [
+        "Machine Learning",
+        "Python",
+        "Statistics",
+        "SQL"
+      ],
+      "alumni_count": 31,
+      "success_stories": []
+    },
+    {
+      "id": "path-005",
+      "starting_role": "Frontend Developer",
+      "target_role": "Full Stack Developer",
+      "transition_percentage": 52,
+      "avg_years": 2,
+      "common_skills": [
+        "Backend Development",
+        "Databases",
+        "APIs",
+        "DevOps"
+      ],
+      "alumni_count": 58,
+      "success_stories": []
     }
   ],
   "leaderboard": [
     {
-      "user_id": "660e8400-e29b-41d4-a716-446655440001",
       "rank": 1,
+      "user_id": "660e8400-e29b-41d4-a716-446655440001",
       "name": "Sarah Johnson",
+      "photo_url": "https://i.pravatar.cc/150?img=1",
       "role": "alumni",
-      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-      "total_score": 485,
+      "total_score": 2850,
       "score_breakdown": {
-        "profile": 20,
-        "mentorship": 240,
-        "jobs": 0,
-        "events": 32,
-        "forum": 193
+        "profile_completeness": 500,
+        "mentorship": 850,
+        "forum_activity": 650,
+        "job_applications": 400,
+        "event_participation": 450
       },
-      "badges": [],
-      "this_week_points": 72,
-      "this_month_points": 194,
-      "trend": "up"
+      "trend": "up",
+      "badges": [
+        "Top Mentor",
+        "Community Champion",
+        "Knowledge Guru"
+      ],
+      "this_week_points": 120,
+      "this_month_points": 485
     },
     {
-      "user_id": "aa0e8400-e29b-41d4-a716-446655440005",
       "rank": 2,
-      "name": "Priya Patel",
-      "role": "alumni",
-      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Priya",
-      "total_score": 442,
-      "score_breakdown": {
-        "profile": 20,
-        "mentorship": 320,
-        "jobs": 0,
-        "events": 40,
-        "forum": 62
-      },
-      "badges": [],
-      "this_week_points": 66,
-      "this_month_points": 176,
-      "trend": "up"
-    },
-    {
-      "user_id": "cc0e8400-e29b-41d4-a716-446655440007",
-      "rank": 3,
-      "name": "Lisa Anderson",
-      "role": "alumni",
-      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa",
-      "total_score": 358,
-      "score_breakdown": {
-        "profile": 19,
-        "mentorship": 210,
-        "jobs": 0,
-        "events": 56,
-        "forum": 73
-      },
-      "badges": [],
-      "this_week_points": 53,
-      "this_month_points": 143,
-      "trend": "stable"
-    },
-    {
       "user_id": "770e8400-e29b-41d4-a716-446655440002",
-      "rank": 4,
       "name": "Michael Chen",
+      "photo_url": "https://i.pravatar.cc/150?img=2",
       "role": "alumni",
-      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
-      "total_score": 294,
+      "total_score": 2640,
       "score_breakdown": {
-        "profile": 19,
-        "mentorship": 180,
-        "jobs": 0,
-        "events": 32,
-        "forum": 63
+        "profile_completeness": 500,
+        "mentorship": 720,
+        "forum_activity": 580,
+        "job_applications": 380,
+        "event_participation": 460
       },
-      "badges": [],
-      "this_week_points": 44,
-      "this_month_points": 117,
-      "trend": "stable"
+      "trend": "up",
+      "badges": [
+        "Mentor Elite",
+        "Event Host",
+        "Career Helper"
+      ],
+      "this_week_points": 98,
+      "this_month_points": 412
     },
     {
-      "user_id": "880e8400-e29b-41d4-a716-446655440003",
-      "rank": 5,
-      "name": "emily.rodriguez",
-      "role": "student",
-      "photo_url": null,
-      "total_score": 127,
+      "rank": 3,
+      "user_id": "aa0e8400-e29b-41d4-a716-446655440005",
+      "name": "Priya Patel",
+      "photo_url": "https://i.pravatar.cc/150?img=5",
+      "role": "alumni",
+      "total_score": 2420,
       "score_breakdown": {
-        "profile": 15,
-        "mentorship": 20,
-        "jobs": 15,
-        "events": 24,
-        "forum": 53
+        "profile_completeness": 500,
+        "mentorship": 650,
+        "forum_activity": 720,
+        "job_applications": 250,
+        "event_participation": 300
       },
-      "badges": [],
-      "this_week_points": 19,
-      "this_month_points": 50,
-      "trend": "down"
+      "trend": "same",
+      "badges": [
+        "Forum Star",
+        "Helpful Alumni",
+        "Active Member"
+      ],
+      "this_week_points": 85,
+      "this_month_points": 378
+    },
+    {
+      "rank": 4,
+      "user_id": "880e8400-e29b-41d4-a716-446655440003",
+      "name": "Emily Rodriguez",
+      "photo_url": "https://i.pravatar.cc/150?img=3",
+      "role": "student",
+      "total_score": 1980,
+      "score_breakdown": {
+        "profile_completeness": 450,
+        "mentorship": 380,
+        "forum_activity": 520,
+        "job_applications": 380,
+        "event_participation": 250
+      },
+      "trend": "up",
+      "badges": [
+        "Rising Star",
+        "Active Learner"
+      ],
+      "this_week_points": 112,
+      "this_month_points": 445
+    },
+    {
+      "rank": 5,
+      "user_id": "bb0e8400-e29b-41d4-a716-446655440006",
+      "name": "James Wilson",
+      "photo_url": "https://i.pravatar.cc/150?img=6",
+      "role": "student",
+      "total_score": 1750,
+      "score_breakdown": {
+        "profile_completeness": 420,
+        "mentorship": 350,
+        "forum_activity": 480,
+        "job_applications": 300,
+        "event_participation": 200
+      },
+      "trend": "up",
+      "badges": [
+        "Engaged Student",
+        "Job Seeker"
+      ],
+      "this_week_points": 95,
+      "this_month_points": 398
+    },
+    {
+      "rank": 6,
+      "user_id": "cc0e8400-e29b-41d4-a716-446655440007",
+      "name": "Lisa Anderson",
+      "photo_url": "https://i.pravatar.cc/150?img=7",
+      "role": "alumni",
+      "total_score": 1620,
+      "score_breakdown": {
+        "profile_completeness": 480,
+        "mentorship": 420,
+        "forum_activity": 380,
+        "job_applications": 180,
+        "event_participation": 160
+      },
+      "trend": "down",
+      "badges": [
+        "Mentor",
+        "Alumni"
+      ],
+      "this_week_points": 42,
+      "this_month_points": 156
     }
   ],
   "system_config": [
