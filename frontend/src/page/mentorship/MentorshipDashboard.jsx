@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Clock, CheckCircle2, Calendar, MessageSquare, Plus } from 'lucide-react';
+import { Users, Clock, CheckCircle2, Calendar, MessageSquare, Plus, Settings } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import SessionCard from '@/components/mentorship/SessionCard';
 import RequestCard from '@/components/mentorship/RequestCard';
@@ -363,6 +363,24 @@ const MentorshipDashboard = () => {
           {/* Mentor View */}
           {isMentor && (
             <TabsContent value="mentor" className="space-y-6">
+              {/* Quick Action Banner */}
+              <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Mentor Profile Settings</h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Update your expertise, availability, and mentorship approach
+                      </p>
+                    </div>
+                    <Button onClick={() => navigate('/mentorship/manage')} data-testid="manage-profile-btn">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Manage Profile
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card>
