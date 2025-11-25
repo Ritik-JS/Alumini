@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockProfileService } from '@/services/mockProfileService';
+import { mockLeaderboardService } from '@/services/mockLeaderboardService';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye, Users, Briefcase, Calendar, TrendingUp, Award } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+import { Eye, Users, Briefcase, Calendar, TrendingUp, Award, Trophy } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import mockData from '@/mockdata.json';
 
 const AlumniDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [mentorProfile, setMentorProfile] = useState(null);
   const [mentorshipRequests, setMentorshipRequests] = useState([]);
@@ -28,14 +31,14 @@ const AlumniDashboard = () => {
           mockProfileService.getMentorProfile(user.id),
           mockProfileService.getMentorshipRequestsByMentor(user.id),
           mockProfileService.getJobsByPoster(user.id),
-          mockProfileService.getEngagementScore(user.id),
+          mockLeaderboardService.getMyScore(user.id),
         ]);
 
         setProfile(profileData);
         setMentorProfile(mentorData);
         setMentorshipRequests(mentorRequests);
         setPostedJobs(jobsData);
-        setEngagementScore(scoreData);
+        if (scoreData.success) setEngagementScore(scoreData.data);
         
         // Get upcoming events
         const events = mockData.events?.filter(e => 
@@ -96,11 +99,25 @@ const AlumniDashboard = () => {
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Welcome Section */}
-            <div className="bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg p-6 text-white">
-              <h1 className="text-3xl font-bold">Welcome back, {profile?.name || 'Alumni'}! 🎓</h1>
-              <p className="mt-2 opacity-90">
-                Thank you for giving back to the community. Your contributions make a difference!
-              </p>
+            <div className="bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg p-6 text-white relative">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold">Welcome back, {profile?.name || 'Alumni'}! 🎓</h1>
+                  <p className="mt-2 opacity-90">
+                    Thank you for giving back to the community. Your contributions make a difference!
+                  </p>
+                </div>
+                {engagementScore && engagementScore.total_score > 0 && (
+                  <Badge 
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 text-lg px-4 py-2 cursor-pointer flex items-center gap-2"
+                    onClick={() => navigate('/leaderboard')}
+                    data-testid="engagement-points-badge"
+                  >
+                    <Trophy className="h-5 w-5" />
+                    {engagementScore.total_score} pts
+                  </Badge>
+                )}
+              </div>
             </div>
 
             {/* Stats Grid */}
@@ -148,7 +165,7 @@ const AlumniDashboard = () => {
                     <div className="text-sm font-medium text-gray-900">Create Event</div>
                     <div className="text-xs text-gray-500 mt-1">Organize workshops and meetups</div>
                   </Link>
-                  <Link to="/mentorship/mentor-dashboard" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-purple-500 transition-all">
+                  <Link to="/mentorship/dashboard" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-purple-500 transition-all">
                     <Users className="h-8 w-8 text-green-600 mb-2" />
                     <div className="text-sm font-medium text-gray-900">Mentorship</div>
                     <div className="text-xs text-gray-500 mt-1">Guide the next generation</div>
@@ -190,7 +207,7 @@ const AlumniDashboard = () => {
                         );
                       })}
                       <Button asChild variant="outline" className="w-full" size="sm">
-                        <Link to="/mentorship/mentor-dashboard">View All Requests</Link>
+                        <Link to="/mentorship/dashboard">View All Requests</Link>
                       </Button>
                     </div>
                   ) : (

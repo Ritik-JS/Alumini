@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
@@ -11,13 +10,6 @@ import { ArrowRight, Users, Briefcase, Calendar, Award, MessageSquare, UserCheck
 const Home = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // If user is authenticated, redirect to dashboard
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
 
   const stats = [
     { label: 'Active Alumni', value: '5,000+', icon: Users },
@@ -137,24 +129,38 @@ const Home = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              onClick={() => navigate('/register')} 
-              className="text-base sm:text-lg px-6 sm:px-8"
-              data-testid="get-started-btn"
-            >
-              Get Started
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              onClick={() => navigate('/login')} 
-              className="text-base sm:text-lg px-6 sm:px-8"
-              data-testid="sign-in-btn"
-            >
-              Sign In
-            </Button>
+            {isAuthenticated ? (
+              <Button 
+                size="lg" 
+                onClick={() => navigate('/dashboard')} 
+                className="text-base sm:text-lg px-6 sm:px-8"
+                data-testid="go-to-dashboard-btn"
+              >
+                Go to Dashboard
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            ) : (
+              <>
+                <Button 
+                  size="lg" 
+                  onClick={() => navigate('/register')} 
+                  className="text-base sm:text-lg px-6 sm:px-8"
+                  data-testid="get-started-btn"
+                >
+                  Get Started
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  onClick={() => navigate('/login')} 
+                  className="text-base sm:text-lg px-6 sm:px-8"
+                  data-testid="sign-in-btn"
+                >
+                  Sign In
+                </Button>
+              </>
+            )}
           </div>
 
           <motion.div
@@ -356,24 +362,38 @@ const Home = () => {
             Be part of a network that's shaping the future of professional growth
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              variant="secondary"
-              onClick={() => navigate('/register')}
-              className="text-base sm:text-lg px-6 sm:px-8"
-              data-testid="cta-register-btn"
-            >
-              Create Free Account
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate('/login')}
-              className="text-base sm:text-lg px-6 sm:px-8 bg-transparent text-white border-white hover:bg-white hover:text-blue-600"
-              data-testid="cta-signin-btn"
-            >
-              Sign In
-            </Button>
+            {isAuthenticated ? (
+              <Button
+                size="lg"
+                variant="secondary"
+                onClick={() => navigate('/dashboard')}
+                className="text-base sm:text-lg px-6 sm:px-8"
+                data-testid="cta-dashboard-btn"
+              >
+                Go to Dashboard
+              </Button>
+            ) : (
+              <>
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  onClick={() => navigate('/register')}
+                  className="text-base sm:text-lg px-6 sm:px-8"
+                  data-testid="cta-register-btn"
+                >
+                  Create Free Account
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => navigate('/login')}
+                  className="text-base sm:text-lg px-6 sm:px-8 bg-transparent text-white border-white hover:bg-white hover:text-blue-600"
+                  data-testid="cta-signin-btn"
+                >
+                  Sign In
+                </Button>
+              </>
+            )}
           </div>
         </motion.div>
       </section>

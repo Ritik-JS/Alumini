@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockProfileService } from '@/services/mockProfileService';
+import { mockLeaderboardService } from '@/services/mockLeaderboardService';
 import { createMentorshipRequest } from '@/services/mockMentorshipService';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -11,7 +12,8 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Users, Briefcase, Calendar, MessageSquare, Award, TrendingUp, Eye, FileText, UserCheck } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Users, Briefcase, Calendar, MessageSquare, Award, TrendingUp, Eye, FileText, UserCheck, Trophy } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import mockData from '@/mockdata.json';
@@ -24,6 +26,7 @@ const StudentDashboard = () => {
   const [mentorshipRequests, setMentorshipRequests] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [recommendedMentors, setRecommendedMentors] = useState([]);
+  const [engagementScore, setEngagementScore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedMentor, setSelectedMentor] = useState(null);
   const [connectDialogOpen, setConnectDialogOpen] = useState(false);
@@ -33,15 +36,17 @@ const StudentDashboard = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [profileData, appsData, mentorRequests] = await Promise.all([
+        const [profileData, appsData, mentorRequests, scoreData] = await Promise.all([
           mockProfileService.getProfileByUserId(user.id),
           mockProfileService.getJobApplicationsByUser(user.id),
           mockProfileService.getMentorshipRequestsByStudent(user.id),
+          mockLeaderboardService.getMyScore(user.id),
         ]);
 
         setProfile(profileData);
         setApplications(appsData);
         setMentorshipRequests(mentorRequests);
+        if (scoreData.success) setEngagementScore(scoreData.data);
         
         // Get upcoming events
         const events = mockData.events?.filter(e => 
@@ -119,11 +124,25 @@ const StudentDashboard = () => {
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Welcome Section */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-6 text-white">
-              <h1 className="text-3xl font-bold">Welcome back, Student! 👋</h1>
-              <p className="mt-2 opacity-90">
-                Ready to advance your career? Check out your personalized recommendations below.
-              </p>
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-6 text-white relative">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold">Welcome back, Student! 👋</h1>
+                  <p className="mt-2 opacity-90">
+                    Ready to advance your career? Check out your personalized recommendations below.
+                  </p>
+                </div>
+                {engagementScore && engagementScore.total_score > 0 && (
+                  <Badge 
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 text-lg px-4 py-2 cursor-pointer flex items-center gap-2"
+                    onClick={() => navigate('/leaderboard')}
+                    data-testid="engagement-points-badge"
+                  >
+                    <Trophy className="h-5 w-5" />
+                    {engagementScore.total_score} pts
+                  </Badge>
+                )}
+              </div>
             </div>
 
             {/* Profile Completion */}

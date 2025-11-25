@@ -30,7 +30,7 @@ const Sidebar = () => {
   const alumniLinks = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'My Profile', path: '/profile', icon: UserCheck },
-    { name: 'Mentorship', path: '/mentorship/mentor-dashboard', icon: Users },
+    { name: 'Mentorship', path: '/mentorship/dashboard', icon: Users },
     { name: 'Post Jobs', path: '/jobs/post', icon: Briefcase },
     { name: 'Events', path: '/events', icon: Calendar },
     { name: 'Forum', path: '/forum', icon: MessageSquare },
