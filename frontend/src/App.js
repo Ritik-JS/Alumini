@@ -19,7 +19,6 @@ import ServerError from '@/pages/error/ServerError';
 
 // Main Pages
 import Home from '@/page/Home';
-import About from '@/page/About';
 
 // Lazy load other pages for performance
 const AlumniDirectory = lazy(() => import('@/page/AlumniDirectory'));
@@ -109,7 +108,6 @@ function App() {
             <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -315,7 +313,7 @@ function App() {
           <Route
             path="/dashboard/student"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['student']}>
                 <StudentDashboard />
               </ProtectedRoute>
             }
@@ -323,7 +321,7 @@ function App() {
           <Route
             path="/dashboard/alumni"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['alumni']}>
                 <AlumniDashboard />
               </ProtectedRoute>
             }
@@ -331,7 +329,7 @@ function App() {
           <Route
             path="/dashboard/recruiter"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['recruiter']}>
                 <RecruiterDashboard />
               </ProtectedRoute>
             }
@@ -339,17 +337,17 @@ function App() {
           <Route
             path="/dashboard/admin"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AdminDashboard />
               </ProtectedRoute>
             }
           />
 
-          {/* Admin Routes - Protected */}
+          {/* Admin Routes - Protected (Admin Only) */}
           <Route
             path="/admin/users"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AdminUsers />
               </ProtectedRoute>
             }
@@ -357,7 +355,7 @@ function App() {
           <Route
             path="/admin/verifications"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AdminVerifications />
               </ProtectedRoute>
             }
@@ -365,7 +363,7 @@ function App() {
           <Route
             path="/admin/moderation"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AdminModeration />
               </ProtectedRoute>
             }
@@ -373,7 +371,7 @@ function App() {
           <Route
             path="/admin/analytics"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AdminAnalytics />
               </ProtectedRoute>
             }
@@ -381,7 +379,7 @@ function App() {
           <Route
             path="/admin/settings"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AdminSettings />
               </ProtectedRoute>
             }
@@ -391,7 +389,7 @@ function App() {
           <Route
             path="/skills/graph"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin', 'alumni', 'student', 'recruiter']}>
                 <SkillGraph />
               </ProtectedRoute>
             }
@@ -399,7 +397,7 @@ function App() {
           <Route
             path="/career/paths"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin', 'alumni', 'student', 'recruiter']}>
                 <CareerPaths />
               </ProtectedRoute>
             }
@@ -407,7 +405,7 @@ function App() {
           <Route
             path="/leaderboard"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin', 'alumni', 'student']}>
                 <Leaderboard />
               </ProtectedRoute>
             }
@@ -415,7 +413,7 @@ function App() {
           <Route
             path="/alumni-card"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin', 'alumni']}>
                 <AlumniCard />
               </ProtectedRoute>
             }
@@ -423,7 +421,7 @@ function App() {
           <Route
             path="/heatmap"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin', 'alumni', 'student', 'recruiter']}>
                 <TalentHeatmap />
               </ProtectedRoute>
             }
@@ -431,7 +429,7 @@ function App() {
           <Route
             path="/knowledge"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['admin', 'alumni', 'student', 'recruiter']}>
                 <KnowledgeCapsules />
               </ProtectedRoute>
             }

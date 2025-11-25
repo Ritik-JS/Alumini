@@ -33,7 +33,6 @@ const MainNavbar = () => {
       // Unauthenticated users - show all features (will prompt login)
       return [
         { name: 'Home', path: '/' },
-        { name: 'About', path: '/about' },
         { name: 'Directory', path: '/directory' },
         { name: 'Jobs', path: '/jobs' },
         { name: 'Mentorship', path: '/mentorship/find' },
