@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Mail, Lock } from 'lucide-react';
+import { Loader2, Mail, Lock, ShieldCheck, GraduationCap, Users, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Login = () => {
@@ -35,6 +35,52 @@ const Login = () => {
   });
 
   const rememberMe = watch('rememberMe');
+
+  // Role credentials for quick login
+  const roleCredentials = [
+    {
+      role: 'Admin',
+      email: 'admin@alumni.edu',
+      password: 'password123',
+      icon: ShieldCheck,
+      color: 'from-red-500 to-red-600',
+      bgColor: 'bg-red-50 hover:bg-red-100',
+      textColor: 'text-red-700',
+    },
+    {
+      role: 'Alumni',
+      email: 'sarah.johnson@alumni.edu',
+      password: 'password123',
+      icon: GraduationCap,
+      color: 'from-blue-500 to-blue-600',
+      bgColor: 'bg-blue-50 hover:bg-blue-100',
+      textColor: 'text-blue-700',
+    },
+    {
+      role: 'Student',
+      email: 'emily.rodriguez@alumni.edu',
+      password: 'password123',
+      icon: Users,
+      color: 'from-green-500 to-green-600',
+      bgColor: 'bg-green-50 hover:bg-green-100',
+      textColor: 'text-green-700',
+    },
+    {
+      role: 'Recruiter',
+      email: 'david.kim@techcorp.com',
+      password: 'password123',
+      icon: Briefcase,
+      color: 'from-purple-500 to-purple-600',
+      bgColor: 'bg-purple-50 hover:bg-purple-100',
+      textColor: 'text-purple-700',
+    },
+  ];
+
+  const handleQuickLogin = (email, password) => {
+    setValue('email', email);
+    setValue('password', password);
+    toast.info(`Credentials filled for quick login`);
+  };
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -211,11 +257,41 @@ const Login = () => {
             </Link>
           </div>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 p-3 bg-blue-50 rounded-md">
-            <p className="text-xs text-blue-800 font-medium mb-1">Demo Credentials:</p>
-            <p className="text-xs text-blue-700">Email: admin@alumni.edu</p>
-            <p className="text-xs text-blue-700">Password: any password</p>
+          {/* Quick Login Buttons for All Roles */}
+          <div className="mt-6">
+            <p className="text-xs text-gray-600 font-medium mb-3 text-center">
+              Quick Login as:
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {roleCredentials.map((cred) => {
+                const IconComponent = cred.icon;
+                return (
+                  <Button
+                    key={cred.role}
+                    type="button"
+                    variant="outline"
+                    className={`${cred.bgColor} border-0 transition-all duration-200`}
+                    onClick={() => handleQuickLogin(cred.email, cred.password)}
+                    disabled={loading}
+                    data-testid={`quick-login-${cred.role.toLowerCase()}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${cred.color} flex items-center justify-center`}>
+                        <IconComponent className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="text-left">
+                        <div className={`text-xs font-semibold ${cred.textColor}`}>
+                          {cred.role}
+                        </div>
+                      </div>
+                    </div>
+                  </Button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-gray-500 mt-3 text-center">
+              Click any role button to auto-fill credentials
+            </p>
           </div>
         </CardContent>
       </Card>

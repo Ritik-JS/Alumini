@@ -120,7 +120,7 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-12 md:py-20 px-4 bg-white" data-testid="features-section">
+      <section id="features" className="py-12 md:py-20 px-4 bg-white" data-testid="features-section">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -162,8 +162,8 @@ const Home = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-12 md:py-20 px-4 bg-gradient-to-br from-blue-600 to-blue-700" data-testid="cta-section">
+      {/* CTA Section / About */}
+      <section id="about" className="py-12 md:py-20 px-4 bg-gradient-to-br from-blue-600 to-blue-700" data-testid="cta-section">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

@@ -27,23 +27,93 @@ const MainNavbar = () => {
     navigate('/login');
   };
 
-  const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Directory', path: '/directory' },
-    { name: 'Jobs', path: '/jobs' },
-    { name: 'Events', path: '/events' },
-    { name: 'Mentorship', path: '/mentorship' },
-    { name: 'Forum', path: '/forum' },
-  ];
+  // Role-based navigation links
+  const getRoleBasedNavLinks = () => {
+    if (!isAuthenticated) {
+      // Unauthenticated users - basic navigation
+      return [
+        { name: 'Home', path: '/' },
+        { name: 'Features', path: '/#features' },
+        { name: 'About', path: '/#about' },
+      ];
+    }
 
-  const advancedFeatures = [
-    { name: 'Skill Graph', path: '/skills/graph', icon: Network },
-    { name: 'Career Paths', path: '/career/paths', icon: TrendingUp },
-    { name: 'Leaderboard', path: '/leaderboard', icon: Trophy },
-    { name: 'Alumni Card', path: '/alumni-card', icon: CreditCard },
-    { name: 'Talent Heatmap', path: '/heatmap', icon: MapPin },
-    { name: 'Knowledge', path: '/knowledge', icon: BookOpen },
-  ];
+    const role = user?.role;
+
+    switch (role) {
+      case 'admin':
+        // Admin: Full access to all features
+        return [
+          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Users', path: '/admin/users' },
+          { name: 'Directory', path: '/directory' },
+          { name: 'Analytics', path: '/admin/analytics' },
+          { name: 'Verifications', path: '/admin/verifications' },
+          { name: 'Moderation', path: '/admin/moderation' },
+        ];
+
+      case 'alumni':
+        // Alumni: Mentorship (as mentor), Directory, Events, Forum, Career features
+        return [
+          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Directory', path: '/directory' },
+          { name: 'Mentorship', path: '/mentorship/dashboard' },
+          { name: 'Events', path: '/events' },
+          { name: 'Forum', path: '/forum' },
+          { name: 'Knowledge', path: '/knowledge' },
+        ];
+
+      case 'student':
+        // Student: Jobs, Mentorship (as mentee), Events, Forum, Learning
+        return [
+          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Directory', path: '/directory' },
+          { name: 'Jobs', path: '/jobs' },
+          { name: 'Mentorship', path: '/mentorship/find' },
+          { name: 'Events', path: '/events' },
+          { name: 'Forum', path: '/forum' },
+        ];
+
+      case 'recruiter':
+        // Recruiter: Job management, Directory (for recruitment), Applications
+        return [
+          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Directory', path: '/directory' },
+          { name: 'Post Job', path: '/jobs/post' },
+          { name: 'Manage Jobs', path: '/jobs/manage' },
+          { name: 'Events', path: '/events' },
+        ];
+
+      default:
+        return [
+          { name: 'Home', path: '/' },
+          { name: 'Directory', path: '/directory' },
+        ];
+    }
+  };
+
+  // Role-based advanced features for "More" dropdown
+  const getRoleBasedAdvancedFeatures = () => {
+    if (!isAuthenticated) {
+      return []; // No advanced features for unauthenticated users
+    }
+
+    const role = user?.role;
+    const allFeatures = [
+      { name: 'Skill Graph', path: '/skills/graph', icon: Network, roles: ['admin', 'alumni', 'student', 'recruiter'] },
+      { name: 'Career Paths', path: '/career/paths', icon: TrendingUp, roles: ['admin', 'alumni', 'student', 'recruiter'] },
+      { name: 'Leaderboard', path: '/leaderboard', icon: Trophy, roles: ['admin', 'alumni', 'student'] },
+      { name: 'Alumni Card', path: '/alumni-card', icon: CreditCard, roles: ['admin', 'alumni'] },
+      { name: 'Talent Heatmap', path: '/heatmap', icon: MapPin, roles: ['admin', 'alumni', 'student', 'recruiter'] },
+      { name: 'Knowledge', path: '/knowledge', icon: BookOpen, roles: ['admin', 'alumni', 'student', 'recruiter'] },
+    ];
+
+    // Filter features based on user role
+    return allFeatures.filter(feature => feature.roles.includes(role));
+  };
+
+  const navLinks = getRoleBasedNavLinks();
+  const advancedFeatures = getRoleBasedAdvancedFeatures();
 
   const isActive = (path) => location.pathname === path;
 
@@ -80,25 +150,30 @@ const MainNavbar = () => {
               </Link>
             ))}
             
-            {/* More Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center gap-1">
-                  More
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Advanced Features</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {advancedFeatures.map((feature) => (
-                  <DropdownMenuItem key={feature.path} onClick={() => navigate(feature.path)}>
-                    <feature.icon className="mr-2 h-4 w-4" />
-                    {feature.name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* More Dropdown - Only show for authenticated users with advanced features */}
+            {isAuthenticated && advancedFeatures.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button 
+                    className="px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center gap-1"
+                    data-testid="nav-more-dropdown"
+                  >
+                    More
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Advanced Features</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {advancedFeatures.map((feature) => (
+                    <DropdownMenuItem key={feature.path} onClick={() => navigate(feature.path)}>
+                      <feature.icon className="mr-2 h-4 w-4" />
+                      {feature.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
           {/* Right Side - Auth & User Menu */}
@@ -203,23 +278,25 @@ const MainNavbar = () => {
               </Link>
             ))}
             
-            {/* Advanced Features Section */}
-            <div className="pt-4">
-              <div className="px-3 py-2 text-sm font-semibold text-gray-500">
-                Advanced Features
+            {/* Advanced Features Section - Only show for authenticated users with features */}
+            {isAuthenticated && advancedFeatures.length > 0 && (
+              <div className="pt-4">
+                <div className="px-3 py-2 text-sm font-semibold text-gray-500">
+                  Advanced Features
+                </div>
+                {advancedFeatures.map((feature) => (
+                  <Link
+                    key={feature.path}
+                    to={feature.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                  >
+                    <feature.icon className="mr-2 h-4 w-4" />
+                    {feature.name}
+                  </Link>
+                ))}
               </div>
-              {advancedFeatures.map((feature) => (
-                <Link
-                  key={feature.path}
-                  to={feature.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
-                >
-                  <feature.icon className="mr-2 h-4 w-4" />
-                  {feature.name}
-                </Link>
-              ))}
-            </div>
+            )}
             
             {!isAuthenticated && (
               <div className="pt-4 space-y-2">
