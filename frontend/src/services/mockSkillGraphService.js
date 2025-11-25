@@ -36,15 +36,21 @@ export const mockSkillGraphService = {
   getAlumniBySkill: async (skillName) => {
     await delay(300);
     
+    // Find the skill in skill_graph to get the correct count
+    const skillData = mockData.skill_graph.find(skill => 
+      skill.skill_name === skillName
+    );
+    
     // Find alumni profiles with this skill
     const alumniWithSkill = mockData.alumni_profiles.filter(profile => 
       profile.skills && profile.skills.includes(skillName)
     );
     
+    // Return the skill_graph count (which matches database) but also include found profiles
     return {
       success: true,
       data: alumniWithSkill,
-      count: alumniWithSkill.length
+      count: skillData ? skillData.alumni_count : alumniWithSkill.length
     };
   },
 
