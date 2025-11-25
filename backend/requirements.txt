@@ -24,3 +24,8 @@ jq>=1.6.0
 typer>=0.9.0
 aiomysql>=0.2.0
 PyMySQL>=1.1.0
+# Advanced Features Dependencies
+qrcode>=7.4.2
+Pillow>=10.2.0
+reportlab>=4.0.0
+python-dateutil>=2.8.2
