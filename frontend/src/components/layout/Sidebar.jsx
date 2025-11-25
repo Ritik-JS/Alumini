@@ -9,6 +9,12 @@ import {
   Settings,
   Award,
   UserCheck,
+  Bell,
+  Mail,
+  FileText,
+  Upload,
+  Activity,
+  BookOpen,
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -52,7 +58,16 @@ const Sidebar = () => {
     { name: 'User Management', path: '/admin/users', icon: Users },
     { name: 'Verifications', path: '/admin/verifications', icon: UserCheck },
     { name: 'Content Moderation', path: '/admin/moderation', icon: MessageSquare },
-    { name: 'Analytics', path: '/admin/analytics', icon: Award },
+    { name: 'Jobs Management', path: '/admin/jobs', icon: Briefcase },
+    { name: 'Events Management', path: '/admin/events', icon: Calendar },
+    { name: 'Mentorship Management', path: '/admin/mentorship', icon: Users },
+    { name: 'Badge Management', path: '/admin/badges', icon: Award },
+    { name: 'Knowledge Capsules', path: '/admin/knowledge-capsules', icon: BookOpen },
+    { name: 'Email Queue', path: '/admin/email-queue', icon: Mail },
+    { name: 'Notifications', path: '/admin/notifications', icon: Bell },
+    { name: 'Audit Logs', path: '/admin/audit-logs', icon: FileText },
+    { name: 'File Uploads', path: '/admin/file-uploads', icon: Upload },
+    { name: 'Analytics', path: '/admin/analytics', icon: Activity },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 

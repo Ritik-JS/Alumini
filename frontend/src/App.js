@@ -72,6 +72,15 @@ const AdminVerifications = lazy(() => import('@/page/admin/AdminVerifications'))
 const AdminModeration = lazy(() => import('@/page/admin/AdminModeration'));
 const AdminAnalytics = lazy(() => import('@/page/admin/AdminAnalytics'));
 const AdminSettings = lazy(() => import('@/page/admin/AdminSettings'));
+const AdminJobs = lazy(() => import('@/page/admin/AdminJobs'));
+const AdminEvents = lazy(() => import('@/page/admin/AdminEvents'));
+const AdminMentorship = lazy(() => import('@/page/admin/AdminMentorship'));
+const AdminBadges = lazy(() => import('@/page/admin/AdminBadges'));
+const AdminKnowledgeCapsules = lazy(() => import('@/page/admin/AdminKnowledgeCapsules'));
+const AdminEmailQueue = lazy(() => import('@/page/admin/AdminEmailQueue'));
+const AdminAuditLogs = lazy(() => import('@/page/admin/AdminAuditLogs'));
+const AdminFileUploads = lazy(() => import('@/page/admin/AdminFileUploads'));
+const AdminNotifications = lazy(() => import('@/page/admin/AdminNotifications'));
 
 // Phase 9: Advanced Features
 const SkillGraph = lazy(() => import('@/page/advanced/SkillGraph'));
@@ -446,6 +455,78 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/jobs"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminJobs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/events"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminEvents />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/mentorship"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminMentorship />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/badges"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminBadges />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/knowledge-capsules"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminKnowledgeCapsules />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/email-queue"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminEmailQueue />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/audit-logs"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminAuditLogs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/file-uploads"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminFileUploads />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/notifications"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminNotifications />
               </ProtectedRoute>
             }
           />
