@@ -27,16 +27,17 @@ const MyApplications = () => {
     loadApplications();
   }, [user, navigate]);
 
-  const loadApplications = () => {
+  const loadApplications = async () => {
     setLoading(true);
     try {
       // Get user's applications
-      const userApplications = getAllApplicationsWithUserApps(user.id);
+      const response = await getAllApplicationsWithUserApps(user.id);
+      const userApplications = response.success ? response.data : [];
       
       // Enrich with job data
       const enriched = userApplications.map(app => {
         const job = mockData.jobs.find(j => j.id === app.job_id) || 
-                    JSON.parse(localStorage.getItem('posted_jobs') || '[]').find(j => j.id === app.job_id);
+                    JSON.parse(localStorage.getItem('jobs') || '[]').find(j => j.id === app.job_id);
         return {
           ...app,
           job: job || { title: 'Unknown Job', company: 'Unknown Company' },

@@ -26,19 +26,19 @@ const JobDetails = () => {
     const loadJob = async () => {
       setLoading(true);
       try {
-        const jobData = await getJobById(jobId);
-        if (jobData) {
-          setJob(jobData);
+        const response = await getJobById(jobId);
+        if (response.success && response.data) {
+          setJob(response.data);
           
           // Check if user has applied
           if (user) {
-            const applied = hasUserApplied(user.id, jobId);
+            const applied = hasUserApplied(jobId, user.id);
             setHasApplied(applied);
           }
 
           // Load similar jobs
           const filtered = filterJobs({
-            skills: jobData.skills_required.slice(0, 2),
+            skills: response.data.skills_required.slice(0, 2),
           });
           setSimilarJobs(filtered.filter(j => j.id !== jobId).slice(0, 3));
         } else {

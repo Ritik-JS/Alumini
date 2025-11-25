@@ -47,7 +47,7 @@ const MainNavbar = () => {
       case 'admin':
         // Admin: Full access to all features
         return [
-          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Home', path: '/' },
           { name: 'Users', path: '/admin/users' },
           { name: 'Directory', path: '/directory' },
           { name: 'Analytics', path: '/admin/analytics' },
@@ -58,7 +58,7 @@ const MainNavbar = () => {
       case 'alumni':
         // Alumni: Mentorship (as mentor), Directory, Events, Forum, Career features
         return [
-          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Home', path: '/' },
           { name: 'Directory', path: '/directory' },
           { name: 'Mentorship', path: '/mentorship/dashboard' },
           { name: 'Events', path: '/events' },
@@ -69,7 +69,7 @@ const MainNavbar = () => {
       case 'student':
         // Student: Jobs, Mentorship (as mentee), Events, Forum, Learning
         return [
-          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Home', path: '/' },
           { name: 'Directory', path: '/directory' },
           { name: 'Jobs', path: '/jobs' },
           { name: 'Mentorship', path: '/mentorship/find' },
@@ -80,7 +80,7 @@ const MainNavbar = () => {
       case 'recruiter':
         // Recruiter: Job management, Directory (for recruitment), Applications
         return [
-          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Home', path: '/' },
           { name: 'Directory', path: '/directory' },
           { name: 'Post Job', path: '/jobs/post' },
           { name: 'Manage Jobs', path: '/jobs/manage' },

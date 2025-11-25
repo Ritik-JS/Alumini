@@ -26,7 +26,25 @@ const KnowledgeCapsules = () => {
 
   useEffect(() => {
     loadData();
+    loadUserInteractions();
   }, []);
+
+  const loadUserInteractions = () => {
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!currentUser.id) return;
+
+    // Load user's likes
+    const userLikes = JSON.parse(localStorage.getItem('user_capsule_likes') || '{}');
+    if (userLikes[currentUser.id]) {
+      setLikedCapsules(new Set(userLikes[currentUser.id]));
+    }
+
+    // Load user's bookmarks
+    const userBookmarks = JSON.parse(localStorage.getItem('user_capsule_bookmarks') || '{}');
+    if (userBookmarks[currentUser.id]) {
+      setBookmarkedCapsules(new Set(userBookmarks[currentUser.id]));
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -63,6 +81,12 @@ const KnowledgeCapsules = () => {
   };
 
   const handleLike = async (capsuleId) => {
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!currentUser.id) {
+      toast.error('Please login to like capsules');
+      return;
+    }
+
     try {
       if (likedCapsules.has(capsuleId)) {
         await mockKnowledgeService.unlikeCapsule(capsuleId);
@@ -71,10 +95,35 @@ const KnowledgeCapsules = () => {
           newSet.delete(capsuleId);
           return newSet;
         });
-        toast.success('Removed like');
+        
+        // Update localStorage
+        const userLikes = JSON.parse(localStorage.getItem('user_capsule_likes') || '{}');
+        if (userLikes[currentUser.id]) {
+          userLikes[currentUser.id] = userLikes[currentUser.id].filter(id => id !== capsuleId);
+          localStorage.setItem('user_capsule_likes', JSON.stringify(userLikes));
+        }
+        
+        // Update capsule counts in local state
+        setCapsules(prev => prev.map(c => 
+          c.id === capsuleId ? { ...c, likes_count: Math.max(0, (c.likes_count || 0) - 1) } : c
+        ));
+        
+        toast.success('Like removed');
       } else {
         await mockKnowledgeService.likeCapsule(capsuleId);
         setLikedCapsules(prev => new Set(prev).add(capsuleId));
+        
+        // Update localStorage
+        const userLikes = JSON.parse(localStorage.getItem('user_capsule_likes') || '{}');
+        if (!userLikes[currentUser.id]) userLikes[currentUser.id] = [];
+        userLikes[currentUser.id].push(capsuleId);
+        localStorage.setItem('user_capsule_likes', JSON.stringify(userLikes));
+        
+        // Update capsule counts in local state
+        setCapsules(prev => prev.map(c => 
+          c.id === capsuleId ? { ...c, likes_count: (c.likes_count || 0) + 1 } : c
+        ));
+        
         toast.success('Capsule liked!');
       }
     } catch (error) {
@@ -83,19 +132,51 @@ const KnowledgeCapsules = () => {
   };
 
   const handleBookmark = async (capsuleId) => {
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!currentUser.id) {
+      toast.error('Please login to bookmark capsules');
+      return;
+    }
+
     try {
       await mockKnowledgeService.bookmarkCapsule(capsuleId);
-      setBookmarkedCapsules(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(capsuleId)) {
+      
+      if (bookmarkedCapsules.has(capsuleId)) {
+        setBookmarkedCapsules(prev => {
+          const newSet = new Set(prev);
           newSet.delete(capsuleId);
-          toast.success('Bookmark removed');
-        } else {
-          newSet.add(capsuleId);
-          toast.success('Capsule bookmarked!');
+          return newSet;
+        });
+        
+        // Update localStorage
+        const userBookmarks = JSON.parse(localStorage.getItem('user_capsule_bookmarks') || '{}');
+        if (userBookmarks[currentUser.id]) {
+          userBookmarks[currentUser.id] = userBookmarks[currentUser.id].filter(id => id !== capsuleId);
+          localStorage.setItem('user_capsule_bookmarks', JSON.stringify(userBookmarks));
         }
-        return newSet;
-      });
+        
+        // Update capsule counts in local state
+        setCapsules(prev => prev.map(c => 
+          c.id === capsuleId ? { ...c, bookmarks_count: Math.max(0, (c.bookmarks_count || 0) - 1) } : c
+        ));
+        
+        toast.success('Bookmark removed');
+      } else {
+        setBookmarkedCapsules(prev => new Set(prev).add(capsuleId));
+        
+        // Update localStorage
+        const userBookmarks = JSON.parse(localStorage.getItem('user_capsule_bookmarks') || '{}');
+        if (!userBookmarks[currentUser.id]) userBookmarks[currentUser.id] = [];
+        userBookmarks[currentUser.id].push(capsuleId);
+        localStorage.setItem('user_capsule_bookmarks', JSON.stringify(userBookmarks));
+        
+        // Update capsule counts in local state
+        setCapsules(prev => prev.map(c => 
+          c.id === capsuleId ? { ...c, bookmarks_count: (c.bookmarks_count || 0) + 1 } : c
+        ));
+        
+        toast.success('Capsule bookmarked!');
+      }
     } catch (error) {
       toast.error('Action failed');
     }

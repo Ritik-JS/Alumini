@@ -75,6 +75,7 @@ const Leaderboard = lazy(() => import('@/page/advanced/Leaderboard'));
 const AlumniCard = lazy(() => import('@/page/advanced/AlumniCard'));
 const TalentHeatmap = lazy(() => import('@/page/advanced/TalentHeatmap'));
 const KnowledgeCapsules = lazy(() => import('@/page/advanced/KnowledgeCapsules'));
+const KnowledgeCapsuleDetail = lazy(() => import('@/page/advanced/KnowledgeCapsuleDetail'));
 
 import '@/App.css';
 
@@ -450,6 +451,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin', 'alumni', 'student', 'recruiter']}>
                 <KnowledgeCapsules />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/knowledge/:capsuleId"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'alumni', 'student', 'recruiter']}>
+                <KnowledgeCapsuleDetail />
               </ProtectedRoute>
             }
           />
