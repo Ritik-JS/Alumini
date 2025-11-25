@@ -1,105 +1,135 @@
-import mockData from '@/mockdata.json';
+// Mock Authentication Service
+// This is used for development and testing without a backend
 
-// Simulate API delay
+import mockData from '../mockdata.json';
+
+// Simulate network delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Generate mock JWT token
-const generateToken = (userId) => {
-  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = btoa(JSON.stringify({ userId, exp: Date.now() + 24 * 60 * 60 * 1000 }));
-  const signature = btoa('mock-signature');
-  return `${header}.${payload}.${signature}`;
-};
+// Storage keys
+const AUTH_KEY = 'auth_user';
+const TOKEN_KEY = 'auth_token';
 
-export const mockAuth = {
-  login: async (email, password) => {
-    await delay(800);
-    
+export const mockAuthService = {
+  // Login
+  async login(email, password) {
+    await delay(500);
+
     // Find user in mock data
-    const user = mockData.users.find(u => u.email === email);
+    const user = mockData.users?.find(u => u.email === email);
     
     if (!user) {
-      return { success: false, message: 'Invalid email or password' };
+      throw new Error('Invalid credentials');
     }
+
+    // For mock, accept any password
+    // In real app, password would be checked against password_hash
     
-    // In mock mode, accept any password for existing users
-    const token = generateToken(user.id);
+    // Generate mock token
+    const token = `mock_token_${Date.now()}`;
     
+    // Store auth data
+    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+    localStorage.setItem(TOKEN_KEY, token);
+
     return {
       success: true,
+      user,
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        isVerified: user.is_verified,
-      },
     };
   },
 
-  register: async (userData) => {
-    await delay(1000);
-    
+  // Register
+  async register(userData) {
+    await delay(500);
+
     // Check if email already exists
-    const existingUser = mockData.users.find(u => u.email === userData.email);
+    const existingUser = mockData.users?.find(u => u.email === userData.email);
     
     if (existingUser) {
-      return { success: false, message: 'Email already registered' };
+      throw new Error('Email already registered');
     }
-    
-    // In mock mode, always succeed
-    return {
-      success: true,
-      message: 'Registration successful! Please check your email for verification.',
-    };
-  },
 
-  forgotPassword: async (email) => {
-    await delay(800);
-    
-    // Check if user exists
-    const user = mockData.users.find(u => u.email === email);
-    
-    if (!user) {
-      // Don't reveal if email exists or not (security best practice)
-      return {
-        success: true,
-        message: 'If an account exists with this email, you will receive a password reset link.',
-      };
-    }
-    
-    return {
-      success: true,
-      message: 'Password reset link has been sent to your email.',
+    // Create new user
+    const newUser = {
+      id: `user-${Date.now()}`,
+      email: userData.email,
+      password_hash: 'hashed_password',
+      role: userData.role || 'student',
+      is_verified: false,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
-  },
 
-  resetPassword: async (token, newPassword) => {
-    await delay(800);
+    // In a real app, this would be saved to database
+    // For mock, we just return success
     
-    // In mock mode, always succeed
+    const token = `mock_token_${Date.now()}`;
+    
+    localStorage.setItem(AUTH_KEY, JSON.stringify(newUser));
+    localStorage.setItem(TOKEN_KEY, token);
+
     return {
       success: true,
-      message: 'Password has been reset successfully. You can now login with your new password.',
-    };
-  },
-
-  googleSignIn: async () => {
-    await delay(1000);
-    
-    // Simulate Google Sign-in with first user
-    const user = mockData.users[0];
-    const token = generateToken(user.id);
-    
-    return {
-      success: true,
+      user: newUser,
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        isVerified: user.is_verified,
-      },
     };
+  },
+
+  // Logout
+  async logout() {
+    await delay(200);
+    localStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    return { success: true };
+  },
+
+  // Get current user
+  getCurrentUser() {
+    try {
+      const userStr = localStorage.getItem(AUTH_KEY);
+      return userStr ? JSON.parse(userStr) : null;
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return null;
+    }
+  },
+
+  // Get token
+  getToken() {
+    return localStorage.getItem(TOKEN_KEY);
+  },
+
+  // Verify email
+  async verifyEmail(code) {
+    await delay(500);
+    return { success: true };
+  },
+
+  // Request password reset
+  async requestPasswordReset(email) {
+    await delay(500);
+    return { success: true };
+  },
+
+  // Reset password
+  async resetPassword(token, newPassword) {
+    await delay(500);
+    return { success: true };
+  },
+
+  // Update profile
+  async updateProfile(userId, updates) {
+    await delay(500);
+    
+    const user = this.getCurrentUser();
+    if (user && user.id === userId) {
+      const updatedUser = { ...user, ...updates, updated_at: new Date().toISOString() };
+      localStorage.setItem(AUTH_KEY, JSON.stringify(updatedUser));
+      return { success: true, user: updatedUser };
+    }
+    
+    throw new Error('User not found');
   },
 };

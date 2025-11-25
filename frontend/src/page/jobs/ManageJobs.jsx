@@ -1,73 +1,34 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Eye, Users, MoreVertical } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import MainNavbar from '@/components/layout/MainNavbar';
-import Footer from '@/components/layout/Footer';
-import { getJobsByUser, deleteJob, updateJob, getApplicationsForJob } from '@/services/mockJobService';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
+import { mockProfileService } from '@/services/mockProfileService';
+import { jobService } from '@/services/mockJobService';
+import MainNavbar from '@/components/layout/MainNavbar';
+import Sidebar from '@/components/layout/Sidebar';
+import Footer from '@/components/layout/Footer';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Briefcase, Eye, FileText, Edit, Trash2, Search, Plus } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import mockData from '../../mockdata.json';
 
 const ManageJobs = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
-  const [jobs, setJobs] = useState([]);
+  const navigate = useNavigate();
+  const [postedJobs, setPostedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [jobToDelete, setJobToDelete] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
-    if (!user || (user.role !== 'alumni' && user.role !== 'recruiter')) {
-      navigate('/jobs');
-      return;
-    }
-
     loadJobs();
-  }, [user, navigate]);
+  }, [user.id]);
 
-  const loadJobs = () => {
-    setLoading(true);
+  const loadJobs = async () => {
     try {
-      // Get jobs from mock data
-      const mockJobs = getJobsByUser(user.id);
-      
-      // Get jobs from localStorage (user's posted jobs)
-      const storedJobs = JSON.parse(localStorage.getItem('posted_jobs') || '[]')
-        .filter(job => job.posted_by === user.id);
-
-      const allJobs = [...mockJobs, ...storedJobs];
-
-      // Enrich with application counts
-      const enriched = allJobs.map(job => {
-        const applications = getApplicationsForJob(job.id);
-        return {
-          ...job,
-          applications_count: applications.length,
-        };
-      });
-
-      // Sort by created date (most recent first)
-      enriched.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-      setJobs(enriched);
+      const jobsData = await mockProfileService.getJobsByPoster(user.id);
+      setPostedJobs(jobsData);
     } catch (error) {
       console.error('Error loading jobs:', error);
     } finally {
@@ -75,258 +36,214 @@ const ManageJobs = () => {
     }
   };
 
-  const handleDeleteClick = (job) => {
-    setJobToDelete(job);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!jobToDelete) return;
-
-    try {
-      const result = await deleteJob(jobToDelete.id);
-      if (result.success) {
-        toast.success('Job deleted successfully');
-        loadJobs();
-      } else {
-        toast.error(result.message);
+  const handleDeleteJob = async (jobId) => {
+    if (window.confirm('Are you sure you want to delete this job posting?')) {
+      try {
+        await jobService.deleteJob(jobId);
+        setPostedJobs(prev => prev.filter(j => j.id !== jobId));
+      } catch (error) {
+        console.error('Error deleting job:', error);
+        alert('Failed to delete job');
       }
-    } catch (error) {
-      toast.error('Failed to delete job');
-    } finally {
-      setDeleteDialogOpen(false);
-      setJobToDelete(null);
     }
   };
 
-  const handleToggleStatus = async (job) => {
-    const newStatus = job.status === 'active' ? 'closed' : 'active';
-    try {
-      const result = await updateJob(job.id, { status: newStatus });
-      if (result.success) {
-        toast.success(`Job ${newStatus === 'active' ? 'activated' : 'closed'}`);
-        loadJobs();
-      } else {
-        toast.error(result.message);
-      }
-    } catch (error) {
-      toast.error('Failed to update job status');
-    }
+  const handleEditJob = (jobId) => {
+    navigate(`/jobs/edit/${jobId}`);
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+  const handleViewApplications = (jobId) => {
+    navigate(`/jobs/applications/${jobId}`);
   };
 
-  const getJobTypeColor = (type) => {
-    const colors = {
-      'full-time': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      'part-time': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-      'internship': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-      'contract': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-    };
-    return colors[type] || 'bg-gray-100 text-gray-800';
-  };
+  const filteredJobs = postedJobs.filter(job => {
+    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         job.company.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
-    <div className="min-h-screen flex flex-col" data-testid="manage-jobs-page">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <MainNavbar />
       
-      <main className="flex-1 bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Manage Jobs</h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                View and manage your posted job opportunities
-              </p>
+      <div className="flex flex-1">
+        <Sidebar />
+        
+        <main className="flex-1 p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Manage Jobs</h1>
+                <p className="text-gray-600 mt-1">View and manage all your job postings</p>
+              </div>
+              <Button asChild data-testid="post-new-job-btn">
+                <Link to="/jobs/post">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Post New Job
+                </Link>
+              </Button>
             </div>
-            <Button
-              onClick={() => navigate('/jobs/post')}
-              data-testid="post-new-job-btn"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Post New Job
-            </Button>
-          </div>
 
-          {/* Jobs List */}
-          {loading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-6">
-                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : jobs.length > 0 ? (
-            <div className="space-y-4" data-testid="jobs-list">
-              {jobs.map((job) => (
-                <Card key={job.id} data-testid={`job-card-${job.id}`}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-xl font-semibold" data-testid="job-title">
-                            {job.title}
-                          </h3>
-                          <Badge className={getJobTypeColor(job.job_type)}>
-                            {job.job_type}
-                          </Badge>
-                          <Badge
-                            variant={job.status === 'active' ? 'default' : 'secondary'}
-                            data-testid="job-status"
-                          >
-                            {job.status}
-                          </Badge>
+            {/* Filters */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        placeholder="Search jobs by title or company..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                        data-testid="search-jobs-input"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={statusFilter === 'all' ? 'default' : 'outline'}
+                      onClick={() => setStatusFilter('all')}
+                      size="sm"
+                      data-testid="filter-all-btn"
+                    >
+                      All ({postedJobs.length})
+                    </Button>
+                    <Button
+                      variant={statusFilter === 'active' ? 'default' : 'outline'}
+                      onClick={() => setStatusFilter('active')}
+                      size="sm"
+                      data-testid="filter-active-btn"
+                    >
+                      Active ({postedJobs.filter(j => j.status === 'active').length})
+                    </Button>
+                    <Button
+                      variant={statusFilter === 'closed' ? 'default' : 'outline'}
+                      onClick={() => setStatusFilter('closed')}
+                      size="sm"
+                      data-testid="filter-closed-btn"
+                    >
+                      Closed ({postedJobs.filter(j => j.status === 'closed').length})
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Jobs List */}
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p className="mt-2 text-gray-600">Loading jobs...</p>
+              </div>
+            ) : filteredJobs.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <Briefcase className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {searchTerm || statusFilter !== 'all' ? 'No jobs found' : 'No jobs posted yet'}
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    {searchTerm || statusFilter !== 'all'
+                      ? 'Try adjusting your filters'
+                      : 'Start by posting your first job'}
+                  </p>
+                  {!searchTerm && statusFilter === 'all' && (
+                    <Button asChild data-testid="post-first-job-btn">
+                      <Link to="/jobs/post">Post Your First Job</Link>
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {filteredJobs.map(job => {
+                  const applicationsCount = mockData.job_applications?.filter(
+                    app => app.job_id === job.id
+                  ).length || job.applications_count || 0;
+
+                  return (
+                    <Card key={job.id} data-testid={`job-card-${job.id}`}>
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <CardTitle className="text-xl">{job.title}</CardTitle>
+                              <Badge
+                                variant={job.status === 'active' ? 'default' : 'secondary'}
+                                data-testid={`job-status-${job.id}`}
+                              >
+                                {job.status}
+                              </Badge>
+                            </div>
+                            <CardDescription className="mt-1">
+                              {job.company} • {job.location} • {job.job_type}
+                            </CardDescription>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {job.company} • {job.location}
-                        </p>
-                      </div>
+                      </CardHeader>
+                      <CardContent>
+                        {/* Stats */}
+                        <div className="flex gap-6 mb-4">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Eye className="w-4 h-4" />
+                            <span>{job.views_count || 0} views</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <FileText className="w-4 h-4" />
+                            <span>{applicationsCount} applications</span>
+                          </div>
+                        </div>
 
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" data-testid="job-actions-menu">
-                            <MoreVertical className="w-4 h-4" />
+                        {/* Description Preview */}
+                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                          {job.description}
+                        </p>
+
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleViewApplications(job.id)}
+                            data-testid={`view-applications-btn-${job.id}`}
+                          >
+                            <FileText className="w-4 h-4 mr-2" />
+                            View Applications ({applicationsCount})
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => navigate(`/jobs/${job.id}`)}
-                            data-testid="view-job-menu-item"
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditJob(job.id)}
+                            data-testid={`edit-job-btn-${job.id}`}
                           >
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Job
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => navigate(`/jobs/${job.id}/applications`)}
-                            data-testid="view-applications-menu-item"
-                          >
-                            <Users className="w-4 h-4 mr-2" />
-                            View Applications
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleToggleStatus(job)}
-                            data-testid="toggle-status-menu-item"
-                          >
-                            {job.status === 'active' ? 'Close Job' : 'Activate Job'}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteClick(job)}
-                            className="text-red-600"
-                            data-testid="delete-job-menu-item"
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteJob(job.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            data-testid={`delete-job-btn-${job.id}`}
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
                             Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent>
-                    <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      <div className="flex items-center gap-1">
-                        <Eye className="w-4 h-4" />
-                        <span>{job.views_count || 0} views</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        <span>{job.applications_count || 0} applications</span>
-                      </div>
-                      <div>
-                        Posted {formatDate(job.created_at)}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {job.skills_required?.slice(0, 5).map((skill, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {skill}
-                        </Badge>
-                      ))}
-                      {job.skills_required?.length > 5 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{job.skills_required.length - 5} more
-                        </Badge>
-                      )}
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/jobs/${job.id}`)}
-                        data-testid="view-details-btn"
-                      >
-                        View Details
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/jobs/${job.id}/applications`)}
-                        data-testid="view-applications-btn"
-                      >
-                        <Users className="w-4 h-4 mr-1" />
-                        View Applications ({job.applications_count || 0})
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12" data-testid="no-jobs-message">
-              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Plus className="w-8 h-8 text-gray-400" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
-              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                No jobs posted yet
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
-                Start by posting your first job opportunity
-              </p>
-              <Button onClick={() => navigate('/jobs/post')}>
-                <Plus className="w-4 h-4 mr-2" />
-                Post Your First Job
-              </Button>
-            </div>
-          )}
-        </div>
-      </main>
-
+            )}
+          </div>
+        </main>
+      </div>
+      
       <Footer />
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Job</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{jobToDelete?.title}"? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel data-testid="cancel-delete-btn">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-600 hover:bg-red-700"
-              data-testid="confirm-delete-btn"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };

@@ -7,11 +7,12 @@ import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Briefcase, Users, Eye, TrendingUp, FileText } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import mockData from '@/mockdata.json';
+import { Link, useNavigate } from 'react-router-dom';
+import mockData from '../mockdata.json';
 
 const RecruiterDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [postedJobs, setPostedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -164,8 +165,24 @@ const RecruiterDashboard = () => {
                             </span>
                           </div>
                           <div className="flex gap-2 mt-3">
-                            <Button size="sm" variant="outline" className="flex-1">View Applications</Button>
-                            <Button size="sm" variant="outline" className="flex-1">Edit</Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="flex-1"
+                              onClick={() => navigate(`/jobs/applications/${job.id}`)}
+                              data-testid={`view-applications-btn-${job.id}`}
+                            >
+                              View Applications
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="flex-1"
+                              onClick={() => navigate(`/jobs/edit/${job.id}`)}
+                              data-testid={`edit-job-btn-${job.id}`}
+                            >
+                              Edit
+                            </Button>
                           </div>
                         </div>
                       ))}
@@ -213,7 +230,14 @@ const RecruiterDashboard = () => {
                                 </span>
                               </div>
                             </div>
-                            <Button size="sm" variant="outline">Review</Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => navigate(`/jobs/applications/${app.job_id}`)}
+                              data-testid={`review-application-btn-${app.id}`}
+                            >
+                              Review
+                            </Button>
                           </div>
                         );
                       })}
