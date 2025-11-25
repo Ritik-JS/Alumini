@@ -531,6 +531,67 @@ export const getMentorStats = (mentorId) => {
   };
 };
 
+// Register as mentor
+export const registerAsMentor = async (userId, mentorData) => {
+  try {
+    const mentorProfiles = getStoredData(STORAGE_KEYS.MENTOR_PROFILES, mockData.mentor_profiles);
+    
+    // Check if already registered
+    const existingMentor = mentorProfiles.find(m => m.user_id === userId);
+    if (existingMentor) {
+      throw new Error('User is already registered as a mentor');
+    }
+
+    const newMentor = {
+      id: `mentor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      user_id: userId,
+      is_available: mentorData.is_available !== undefined ? mentorData.is_available : true,
+      expertise_areas: mentorData.expertise_areas || [],
+      max_mentees: mentorData.max_mentees || 5,
+      current_mentees_count: 0,
+      rating: 0.0,
+      total_sessions: 0,
+      total_reviews: 0,
+      mentorship_approach: mentorData.mentorship_approach || '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    mentorProfiles.push(newMentor);
+    saveData(STORAGE_KEYS.MENTOR_PROFILES, mentorProfiles);
+
+    return { success: true, data: newMentor };
+  } catch (error) {
+    console.error('Error registering as mentor:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Update mentor profile
+export const updateMentorProfile = async (userId, updateData) => {
+  try {
+    const mentorProfiles = getStoredData(STORAGE_KEYS.MENTOR_PROFILES, mockData.mentor_profiles);
+    const mentorIndex = mentorProfiles.findIndex(m => m.user_id === userId);
+
+    if (mentorIndex === -1) {
+      throw new Error('Mentor profile not found');
+    }
+
+    mentorProfiles[mentorIndex] = {
+      ...mentorProfiles[mentorIndex],
+      ...updateData,
+      updated_at: new Date().toISOString(),
+    };
+
+    saveData(STORAGE_KEYS.MENTOR_PROFILES, mentorProfiles);
+
+    return { success: true, data: mentorProfiles[mentorIndex] };
+  } catch (error) {
+    console.error('Error updating mentor profile:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Paginate results
 export const paginateResults = (items, page = 1, pageSize = 12) => {
   const startIndex = (page - 1) * pageSize;
@@ -555,6 +616,8 @@ export default {
   getMentorByUserId,
   getUniqueExpertiseAreas,
   getMentorStats,
+  registerAsMentor,
+  updateMentorProfile,
 
   // Requests
   getAllMentorshipRequests,

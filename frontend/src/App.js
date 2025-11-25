@@ -38,6 +38,7 @@ const ApplicationsManager = lazy(() => import('@/page/jobs/ApplicationsManager')
 const FindMentors = lazy(() => import('@/page/mentorship/FindMentors'));
 const MentorProfile = lazy(() => import('@/page/mentorship/MentorProfile'));
 const MentorshipDashboard = lazy(() => import('@/page/mentorship/MentorshipDashboard'));
+const MentorManagement = lazy(() => import('@/page/mentorship/MentorManagement'));
 const SessionDetails = lazy(() => import('@/page/mentorship/SessionDetails'));
 
 // Event Pages
@@ -231,6 +232,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <MentorshipDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/mentorship/manage"
+            element={
+              <ProtectedRoute>
+                <MentorManagement />
               </ProtectedRoute>
             }
           />
