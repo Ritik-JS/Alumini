@@ -118,9 +118,9 @@ const TalentHeatmap = () => {
           <CardContent>
             <div className="grid md:grid-cols-3 gap-4">
               <Select
-                value={filters.skill}
+                value={filters.skill || 'all'}
                 onValueChange={(value) => {
-                  setFilters({...filters, skill: value});
+                  setFilters({...filters, skill: value === 'all' ? '' : value});
                   applyFilters();
                 }}
               >
@@ -128,7 +128,7 @@ const TalentHeatmap = () => {
                   <SelectValue placeholder="Filter by skill" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Skills</SelectItem>
+                  <SelectItem value="all">All Skills</SelectItem>
                   {skills.map(skill => (
                     <SelectItem key={skill} value={skill}>{skill}</SelectItem>
                   ))}
@@ -136,9 +136,9 @@ const TalentHeatmap = () => {
               </Select>
 
               <Select
-                value={filters.industry}
+                value={filters.industry || 'all'}
                 onValueChange={(value) => {
-                  setFilters({...filters, industry: value});
+                  setFilters({...filters, industry: value === 'all' ? '' : value});
                   applyFilters();
                 }}
               >
@@ -146,7 +146,7 @@ const TalentHeatmap = () => {
                   <SelectValue placeholder="Filter by industry" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Industries</SelectItem>
+                  <SelectItem value="all">All Industries</SelectItem>
                   {industries.map(industry => (
                     <SelectItem key={industry} value={industry}>{industry}</SelectItem>
                   ))}

@@ -126,7 +126,7 @@ const SkillGraph = () => {
               <Select
                 value={filters.industry}
                 onValueChange={(value) => {
-                  setFilters({...filters, industry: value});
+                  setFilters({...filters, industry: value === 'all' ? '' : value});
                   handleSearch();
                 }}
               >
@@ -134,7 +134,7 @@ const SkillGraph = () => {
                   <SelectValue placeholder="Filter by industry" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Industries</SelectItem>
+                  <SelectItem value="all">All Industries</SelectItem>
                   {industries.map(industry => (
                     <SelectItem key={industry} value={industry}>{industry}</SelectItem>
                   ))}

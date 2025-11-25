@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from 'sonner';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -103,11 +103,10 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <BrowserRouter>
-          <OfflineIndicator />
-          <Toaster position="top-right" richColors />
-          <Suspense fallback={<FullPageSkeleton />}>
-            <Routes>
+        <OfflineIndicator />
+        <Toaster position="top-right" richColors />
+        <Suspense fallback={<FullPageSkeleton />}>
+          <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -461,8 +460,7 @@ function App() {
           {/* Redirect unknown routes to 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-          </Suspense>
-        </BrowserRouter>
+        </Suspense>
       </AuthProvider>
     </ErrorBoundary>
   );

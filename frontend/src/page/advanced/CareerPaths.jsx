@@ -79,14 +79,14 @@ const CareerPaths = () => {
           <CardContent>
             <div className="grid md:grid-cols-3 gap-4">
               <Select
-                value={filters.startingRole}
-                onValueChange={(value) => setFilters({...filters, startingRole: value})}
+                value={filters.startingRole || 'any'}
+                onValueChange={(value) => setFilters({...filters, startingRole: value === 'any' ? '' : value})}
               >
                 <SelectTrigger data-testid="starting-role-select">
                   <SelectValue placeholder="Starting Role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Role</SelectItem>
+                  <SelectItem value="any">Any Role</SelectItem>
                   {roles.map(role => (
                     <SelectItem key={role} value={role}>{role}</SelectItem>
                   ))}
@@ -94,14 +94,14 @@ const CareerPaths = () => {
               </Select>
 
               <Select
-                value={filters.targetRole}
-                onValueChange={(value) => setFilters({...filters, targetRole: value})}
+                value={filters.targetRole || 'any'}
+                onValueChange={(value) => setFilters({...filters, targetRole: value === 'any' ? '' : value})}
               >
                 <SelectTrigger data-testid="target-role-select">
                   <SelectValue placeholder="Target Role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Any Role</SelectItem>
+                  <SelectItem value="any">Any Role</SelectItem>
                   {roles.map(role => (
                     <SelectItem key={role} value={role}>{role}</SelectItem>
                   ))}

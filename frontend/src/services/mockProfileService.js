@@ -195,10 +195,12 @@ export const mockProfileService = {
   createProfile,
   getAllJobs,
   getJobsByPostedBy,
+  getJobsByPoster: getJobsByPostedBy, // Alias for compatibility
   getJobApplicationsByUser,
   getApplicationsForJob,
   getAllMentorProfiles,
   getMentorProfileByUserId,
+  getMentorProfile: getMentorProfileByUserId, // Alias for compatibility
   getMentorshipRequestsByStudent,
   getMentorshipRequestsByMentor,
   getMentorshipSessions,
