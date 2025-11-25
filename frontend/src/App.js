@@ -49,6 +49,13 @@ import AlumniDashboard from '@/page/AlumniDashboard';
 import RecruiterDashboard from '@/page/RecruiterDashboard';
 import AdminDashboard from '@/page/AdminDashboard';
 
+// Admin Pages
+import AdminUsers from '@/page/admin/AdminUsers';
+import AdminVerifications from '@/page/admin/AdminVerifications';
+import AdminModeration from '@/page/admin/AdminModeration';
+import AdminAnalytics from '@/page/admin/AdminAnalytics';
+import AdminSettings from '@/page/admin/AdminSettings';
+
 import '@/App.css';
 
 // Dashboard router component - redirects to role-specific dashboard
@@ -311,6 +318,48 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Routes - Protected */}
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute>
+                <AdminUsers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/verifications"
+            element={
+              <ProtectedRoute>
+                <AdminVerifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/moderation"
+            element={
+              <ProtectedRoute>
+                <AdminModeration />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/analytics"
+            element={
+              <ProtectedRoute>
+                <AdminAnalytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <ProtectedRoute>
+                <AdminSettings />
               </ProtectedRoute>
             }
           />
