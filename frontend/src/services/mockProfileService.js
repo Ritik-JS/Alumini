@@ -164,6 +164,7 @@ export const getSystemStats = async () => {
     studentCount: users.filter(u => u.role === 'student').length,
     alumniCount: users.filter(u => u.role === 'alumni').length,
     recruiterCount: users.filter(u => u.role === 'recruiter').length,
+    verifiedAlumni: profiles.filter(p => p.is_verified).length,
     totalProfiles: profiles.length,
     verifiedProfiles: profiles.filter(p => p.is_verified).length,
     pendingVerifications: profiles.filter(p => !p.is_verified).length,
@@ -172,6 +173,12 @@ export const getSystemStats = async () => {
     totalEvents: events.length,
     upcomingEvents: events.filter(e => new Date(e.start_date) > new Date()).length,
   };
+};
+
+// Get pending verification profiles (for admin verifications page)
+export const getPendingVerifications = async () => {
+  const profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
+  return profiles.filter(p => !p.is_verified);
 };
 
 // Get user by ID
@@ -198,6 +205,7 @@ export const mockProfileService = {
   getUpcomingEvents,
   getEventRSVPsByUser,
   getSystemStats,
+  getPendingVerifications,
   getUserById,
 };
 
