@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Users, Briefcase, Calendar, AlertCircle, TrendingUp, CheckCircle, UserCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import mockData from '@/mockdata.json';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -249,30 +250,127 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            {/* User Distribution */}
-            <Card>
-              <CardHeader>
-                <CardTitle>User Distribution</CardTitle>
-                <CardDescription>Users by role</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {['student', 'alumni', 'recruiter', 'admin'].map(role => {
-                    const count = mockData.users?.filter(u => u.role === role).length || 0;
-                    const percentage = systemStats?.totalUsers > 0 
-                      ? Math.round((count / systemStats.totalUsers) * 100) 
-                      : 0;
-                    return (
-                      <div key={role} className="text-center p-4 border rounded-lg">
-                        <div className="text-2xl font-bold capitalize text-gray-900">{count}</div>
-                        <div className="text-sm text-gray-600 mt-1 capitalize">{role}s</div>
-                        <div className="text-xs text-gray-500 mt-1">{percentage}%</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* User Growth Chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>User Growth Over Time</CardTitle>
+                  <CardDescription>Monthly user registration trends</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={[
+                      { month: 'Jul', users: 20 },
+                      { month: 'Aug', users: 35 },
+                      { month: 'Sep', users: 48 },
+                      { month: 'Oct', users: 62 },
+                      { month: 'Nov', users: 78 },
+                      { month: 'Dec', users: mockData.users?.length || 95 },
+                    ]}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="users" stroke="#dc2626" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Users by Role Pie Chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Users by Role</CardTitle>
+                  <CardDescription>Distribution of user roles</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Students', value: mockData.users?.filter(u => u.role === 'student').length || 0, color: '#10b981' },
+                          { name: 'Alumni', value: mockData.users?.filter(u => u.role === 'alumni').length || 0, color: '#3b82f6' },
+                          { name: 'Recruiters', value: mockData.users?.filter(u => u.role === 'recruiter').length || 0, color: '#8b5cf6' },
+                          { name: 'Admins', value: mockData.users?.filter(u => u.role === 'admin').length || 0, color: '#ef4444' },
+                        ]}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {[
+                          { name: 'Students', value: mockData.users?.filter(u => u.role === 'student').length || 0, color: '#10b981' },
+                          { name: 'Alumni', value: mockData.users?.filter(u => u.role === 'alumni').length || 0, color: '#3b82f6' },
+                          { name: 'Recruiters', value: mockData.users?.filter(u => u.role === 'recruiter').length || 0, color: '#8b5cf6' },
+                          { name: 'Admins', value: mockData.users?.filter(u => u.role === 'admin').length || 0, color: '#ef4444' },
+                        ].map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Job Postings Trend */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Job Postings Trend</CardTitle>
+                  <CardDescription>Monthly job postings activity</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={[
+                      { month: 'Jul', jobs: 5 },
+                      { month: 'Aug', jobs: 8 },
+                      { month: 'Sep', jobs: 12 },
+                      { month: 'Oct', jobs: 15 },
+                      { month: 'Nov', jobs: 18 },
+                      { month: 'Dec', jobs: mockData.jobs?.length || 22 },
+                    ]}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="jobs" fill="#f59e0b" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Event Participation */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Event Participation</CardTitle>
+                  <CardDescription>Event registrations over time</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={[
+                      { month: 'Jul', registrations: 45 },
+                      { month: 'Aug', registrations: 62 },
+                      { month: 'Sep', registrations: 78 },
+                      { month: 'Oct', registrations: 95 },
+                      { month: 'Nov', registrations: 112 },
+                      { month: 'Dec', registrations: 145 },
+                    ]}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="registrations" stroke="#8b5cf6" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </main>
       </div>
