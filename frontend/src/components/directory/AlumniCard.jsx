@@ -17,21 +17,24 @@ const AlumniCard = ({ profile, onViewProfile }) => {
   return (
     <Card
       data-testid={`alumni-card-${profile.id}`}
-      className="hover:shadow-lg transition-shadow duration-200 cursor-pointer group"
+      className="hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group border-gray-200 overflow-hidden"
       onClick={() => onViewProfile(profile)}
     >
-      <CardContent className="p-6">
+      <CardContent className="p-6 relative">
+        {/* Decorative background gradient */}
+        <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-br from-blue-50 to-indigo-50 -z-10"></div>
+        
         {/* Avatar and Basic Info */}
         <div className="flex flex-col items-center text-center space-y-3">
           <div className="relative">
-            <Avatar className="h-24 w-24">
+            <Avatar className="h-24 w-24 border-4 border-white shadow-lg ring-2 ring-blue-100">
               <AvatarImage src={profile.photo_url} alt={profile.name} />
-              <AvatarFallback className="text-lg">
+              <AvatarFallback className="text-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
                 {getInitials(profile.name)}
               </AvatarFallback>
             </Avatar>
             {profile.is_verified && (
-              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
+              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-md">
                 <CheckCircle2 className="h-5 w-5 text-blue-600" />
               </div>
             )}
@@ -85,14 +88,19 @@ const AlumniCard = ({ profile, onViewProfile }) => {
           </div>
         )}
 
-        {/* Batch Year */}
-        {profile.batch_year && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <p className="text-xs text-gray-500 text-center">
-              Batch of {profile.batch_year}
+        {/* Additional Info */}
+        <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+          {profile.batch_year && (
+            <p className="text-xs text-gray-500">
+              <span className="font-medium">Batch:</span> {profile.batch_year}
             </p>
-          </div>
-        )}
+          )}
+          {profile.willing_to_mentor && (
+            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+              Available to Mentor
+            </Badge>
+          )}
+        </div>
 
         {/* Actions */}
         <div className="mt-4 flex gap-2">

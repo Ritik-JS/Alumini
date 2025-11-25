@@ -27,15 +27,15 @@ const MainNavbar = () => {
     navigate('/login');
   };
 
-  // Role-based navigation links
+  // Role-based navigation links - Standardized structure with role-specific visibility
   const getRoleBasedNavLinks = () => {
     if (!isAuthenticated) {
-      // Unauthenticated users - show all features (will prompt login)
+      // Unauthenticated users - show main features (will prompt login)
       return [
         { name: 'Home', path: '/' },
-        { name: 'Directory', path: '/directory' },
-        { name: 'Jobs', path: '/jobs' },
+        { name: 'Alumni', path: '/directory' },
         { name: 'Mentorship', path: '/mentorship/find' },
+        { name: 'Jobs', path: '/jobs' },
         { name: 'Events', path: '/events' },
         { name: 'Forum', path: '/forum' },
       ];
@@ -43,54 +43,57 @@ const MainNavbar = () => {
 
     const role = user?.role;
 
+    // Standardized navigation structure: Home, Alumni, Mentorship, Jobs, Events, Forum
+    // Role-specific visibility for what each role can access
     switch (role) {
       case 'admin':
         // Admin: Full access to all features
         return [
           { name: 'Home', path: '/' },
-          { name: 'Users', path: '/admin/users' },
-          { name: 'Directory', path: '/directory' },
-          { name: 'Analytics', path: '/admin/analytics' },
-          { name: 'Verifications', path: '/admin/verifications' },
-          { name: 'Moderation', path: '/admin/moderation' },
+          { name: 'Alumni', path: '/directory' },
+          { name: 'Mentorship', path: '/mentorship/find' },
+          { name: 'Jobs', path: '/jobs' },
+          { name: 'Events', path: '/events' },
+          { name: 'Forum', path: '/forum' },
         ];
 
       case 'alumni':
-        // Alumni: Mentorship (as mentor), Directory, Events, Forum, Career features
+        // Alumni: Can mentor, view directory, participate in events and forum
         return [
           { name: 'Home', path: '/' },
-          { name: 'Directory', path: '/directory' },
+          { name: 'Alumni', path: '/directory' },
           { name: 'Mentorship', path: '/mentorship/dashboard' },
+          { name: 'Jobs', path: '/jobs' },
           { name: 'Events', path: '/events' },
           { name: 'Forum', path: '/forum' },
-          { name: 'Knowledge', path: '/knowledge' },
         ];
 
       case 'student':
-        // Student: Jobs, Mentorship (as mentee), Events, Forum, Learning
+        // Student: Can find mentors, apply for jobs, attend events
         return [
           { name: 'Home', path: '/' },
-          { name: 'Directory', path: '/directory' },
-          { name: 'Jobs', path: '/jobs' },
+          { name: 'Alumni', path: '/directory' },
           { name: 'Mentorship', path: '/mentorship/find' },
+          { name: 'Jobs', path: '/jobs' },
           { name: 'Events', path: '/events' },
           { name: 'Forum', path: '/forum' },
         ];
 
       case 'recruiter':
-        // Recruiter: Job management, Directory (for recruitment), Applications
+        // Recruiter: Can post jobs, view directory for recruitment, attend events
         return [
           { name: 'Home', path: '/' },
-          { name: 'Directory', path: '/directory' },
-          { name: 'Post Job', path: '/jobs/post' },
-          { name: 'Manage Jobs', path: '/jobs/manage' },
+          { name: 'Alumni', path: '/directory' },
+          { name: 'Mentorship', path: '/mentorship/find' },
+          { name: 'Jobs', path: '/jobs' },
           { name: 'Events', path: '/events' },
+          { name: 'Forum', path: '/forum' },
         ];
 
       default:
         return [
           { name: 'Home', path: '/' },
-          { name: 'Directory', path: '/directory' },
+          { name: 'Alumni', path: '/directory' },
         ];
     }
   };

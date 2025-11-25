@@ -116,6 +116,149 @@
       "last_login": "2024-12-28T07:30:00Z",
       "created_at": "2024-09-10T13:15:00Z",
       "updated_at": "2024-12-28T07:30:00Z"
+    },
+    {
+      "id": "f10e8400-e29b-41d4-a716-446655440010",
+      "email": "alex.thompson@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-27T18:00:00Z",
+      "created_at": "2022-01-20T09:00:00Z",
+      "updated_at": "2024-12-27T18:00:00Z"
+    },
+    {
+      "id": "f20e8400-e29b-41d4-a716-446655440011",
+      "email": "rachel.kim@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-28T09:30:00Z",
+      "created_at": "2021-06-10T10:30:00Z",
+      "updated_at": "2024-12-28T09:30:00Z"
+    },
+    {
+      "id": "f30e8400-e29b-41d4-a716-446655440012",
+      "email": "daniel.martinez@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-27T16:45:00Z",
+      "created_at": "2020-09-15T09:00:00Z",
+      "updated_at": "2024-12-27T16:45:00Z"
+    },
+    {
+      "id": "f40e8400-e29b-41d4-a716-446655440013",
+      "email": "sophia.williams@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-28T11:20:00Z",
+      "created_at": "2023-02-15T11:00:00Z",
+      "updated_at": "2024-12-28T11:20:00Z"
+    },
+    {
+      "id": "f50e8400-e29b-41d4-a716-446655440014",
+      "email": "kevin.nguyen@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-27T14:15:00Z",
+      "created_at": "2022-05-15T10:00:00Z",
+      "updated_at": "2024-12-27T14:15:00Z"
+    },
+    {
+      "id": "f60e8400-e29b-41d4-a716-446655440015",
+      "email": "nina.patel@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-28T10:00:00Z",
+      "created_at": "2021-01-15T09:00:00Z",
+      "updated_at": "2024-12-28T10:00:00Z"
+    },
+    {
+      "id": "f70e8400-e29b-41d4-a716-446655440016",
+      "email": "marcus.brown@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-27T19:30:00Z",
+      "created_at": "2021-03-15T10:00:00Z",
+      "updated_at": "2024-12-27T19:30:00Z"
+    },
+    {
+      "id": "f80e8400-e29b-41d4-a716-446655440017",
+      "email": "jennifer.lee@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-28T08:45:00Z",
+      "created_at": "2022-07-15T09:00:00Z",
+      "updated_at": "2024-12-28T08:45:00Z"
+    },
+    {
+      "id": "f90e8400-e29b-41d4-a716-446655440018",
+      "email": "ryan.obrien@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-27T17:20:00Z",
+      "created_at": "2023-01-15T09:00:00Z",
+      "updated_at": "2024-12-27T17:20:00Z"
+    },
+    {
+      "id": "fa0e8400-e29b-41d4-a716-446655440019",
+      "email": "amanda.foster@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-28T12:00:00Z",
+      "created_at": "2021-09-15T09:00:00Z",
+      "updated_at": "2024-12-28T12:00:00Z"
+    },
+    {
+      "id": "fb0e8400-e29b-41d4-a716-446655440020",
+      "email": "carlos.rodriguez@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-28T13:15:00Z",
+      "created_at": "2021-01-15T09:00:00Z",
+      "updated_at": "2024-12-28T13:15:00Z"
+    },
+    {
+      "id": "fc0e8400-e29b-41d4-a716-446655440021",
+      "email": "hannah.zhang@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-27T20:30:00Z",
+      "created_at": "2022-08-15T09:00:00Z",
+      "updated_at": "2024-12-27T20:30:00Z"
+    },
+    {
+      "id": "fd0e8400-e29b-41d4-a716-446655440022",
+      "email": "thomas.anderson@alumni.edu",
+      "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO",
+      "role": "alumni",
+      "is_verified": true,
+      "is_active": true,
+      "last_login": "2024-12-28T09:00:00Z",
+      "created_at": "2022-03-15T09:00:00Z",
+      "updated_at": "2024-12-28T09:00:00Z"
     }
   ],
   "alumni_profiles": [
@@ -559,6 +702,806 @@
       "verified_at": null,
       "created_at": "2024-09-10T13:30:00Z",
       "updated_at": "2024-12-20T10:15:00Z"
+    },
+    {
+      "id": "profile-f10e8400-e29b-41d4-a716",
+      "user_id": "f10e8400-e29b-41d4-a716-446655440010",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
+      "name": "Alex Thompson",
+      "bio": "DevOps Engineer specializing in cloud infrastructure and automation. Passionate about Kubernetes, CI/CD, and building reliable systems.",
+      "headline": "DevOps Engineer at Tesla | Cloud Infrastructure Specialist",
+      "current_company": "Tesla",
+      "current_role": "DevOps Engineer",
+      "location": "Austin, TX",
+      "batch_year": 2020,
+      "experience_timeline": [
+        {
+          "company": "Tesla",
+          "role": "DevOps Engineer",
+          "start_date": "2022-01-15",
+          "end_date": null,
+          "description": "Managing cloud infrastructure and CI/CD pipelines for manufacturing systems"
+        },
+        {
+          "company": "Salesforce",
+          "role": "Junior DevOps Engineer",
+          "start_date": "2020-08-01",
+          "end_date": "2021-12-31",
+          "description": "Implemented automated deployment processes and monitoring solutions"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Information Technology",
+          "start_year": 2016,
+          "end_year": 2020,
+          "achievements": "Cloud Computing Certification, IT Club President"
+        }
+      ],
+      "skills": ["AWS", "Kubernetes", "Docker", "Terraform", "Jenkins", "Python", "Bash", "Linux", "Monitoring", "CI/CD"],
+      "achievements": ["AWS Solutions Architect Certified", "Kubernetes Certified Administrator", "Published DevOps blog with 10k+ readers"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/alexthompson",
+        "github": "https://github.com/alexdevops"
+      },
+      "cv_url": "https://storage.example.com/cvs/alex-thompson-cv.pdf",
+      "industry": "Technology",
+      "years_of_experience": 4,
+      "willing_to_mentor": true,
+      "willing_to_hire": false,
+      "profile_completion_percentage": 92,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2022-02-01T10:00:00Z",
+      "created_at": "2022-01-20T09:00:00Z",
+      "updated_at": "2024-12-18T14:30:00Z"
+    },
+    {
+      "id": "profile-f20e8400-e29b-41d4-a716",
+      "user_id": "f20e8400-e29b-41d4-a716-446655440011",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Rachel",
+      "name": "Rachel Kim",
+      "bio": "Marketing strategist helping tech companies grow. Expertise in digital marketing, content strategy, and brand development.",
+      "headline": "Marketing Manager at Spotify | Growth Marketing Expert",
+      "current_company": "Spotify",
+      "current_role": "Marketing Manager",
+      "location": "New York, NY",
+      "batch_year": 2017,
+      "experience_timeline": [
+        {
+          "company": "Spotify",
+          "role": "Marketing Manager",
+          "start_date": "2021-06-01",
+          "end_date": null,
+          "description": "Leading growth marketing initiatives and user acquisition campaigns"
+        },
+        {
+          "company": "HubSpot",
+          "role": "Digital Marketing Specialist",
+          "start_date": "2019-03-01",
+          "end_date": "2021-05-31",
+          "description": "Managed social media campaigns and content marketing strategy"
+        },
+        {
+          "company": "Startup Marketing Agency",
+          "role": "Marketing Coordinator",
+          "start_date": "2017-07-01",
+          "end_date": "2019-02-28",
+          "description": "Supported marketing campaigns for various tech startups"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Arts",
+          "field": "Marketing",
+          "start_year": 2013,
+          "end_year": 2017,
+          "achievements": "Marketing Club President, Outstanding Student Award"
+        }
+      ],
+      "skills": ["Digital Marketing", "Content Strategy", "SEO", "Social Media", "Analytics", "Growth Hacking", "Branding", "Email Marketing"],
+      "achievements": ["Grew user base by 300% at Spotify", "Google Analytics Certified", "Speaker at Marketing Summit 2023"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/rachelkim",
+        "twitter": "https://twitter.com/rachelmarketing"
+      },
+      "cv_url": "https://storage.example.com/cvs/rachel-kim-cv.pdf",
+      "industry": "Marketing & Technology",
+      "years_of_experience": 7,
+      "willing_to_mentor": true,
+      "willing_to_hire": false,
+      "profile_completion_percentage": 88,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2021-07-15T11:00:00Z",
+      "created_at": "2021-06-10T10:30:00Z",
+      "updated_at": "2024-11-25T16:20:00Z"
+    },
+    {
+      "id": "profile-f30e8400-e29b-41d4-a716",
+      "user_id": "f30e8400-e29b-41d4-a716-446655440012",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Daniel",
+      "name": "Daniel Martinez",
+      "bio": "Cybersecurity specialist protecting organizations from digital threats. Experienced in penetration testing and security architecture.",
+      "headline": "Senior Security Engineer at Microsoft | Ethical Hacker",
+      "current_company": "Microsoft",
+      "current_role": "Senior Security Engineer",
+      "location": "Redmond, WA",
+      "batch_year": 2016,
+      "experience_timeline": [
+        {
+          "company": "Microsoft",
+          "role": "Senior Security Engineer",
+          "start_date": "2020-09-01",
+          "end_date": null,
+          "description": "Leading security assessments and incident response for Azure cloud services"
+        },
+        {
+          "company": "FireEye",
+          "role": "Security Analyst",
+          "start_date": "2018-06-01",
+          "end_date": "2020-08-31",
+          "description": "Conducted threat analysis and vulnerability assessments"
+        },
+        {
+          "company": "CyberSec Corp",
+          "role": "Junior Security Analyst",
+          "start_date": "2016-08-01",
+          "end_date": "2018-05-31",
+          "description": "Performed security audits and penetration testing"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Cybersecurity",
+          "start_year": 2012,
+          "end_year": 2016,
+          "achievements": "Cybersecurity Competition Winner, Honor Roll"
+        }
+      ],
+      "skills": ["Cybersecurity", "Penetration Testing", "Threat Analysis", "Security Architecture", "Python", "Network Security", "Cloud Security", "Incident Response"],
+      "achievements": ["CISSP Certified", "CEH Certified", "Discovered critical vulnerabilities in major platforms"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/danielmartinez",
+        "github": "https://github.com/danielsec"
+      },
+      "cv_url": "https://storage.example.com/cvs/daniel-martinez-cv.pdf",
+      "industry": "Cybersecurity",
+      "years_of_experience": 8,
+      "willing_to_mentor": true,
+      "willing_to_hire": true,
+      "profile_completion_percentage": 95,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2020-10-01T12:00:00Z",
+      "created_at": "2020-09-15T09:00:00Z",
+      "updated_at": "2024-12-22T11:45:00Z"
+    },
+    {
+      "id": "profile-f40e8400-e29b-41d4-a716",
+      "user_id": "f40e8400-e29b-41d4-a716-446655440013",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Sophia",
+      "name": "Sophia Williams",
+      "bio": "Mobile app developer creating innovative iOS and Android applications. Passionate about user-centric design and performance optimization.",
+      "headline": "Lead Mobile Developer at Instagram | iOS & Android Specialist",
+      "current_company": "Instagram (Meta)",
+      "current_role": "Lead Mobile Developer",
+      "location": "Menlo Park, CA",
+      "batch_year": 2019,
+      "experience_timeline": [
+        {
+          "company": "Instagram (Meta)",
+          "role": "Lead Mobile Developer",
+          "start_date": "2023-02-01",
+          "end_date": null,
+          "description": "Leading mobile development team for new features and performance improvements"
+        },
+        {
+          "company": "Twitter",
+          "role": "Senior iOS Developer",
+          "start_date": "2021-04-01",
+          "end_date": "2023-01-31",
+          "description": "Developed core features for Twitter iOS app"
+        },
+        {
+          "company": "Mobile Dev Studio",
+          "role": "Mobile Developer",
+          "start_date": "2019-08-01",
+          "end_date": "2021-03-31",
+          "description": "Built cross-platform mobile apps for various clients"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Computer Science",
+          "start_year": 2015,
+          "end_year": 2019,
+          "achievements": "Mobile App Development Award, Dean's List"
+        }
+      ],
+      "skills": ["Swift", "Kotlin", "React Native", "iOS", "Android", "Flutter", "Mobile UI/UX", "Performance Optimization", "API Integration"],
+      "achievements": ["Published 5 apps with 1M+ downloads", "Apple WWDC Scholar", "Google Play Store Featured Developer"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/sophiawilliams",
+        "github": "https://github.com/sophiamobile"
+      },
+      "cv_url": "https://storage.example.com/cvs/sophia-williams-cv.pdf",
+      "industry": "Technology",
+      "years_of_experience": 5,
+      "willing_to_mentor": true,
+      "willing_to_hire": false,
+      "profile_completion_percentage": 100,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2023-03-01T10:00:00Z",
+      "created_at": "2023-02-15T11:00:00Z",
+      "updated_at": "2024-12-20T15:30:00Z"
+    },
+    {
+      "id": "profile-f50e8400-e29b-41d4-a716",
+      "user_id": "f50e8400-e29b-41d4-a716-446655440014",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Kevin",
+      "name": "Kevin Nguyen",
+      "bio": "Blockchain developer building decentralized applications. Enthusiast of Web3, smart contracts, and cryptocurrency technology.",
+      "headline": "Blockchain Developer at Coinbase | Web3 Architect",
+      "current_company": "Coinbase",
+      "current_role": "Blockchain Developer",
+      "location": "San Francisco, CA",
+      "batch_year": 2020,
+      "experience_timeline": [
+        {
+          "company": "Coinbase",
+          "role": "Blockchain Developer",
+          "start_date": "2022-05-01",
+          "end_date": null,
+          "description": "Developing smart contracts and DeFi protocols"
+        },
+        {
+          "company": "Ethereum Foundation",
+          "role": "Junior Developer",
+          "start_date": "2020-09-01",
+          "end_date": "2022-04-30",
+          "description": "Contributed to Ethereum core protocol development"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Computer Science",
+          "start_year": 2016,
+          "end_year": 2020,
+          "achievements": "Blockchain Research Project, Crypto Club Founder"
+        }
+      ],
+      "skills": ["Solidity", "Ethereum", "Smart Contracts", "Web3", "JavaScript", "Rust", "DeFi", "NFTs", "Cryptocurrency"],
+      "achievements": ["Launched successful DeFi protocol", "Ethereum Core Contributor", "Speaker at Blockchain Summit"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/kevinnguyen",
+        "github": "https://github.com/kevinblockchain",
+        "twitter": "https://twitter.com/kevinweb3"
+      },
+      "cv_url": "https://storage.example.com/cvs/kevin-nguyen-cv.pdf",
+      "industry": "Blockchain & Cryptocurrency",
+      "years_of_experience": 4,
+      "willing_to_mentor": true,
+      "willing_to_hire": true,
+      "profile_completion_percentage": 90,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2022-06-01T09:00:00Z",
+      "created_at": "2022-05-15T10:00:00Z",
+      "updated_at": "2024-12-15T12:00:00Z"
+    },
+    {
+      "id": "profile-f60e8400-e29b-41d4-a716",
+      "user_id": "f60e8400-e29b-41d4-a716-446655440015",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Nina",
+      "name": "Nina Patel",
+      "bio": "AI researcher working on natural language processing and computer vision. PhD candidate exploring cutting-edge machine learning techniques.",
+      "headline": "AI Research Scientist at OpenAI | NLP Specialist",
+      "current_company": "OpenAI",
+      "current_role": "AI Research Scientist",
+      "location": "San Francisco, CA",
+      "batch_year": 2017,
+      "experience_timeline": [
+        {
+          "company": "OpenAI",
+          "role": "AI Research Scientist",
+          "start_date": "2021-01-01",
+          "end_date": null,
+          "description": "Researching large language models and their applications"
+        },
+        {
+          "company": "Google Brain",
+          "role": "Research Intern",
+          "start_date": "2020-06-01",
+          "end_date": "2020-12-31",
+          "description": "Worked on neural network architectures for NLP"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Stanford University",
+          "degree": "PhD",
+          "field": "Artificial Intelligence",
+          "start_year": 2017,
+          "end_year": 2021,
+          "achievements": "Published 10+ research papers, Best Paper Award at NeurIPS"
+        },
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Computer Science",
+          "start_year": 2013,
+          "end_year": 2017,
+          "achievements": "Summa Cum Laude, Research Assistant"
+        }
+      ],
+      "skills": ["Machine Learning", "Deep Learning", "NLP", "Python", "TensorFlow", "PyTorch", "Computer Vision", "Research", "Neural Networks"],
+      "achievements": ["Published 15 research papers", "NeurIPS Best Paper Award", "Featured in Forbes 30 Under 30"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/ninapatel",
+        "github": "https://github.com/ninaai",
+        "website": "https://ninapatel.ai"
+      },
+      "cv_url": "https://storage.example.com/cvs/nina-patel-cv.pdf",
+      "industry": "AI Research",
+      "years_of_experience": 7,
+      "willing_to_mentor": true,
+      "willing_to_hire": false,
+      "profile_completion_percentage": 100,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2021-02-01T10:00:00Z",
+      "created_at": "2021-01-15T09:00:00Z",
+      "updated_at": "2024-12-28T14:00:00Z"
+    },
+    {
+      "id": "profile-f70e8400-e29b-41d4-a716",
+      "user_id": "f70e8400-e29b-41d4-a716-446655440016",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus",
+      "name": "Marcus Brown",
+      "bio": "Engineering manager with a passion for building high-performing teams. Former software engineer turned technical leader.",
+      "headline": "Engineering Manager at Stripe | Team Leadership Expert",
+      "current_company": "Stripe",
+      "current_role": "Engineering Manager",
+      "location": "San Francisco, CA",
+      "batch_year": 2015,
+      "experience_timeline": [
+        {
+          "company": "Stripe",
+          "role": "Engineering Manager",
+          "start_date": "2021-03-01",
+          "end_date": null,
+          "description": "Managing engineering team of 12 developers, overseeing payment infrastructure"
+        },
+        {
+          "company": "PayPal",
+          "role": "Senior Software Engineer",
+          "start_date": "2018-06-01",
+          "end_date": "2021-02-28",
+          "description": "Led development of fraud detection systems"
+        },
+        {
+          "company": "Intuit",
+          "role": "Software Engineer",
+          "start_date": "2015-08-01",
+          "end_date": "2018-05-31",
+          "description": "Developed features for QuickBooks Online"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Computer Engineering",
+          "start_year": 2011,
+          "end_year": 2015,
+          "achievements": "Magna Cum Laude, Engineering Excellence Award"
+        }
+      ],
+      "skills": ["Engineering Management", "Team Leadership", "Java", "Python", "Distributed Systems", "Agile", "Mentoring", "Strategic Planning"],
+      "achievements": ["Built and scaled engineering team from 3 to 12", "Improved team velocity by 50%", "Speaker at Engineering Leadership Conference"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/marcusbrown",
+        "twitter": "https://twitter.com/marcusengmgr"
+      },
+      "cv_url": "https://storage.example.com/cvs/marcus-brown-cv.pdf",
+      "industry": "Technology",
+      "years_of_experience": 9,
+      "willing_to_mentor": true,
+      "willing_to_hire": true,
+      "profile_completion_percentage": 96,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2021-04-01T11:00:00Z",
+      "created_at": "2021-03-15T10:00:00Z",
+      "updated_at": "2024-12-10T13:30:00Z"
+    },
+    {
+      "id": "profile-f80e8400-e29b-41d4-a716",
+      "user_id": "f80e8400-e29b-41d4-a716-446655440017",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Jennifer",
+      "name": "Jennifer Lee",
+      "bio": "Cloud architect designing scalable infrastructure solutions. Expert in AWS, Azure, and multi-cloud strategies.",
+      "headline": "Solutions Architect at AWS | Cloud Infrastructure Expert",
+      "current_company": "Amazon Web Services",
+      "current_role": "Solutions Architect",
+      "location": "Seattle, WA",
+      "batch_year": 2018,
+      "experience_timeline": [
+        {
+          "company": "Amazon Web Services",
+          "role": "Solutions Architect",
+          "start_date": "2022-07-01",
+          "end_date": null,
+          "description": "Designing cloud solutions for enterprise clients"
+        },
+        {
+          "company": "Microsoft Azure",
+          "role": "Cloud Engineer",
+          "start_date": "2020-09-01",
+          "end_date": "2022-06-30",
+          "description": "Implemented cloud migration strategies for Fortune 500 companies"
+        },
+        {
+          "company": "IBM Cloud",
+          "role": "Junior Cloud Developer",
+          "start_date": "2018-08-01",
+          "end_date": "2020-08-31",
+          "description": "Developed cloud-native applications"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Information Systems",
+          "start_year": 2014,
+          "end_year": 2018,
+          "achievements": "Cloud Computing Award, Honor Society Member"
+        }
+      ],
+      "skills": ["AWS", "Azure", "Cloud Architecture", "Terraform", "Kubernetes", "Microservices", "System Design", "Cost Optimization"],
+      "achievements": ["AWS Solutions Architect Professional", "Azure Solutions Architect Expert", "Saved clients $5M+ in cloud costs"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/jenniferlee",
+        "twitter": "https://twitter.com/jencloud"
+      },
+      "cv_url": "https://storage.example.com/cvs/jennifer-lee-cv.pdf",
+      "industry": "Cloud Computing",
+      "years_of_experience": 6,
+      "willing_to_mentor": true,
+      "willing_to_hire": false,
+      "profile_completion_percentage": 94,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2022-08-01T10:00:00Z",
+      "created_at": "2022-07-15T09:00:00Z",
+      "updated_at": "2024-12-12T11:00:00Z"
+    },
+    {
+      "id": "profile-f90e8400-e29b-41d4-a716",
+      "user_id": "f90e8400-e29b-41d4-a716-446655440018",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Ryan",
+      "name": "Ryan O'Brien",
+      "bio": "Game developer creating immersive gaming experiences. Specialized in Unity and Unreal Engine development.",
+      "headline": "Senior Game Developer at Riot Games | Unity Expert",
+      "current_company": "Riot Games",
+      "current_role": "Senior Game Developer",
+      "location": "Los Angeles, CA",
+      "batch_year": 2019,
+      "experience_timeline": [
+        {
+          "company": "Riot Games",
+          "role": "Senior Game Developer",
+          "start_date": "2023-01-01",
+          "end_date": null,
+          "description": "Developing new features for League of Legends"
+        },
+        {
+          "company": "Electronic Arts",
+          "role": "Game Developer",
+          "start_date": "2021-06-01",
+          "end_date": "2022-12-31",
+          "description": "Worked on FIFA game mechanics and AI systems"
+        },
+        {
+          "company": "Indie Game Studio",
+          "role": "Junior Developer",
+          "start_date": "2019-08-01",
+          "end_date": "2021-05-31",
+          "description": "Developed mobile and indie games"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Game Development",
+          "start_year": 2015,
+          "end_year": 2019,
+          "achievements": "Best Game Award, Game Jam Winner"
+        }
+      ],
+      "skills": ["Unity", "Unreal Engine", "C#", "C++", "Game Design", "3D Graphics", "Physics Engines", "Multiplayer Systems"],
+      "achievements": ["Shipped 3 AAA games", "Unity Certified Expert", "Published indie game with 500k+ downloads"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/ryanobrien",
+        "github": "https://github.com/ryangamedev",
+        "website": "https://ryanobrien.games"
+      },
+      "cv_url": "https://storage.example.com/cvs/ryan-obrien-cv.pdf",
+      "industry": "Gaming",
+      "years_of_experience": 5,
+      "willing_to_mentor": true,
+      "willing_to_hire": false,
+      "profile_completion_percentage": 91,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2023-02-01T10:00:00Z",
+      "created_at": "2023-01-15T09:00:00Z",
+      "updated_at": "2024-12-05T14:00:00Z"
+    },
+    {
+      "id": "profile-fa0e8400-e29b-41d4-a716",
+      "user_id": "fa0e8400-e29b-41d4-a716-446655440019",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Amanda",
+      "name": "Amanda Foster",
+      "bio": "Technical writer making complex technology accessible. Passionate about developer documentation and API design.",
+      "headline": "Senior Technical Writer at GitHub | Documentation Specialist",
+      "current_company": "GitHub",
+      "current_role": "Senior Technical Writer",
+      "location": "Remote",
+      "batch_year": 2018,
+      "experience_timeline": [
+        {
+          "company": "GitHub",
+          "role": "Senior Technical Writer",
+          "start_date": "2021-09-01",
+          "end_date": null,
+          "description": "Writing and maintaining GitHub's developer documentation"
+        },
+        {
+          "company": "Atlassian",
+          "role": "Technical Writer",
+          "start_date": "2019-07-01",
+          "end_date": "2021-08-31",
+          "description": "Documented Jira and Confluence features"
+        },
+        {
+          "company": "Tech Startup",
+          "role": "Junior Technical Writer",
+          "start_date": "2018-08-01",
+          "end_date": "2019-06-30",
+          "description": "Created API documentation and user guides"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Arts",
+          "field": "Technical Communication",
+          "start_year": 2014,
+          "end_year": 2018,
+          "achievements": "Outstanding Writing Award, Technical Communication Award"
+        }
+      ],
+      "skills": ["Technical Writing", "Documentation", "API Design", "Markdown", "Git", "Developer Experience", "Content Strategy", "Information Architecture"],
+      "achievements": ["Improved GitHub docs readability by 40%", "Certified Technical Writer", "Published technical writing book"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/amandafoster",
+        "twitter": "https://twitter.com/amandatechwriter",
+        "website": "https://amandafoster.tech"
+      },
+      "cv_url": "https://storage.example.com/cvs/amanda-foster-cv.pdf",
+      "industry": "Technology",
+      "years_of_experience": 6,
+      "willing_to_mentor": true,
+      "willing_to_hire": false,
+      "profile_completion_percentage": 89,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2021-10-01T10:00:00Z",
+      "created_at": "2021-09-15T09:00:00Z",
+      "updated_at": "2024-11-30T12:00:00Z"
+    },
+    {
+      "id": "profile-fb0e8400-e29b-41d4-a716",
+      "user_id": "fb0e8400-e29b-41d4-a716-446655440020",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos",
+      "name": "Carlos Rodriguez",
+      "bio": "Full-stack entrepreneur building innovative SaaS products. Founded 2 successful startups and mentor to aspiring entrepreneurs.",
+      "headline": "Founder & CEO at TechStartup | Serial Entrepreneur",
+      "current_company": "TechStartup Inc",
+      "current_role": "Founder & CEO",
+      "location": "Austin, TX",
+      "batch_year": 2016,
+      "experience_timeline": [
+        {
+          "company": "TechStartup Inc",
+          "role": "Founder & CEO",
+          "start_date": "2021-01-01",
+          "end_date": null,
+          "description": "Building SaaS product serving 10,000+ customers"
+        },
+        {
+          "company": "FirstStartup",
+          "role": "Co-Founder",
+          "start_date": "2018-06-01",
+          "end_date": "2020-12-31",
+          "description": "Founded and sold marketing automation startup (Acquired)"
+        },
+        {
+          "company": "Google",
+          "role": "Software Engineer",
+          "start_date": "2016-08-01",
+          "end_date": "2018-05-31",
+          "description": "Worked on Google Ads platform"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Computer Science",
+          "start_year": 2012,
+          "end_year": 2016,
+          "achievements": "Entrepreneurship Award, Startup Competition Winner"
+        }
+      ],
+      "skills": ["Entrepreneurship", "Product Management", "Full-Stack Development", "Business Strategy", "Fundraising", "Team Building", "SaaS"],
+      "achievements": ["Raised $5M in funding", "Sold first startup for $2M", "Featured in TechCrunch and Forbes"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/carlosrodriguez",
+        "twitter": "https://twitter.com/carlosentrepreneur",
+        "website": "https://carlosrodriguez.co"
+      },
+      "cv_url": "https://storage.example.com/cvs/carlos-rodriguez-cv.pdf",
+      "industry": "Technology & Startups",
+      "years_of_experience": 8,
+      "willing_to_mentor": true,
+      "willing_to_hire": true,
+      "profile_completion_percentage": 100,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2021-02-01T10:00:00Z",
+      "created_at": "2021-01-15T09:00:00Z",
+      "updated_at": "2024-12-28T16:00:00Z"
+    },
+    {
+      "id": "profile-fc0e8400-e29b-41d4-a716",
+      "user_id": "fc0e8400-e29b-41d4-a716-446655440021",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Hannah",
+      "name": "Hannah Zhang",
+      "bio": "Frontend developer specializing in React and modern web technologies. Creator of popular open-source UI libraries.",
+      "headline": "Senior Frontend Developer at Vercel | Open Source Contributor",
+      "current_company": "Vercel",
+      "current_role": "Senior Frontend Developer",
+      "location": "San Francisco, CA",
+      "batch_year": 2020,
+      "experience_timeline": [
+        {
+          "company": "Vercel",
+          "role": "Senior Frontend Developer",
+          "start_date": "2022-08-01",
+          "end_date": null,
+          "description": "Building Next.js features and developer tools"
+        },
+        {
+          "company": "Shopify",
+          "role": "Frontend Developer",
+          "start_date": "2020-09-01",
+          "end_date": "2022-07-31",
+          "description": "Developed merchant dashboard and admin tools"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Web Development",
+          "start_year": 2016,
+          "end_year": 2020,
+          "achievements": "Best Web Project Award, Open Source Contributor"
+        }
+      ],
+      "skills": ["React", "Next.js", "TypeScript", "JavaScript", "CSS", "Tailwind", "Web Performance", "Accessibility", "Node.js"],
+      "achievements": ["Created UI library with 50k+ stars on GitHub", "Vercel Community Champion", "Conference speaker"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/hannahzhang",
+        "github": "https://github.com/hannahfrontend",
+        "website": "https://hannahzhang.dev"
+      },
+      "cv_url": "https://storage.example.com/cvs/hannah-zhang-cv.pdf",
+      "industry": "Technology",
+      "years_of_experience": 4,
+      "willing_to_mentor": true,
+      "willing_to_hire": false,
+      "profile_completion_percentage": 97,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2022-09-01T10:00:00Z",
+      "created_at": "2022-08-15T09:00:00Z",
+      "updated_at": "2024-12-15T13:00:00Z"
+    },
+    {
+      "id": "profile-fd0e8400-e29b-41d4-a716",
+      "user_id": "fd0e8400-e29b-41d4-a716-446655440022",
+      "photo_url": "https://api.dicebear.com/7.x/avataaars/svg?seed=Thomas",
+      "name": "Thomas Anderson",
+      "bio": "Backend architect building robust and scalable systems. Expert in microservices, distributed systems, and database optimization.",
+      "headline": "Principal Backend Engineer at Twitch | System Architecture Expert",
+      "current_company": "Twitch",
+      "current_role": "Principal Backend Engineer",
+      "location": "San Francisco, CA",
+      "batch_year": 2015,
+      "experience_timeline": [
+        {
+          "company": "Twitch",
+          "role": "Principal Backend Engineer",
+          "start_date": "2022-03-01",
+          "end_date": null,
+          "description": "Architecting live streaming infrastructure handling millions of concurrent users"
+        },
+        {
+          "company": "Netflix",
+          "role": "Senior Backend Engineer",
+          "start_date": "2019-06-01",
+          "end_date": "2022-02-28",
+          "description": "Built content delivery and recommendation systems"
+        },
+        {
+          "company": "LinkedIn",
+          "role": "Backend Engineer",
+          "start_date": "2016-08-01",
+          "end_date": "2019-05-31",
+          "description": "Developed messaging and notification services"
+        },
+        {
+          "company": "Oracle",
+          "role": "Software Engineer",
+          "start_date": "2015-07-01",
+          "end_date": "2016-07-31",
+          "description": "Worked on database management systems"
+        }
+      ],
+      "education_details": [
+        {
+          "institution": "Tech University",
+          "degree": "Bachelor of Science",
+          "field": "Computer Science",
+          "start_year": 2011,
+          "end_year": 2015,
+          "achievements": "Summa Cum Laude, ACM Programming Competition Winner"
+        }
+      ],
+      "skills": ["Java", "Go", "Python", "Microservices", "Distributed Systems", "Kubernetes", "PostgreSQL", "Redis", "Kafka", "System Design"],
+      "achievements": ["Scaled systems to handle 10M+ concurrent users", "Speaker at QCon and AWS re:Invent", "Published book on System Design"],
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/thomasanderson",
+        "github": "https://github.com/thomasbackend",
+        "website": "https://thomasanderson.tech"
+      },
+      "cv_url": "https://storage.example.com/cvs/thomas-anderson-cv.pdf",
+      "industry": "Technology",
+      "years_of_experience": 9,
+      "willing_to_mentor": true,
+      "willing_to_hire": true,
+      "profile_completion_percentage": 100,
+      "is_verified": true,
+      "verified_by": "550e8400-e29b-41d4-a716-446655440000",
+      "verified_at": "2022-04-01T10:00:00Z",
+      "created_at": "2022-03-15T09:00:00Z",
+      "updated_at": "2024-12-20T14:30:00Z"
     }
   ],
   "jobs": [

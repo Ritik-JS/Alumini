@@ -168,29 +168,64 @@ const AlumniDirectory = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 to-white">
       <MainNavbar />
 
-      <main className="flex-1 py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <Users className="h-8 w-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-gray-900">Alumni Directory</h1>
+      <main className="flex-1">
+        {/* Enhanced Header Section */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-12 mb-8">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center gap-4 mb-3">
+              <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                <Users className="h-8 w-8" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold">Alumni Directory</h1>
+                <p className="text-blue-100 mt-1">
+                  Connect with {results.totalResults || 0} talented alumni from various industries and locations
+                </p>
+              </div>
             </div>
-            <p className="text-gray-600">
-              Connect with alumni from various industries and locations
-            </p>
           </div>
+        </div>
 
-          {/* Search Bar */}
-          <div className="mb-6">
-            <SearchBar
-              value={filters.search}
-              onChange={(query) => setFilters(prev => ({ ...prev, search: query }))}
-              onSearch={handleSearch}
-            />
+        <div className="max-w-7xl mx-auto px-4 -mt-4 pb-12">
+
+          {/* Search Bar with Stats */}
+          <div className="mb-8">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <SearchBar
+                value={filters.search}
+                onChange={(query) => setFilters(prev => ({ ...prev, search: query }))}
+                onSearch={handleSearch}
+              />
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-100">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">{results.totalResults || 0}</div>
+                  <div className="text-sm text-gray-600">Total Alumni</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {results.data.filter(p => p.willing_to_mentor).length}
+                  </div>
+                  <div className="text-sm text-gray-600">Available Mentors</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {results.data.filter(p => p.is_verified).length}
+                  </div>
+                  <div className="text-sm text-gray-600">Verified Profiles</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {[...new Set(results.data.map(p => p.current_company))].filter(Boolean).length}
+                  </div>
+                  <div className="text-sm text-gray-600">Companies</div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Active Filters */}
@@ -211,7 +246,7 @@ const AlumniDirectory = () => {
 
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Desktop Filter Sidebar */}
-            <aside className="hidden lg:block lg:w-64 flex-shrink-0">
+            <aside className="hidden lg:block lg:w-72 flex-shrink-0">
               <div className="sticky top-4">
                 <FilterSidebar
                   filters={filters}
@@ -264,21 +299,28 @@ const AlumniDirectory = () => {
             {/* Main Content */}
             <div className="flex-1 min-w-0">
               {/* Controls Bar */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div className="text-sm text-gray-600">
-                  {loading ? (
-                    <span>Loading...</span>
-                  ) : (
-                    <span data-testid="results-count">
-                      Showing <strong>{results.data.length}</strong> of{' '}
-                      <strong>{results.totalResults}</strong> alumni
-                    </span>
-                  )}
-                </div>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="text-sm font-medium text-gray-700">
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                        Loading alumni...
+                      </span>
+                    ) : (
+                      <span data-testid="results-count" className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        Showing <strong className="text-blue-600">{results.data.length}</strong> of{' '}
+                        <strong className="text-gray-900">{results.totalResults}</strong> alumni
+                      </span>
+                    )}
+                  </div>
 
-                <div className="flex items-center gap-4">
-                  <SortDropdown value={sortBy} onChange={handleSortChange} />
-                  <ViewToggle view={view} onViewChange={setView} />
+                  <div className="flex items-center gap-3">
+                    <SortDropdown value={sortBy} onChange={handleSortChange} />
+                    <div className="h-6 w-px bg-gray-300"></div>
+                    <ViewToggle view={view} onViewChange={setView} />
+                  </div>
                 </div>
               </div>
 
@@ -306,7 +348,7 @@ const AlumniDirectory = () => {
                   {view === 'grid' && (
                     <div
                       data-testid="alumni-grid"
-                      className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+                      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6"
                     >
                       {results.data.map(profile => (
                         <AlumniCard
