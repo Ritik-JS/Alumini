@@ -19,6 +19,7 @@ import ServerError from '@/pages/error/ServerError';
 
 // Main Pages
 import Home from '@/page/Home';
+import About from '@/page/About';
 
 // Lazy load other pages for performance
 const AlumniDirectory = lazy(() => import('@/page/AlumniDirectory'));
@@ -108,6 +109,7 @@ function App() {
             <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

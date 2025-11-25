@@ -1,8 +1,19 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      toast.info('Please login to access this feature', {
+        description: 'You need to be logged in to view this page',
+      });
+    }
+  }, [loading, user]);
 
   if (loading) {
     return (
@@ -13,10 +24,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    // Save the location they were trying to access
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
+    toast.error('Access Denied', {
+      description: 'You do not have permission to access this page',
+    });
     return <Navigate to="/dashboard" replace />;
   }
 

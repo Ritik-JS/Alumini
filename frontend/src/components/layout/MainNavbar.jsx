@@ -30,11 +30,15 @@ const MainNavbar = () => {
   // Role-based navigation links
   const getRoleBasedNavLinks = () => {
     if (!isAuthenticated) {
-      // Unauthenticated users - basic navigation
+      // Unauthenticated users - show all features (will prompt login)
       return [
         { name: 'Home', path: '/' },
-        { name: 'Features', path: '/#features' },
-        { name: 'About', path: '/#about' },
+        { name: 'About', path: '/about' },
+        { name: 'Directory', path: '/directory' },
+        { name: 'Jobs', path: '/jobs' },
+        { name: 'Mentorship', path: '/mentorship/find' },
+        { name: 'Events', path: '/events' },
+        { name: 'Forum', path: '/forum' },
       ];
     }
 
