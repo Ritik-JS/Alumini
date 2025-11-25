@@ -122,16 +122,21 @@ const RecruiterDashboard = () => {
                 <CardDescription>Manage your recruitment activities</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Link to="/jobs/post" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-green-500 transition-all">
                     <Briefcase className="h-8 w-8 text-green-600 mb-2" />
                     <div className="text-sm font-medium text-gray-900">Post New Job</div>
                     <div className="text-xs text-gray-500 mt-1">Create a new job posting</div>
                   </Link>
-                  <Link to="/directory" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-green-500 transition-all">
+                  <Link to="/directory" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-blue-500 transition-all">
                     <Users className="h-8 w-8 text-blue-600 mb-2" />
                     <div className="text-sm font-medium text-gray-900">Browse Alumni</div>
                     <div className="text-xs text-gray-500 mt-1">Find qualified candidates</div>
+                  </Link>
+                  <Link to="/jobs/all-applications" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-purple-500 transition-all" data-testid="view-all-applications-card">
+                    <FileText className="h-8 w-8 text-purple-600 mb-2" />
+                    <div className="text-sm font-medium text-gray-900">View All Applications</div>
+                    <div className="text-xs text-gray-500 mt-1">Manage all job applications</div>
                   </Link>
                 </div>
               </CardContent>

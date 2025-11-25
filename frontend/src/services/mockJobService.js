@@ -200,6 +200,23 @@ export const jobService = {
       return { success: false, error: error.message, data: [] };
     }
   },
+
+  // Get all applications for jobs posted by a recruiter
+  async getAllRecruiterApplications(recruiterId) {
+    try {
+      const jobs = getAllJobsData();
+      const recruiterJobs = jobs.filter(j => j.posted_by === recruiterId);
+      const jobIds = recruiterJobs.map(j => j.id);
+      
+      const applications = getAllApplicationsData();
+      const recruiterApplications = applications.filter(app => jobIds.includes(app.job_id));
+      
+      return { success: true, data: recruiterApplications };
+    } catch (error) {
+      console.error('Error fetching recruiter applications:', error);
+      return { success: false, error: error.message, data: [] };
+    }
+  },
 };
 
 // Utility functions
@@ -328,5 +345,6 @@ export const getApplicationsForJob = jobService.getJobApplications; // Alias
 export const updateApplicationStatus = jobService.updateApplicationStatus;
 export const getMyJobs = jobService.getMyJobs;
 export const getJobsByUser = jobService.getMyJobs; // Alias
+export const getAllRecruiterApplications = jobService.getAllRecruiterApplications;
 
 export default jobService;

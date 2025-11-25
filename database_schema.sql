@@ -158,6 +158,11 @@ CREATE TABLE jobs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Job applications
+-- API Endpoints needed for frontend integration:
+--   GET /api/applications/recruiter/:recruiterId - Get all applications for jobs posted by a recruiter
+--   GET /api/jobs/:jobId/applications - Get applications for a specific job
+--   GET /api/applications/user/:userId - Get applications submitted by a user
+--   PUT /api/applications/:applicationId - Update application status
 CREATE TABLE job_applications (
     id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
     job_id VARCHAR(36) NOT NULL,

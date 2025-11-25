@@ -109,6 +109,16 @@ export const apiJobService = {
       return { success: false, error: error.message, data: [] };
     }
   },
+
+  // Get all applications for jobs posted by a recruiter
+  async getAllRecruiterApplications(recruiterId) {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/applications/recruiter/${recruiterId}`);
+      return response.data;
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  },
 };
 
 export default apiJobService;
