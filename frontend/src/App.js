@@ -35,7 +35,7 @@ const EditJob = lazy(() => import('@/page/jobs/EditJob'));
 const ManageJobs = lazy(() => import('@/page/jobs/ManageJobs'));
 const ApplicationsManager = lazy(() => import('@/page/jobs/ApplicationsManager'));
 const JobApplicationsManager = lazy(() => import('@/page/jobs/JobApplicationsManager'));
-const AllApplications = lazy(() => import('@/page/jobs/AllApplications'));
+// const AllApplications = lazy(() => import('@/page/jobs/AllApplications'));
 
 // Mentorship Pages
 const FindMentors = lazy(() => import('@/page/mentorship/FindMentors'));
@@ -221,14 +221,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
+          {/* <Route
             path="/jobs/all-applications"
             element={
               <ProtectedRoute>
                 <AllApplications />
               </ProtectedRoute>
             }
-          />
+          /> */}
 
           {/* Mentorship Routes - Protected */}
           <Route
