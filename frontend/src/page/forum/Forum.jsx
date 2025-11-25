@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Plus, Search, TrendingUp, Clock, Filter } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import PostCard from '@/components/forum/PostCard';
@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 
 const Forum = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -212,6 +213,17 @@ const Forum = () => {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Manage Posts Link */}
+        <div className="mt-8 text-center">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/forum/manage')}
+            data-testid="manage-posts-button"
+          >
+            Manage My Posts
+          </Button>
+        </div>
 
         {/* Create Post Modal */}
         <CreatePostModal

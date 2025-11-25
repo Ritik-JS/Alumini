@@ -85,6 +85,11 @@ CREATE TABLE alumni_profiles (
     achievements JSON,         -- ["achievement1", "achievement2", ...]
     social_links JSON,         -- {linkedin, github, twitter, website}
     cv_url VARCHAR(500),
+    -- Alumni-specific fields
+    industry VARCHAR(255),     -- Industry/sector the alumni works in
+    years_of_experience INT DEFAULT 0,  -- Total years of professional experience
+    willing_to_mentor BOOLEAN DEFAULT FALSE,  -- Availability for mentorship
+    willing_to_hire BOOLEAN DEFAULT FALSE,    -- Willing to post job opportunities
     profile_completion_percentage INT DEFAULT 0,
     is_verified BOOLEAN DEFAULT FALSE,
     verified_by VARCHAR(36) NULL,
@@ -98,6 +103,8 @@ CREATE TABLE alumni_profiles (
     INDEX idx_location (location),
     INDEX idx_batch_year (batch_year),
     INDEX idx_is_verified (is_verified),
+    INDEX idx_industry (industry),
+    INDEX idx_willing_to_mentor (willing_to_mentor),
     FULLTEXT idx_name_bio (name, bio, headline)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

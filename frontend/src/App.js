@@ -51,6 +51,7 @@ const EventAttendees = lazy(() => import('@/page/events/EventAttendees'));
 // Forum Pages
 const Forum = lazy(() => import('@/page/forum/Forum'));
 const PostDetails = lazy(() => import('@/page/forum/PostDetails'));
+const ManagePosts = lazy(() => import('@/page/forum/ManagePosts'));
 
 // Notification Pages
 const Notifications = lazy(() => import('@/page/notifications/Notifications'));
@@ -300,6 +301,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Forum />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/forum/manage"
+            element={
+              <ProtectedRoute>
+                <ManagePosts />
               </ProtectedRoute>
             }
           />

@@ -53,11 +53,11 @@ const Profile = () => {
       let alumniProfile = profiles.find(p => p.user_id === user.id);
       
       if (!alumniProfile) {
-        // Create default profile structure for students
+        // Create default profile structure
         alumniProfile = {
           id: `profile-${user.id}-${Date.now()}`,
           user_id: user.id,
-          name: user.email?.split('@')[0] || 'Student',
+          name: user.email?.split('@')[0] || (user.role === 'alumni' ? 'Alumni' : 'Student'),
           email: user.email,
           photo_url: '',
           bio: '',
@@ -71,6 +71,11 @@ const Profile = () => {
           skills: [],
           achievements: [],
           social_links: {},
+          // Alumni-specific fields
+          industry: '',
+          years_of_experience: 0,
+          willing_to_mentor: false,
+          willing_to_hire: false,
           profile_completion_percentage: 10,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -103,6 +108,13 @@ const Profile = () => {
     if (data.batch_year) completion += 5;
     if (data.skills && data.skills.length >= 3) completion += 10;
     if (data.education_details && data.education_details.length > 0) completion += 10;
+    
+    // Alumni-specific fields (optional bonus)
+    if (user?.role === 'alumni') {
+      if (data.industry) completion += 5;
+      if (data.years_of_experience !== undefined && data.years_of_experience > 0) completion += 5;
+    }
+    
     return Math.min(completion, 100);
   };
 
@@ -506,6 +518,92 @@ const Profile = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Alumni-Specific Professional Details */}
+                {user?.role === 'alumni' && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Professional Details</CardTitle>
+                      <CardDescription>Alumni-specific information</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {isEditing ? (
+                        <>
+                          <div className="space-y-2">
+                            <Label htmlFor="industry">Industry/Sector</Label>
+                            <Input
+                              id="industry"
+                              value={profileData.industry || ''}
+                              onChange={(e) => updateField('industry', e.target.value)}
+                              placeholder="e.g., Technology, Finance, Healthcare"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="yearsOfExperience">Years of Experience</Label>
+                            <Input
+                              id="yearsOfExperience"
+                              type="number"
+                              value={profileData.years_of_experience || ''}
+                              onChange={(e) => updateField('years_of_experience', parseInt(e.target.value) || 0)}
+                              placeholder="e.g., 5"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="willingToMentor">Willing to Mentor</Label>
+                            <select
+                              id="willingToMentor"
+                              className="w-full p-2 border rounded-md"
+                              value={profileData.willing_to_mentor ? 'yes' : 'no'}
+                              onChange={(e) => updateField('willing_to_mentor', e.target.value === 'yes')}
+                            >
+                              <option value="yes">Yes</option>
+                              <option value="no">No</option>
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="willingToHire">Willing to Post Jobs</Label>
+                            <select
+                              id="willingToHire"
+                              className="w-full p-2 border rounded-md"
+                              value={profileData.willing_to_hire ? 'yes' : 'no'}
+                              onChange={(e) => updateField('willing_to_hire', e.target.value === 'yes')}
+                            >
+                              <option value="yes">Yes</option>
+                              <option value="no">No</option>
+                            </select>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {profileData.industry && (
+                            <div>
+                              <p className="text-sm text-gray-500">Industry</p>
+                              <p className="font-medium">{profileData.industry}</p>
+                            </div>
+                          )}
+                          {profileData.years_of_experience !== undefined && (
+                            <div>
+                              <p className="text-sm text-gray-500">Years of Experience</p>
+                              <p className="font-medium">{profileData.years_of_experience} years</p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-sm text-gray-500">Mentorship</p>
+                            <Badge variant={profileData.willing_to_mentor ? 'default' : 'secondary'}>
+                              {profileData.willing_to_mentor ? 'Available' : 'Not Available'}
+                            </Badge>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500">Hiring</p>
+                            <Badge variant={profileData.willing_to_hire ? 'default' : 'secondary'}>
+                              {profileData.willing_to_hire ? 'Open to Post Jobs' : 'Not Hiring'}
+                            </Badge>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
 
               {/* Experience Tab */}

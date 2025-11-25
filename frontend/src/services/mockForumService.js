@@ -404,6 +404,40 @@ class MockForumService {
       data: Array.from(allTags).sort()
     };
   }
+
+  // Get posts by current user
+  async getMyPosts() {
+    await delay();
+    
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      return { success: false, message: 'Not authenticated' };
+    }
+    
+    let myPosts = this.posts.filter(p => p.author_id === currentUser.id && !p.is_deleted);
+    
+    // Sort by most recent first
+    myPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    
+    // Add author info
+    myPosts = myPosts.map(post => {
+      const author = mockData.users.find(u => u.id === post.author_id);
+      const authorProfile = mockData.alumni_profiles.find(p => p.user_id === post.author_id);
+      
+      return {
+        ...post,
+        author: {
+          ...author,
+          profile: authorProfile
+        }
+      };
+    });
+    
+    return {
+      success: true,
+      data: myPosts
+    };
+  }
 }
 
 export default new MockForumService();

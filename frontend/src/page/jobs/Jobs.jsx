@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Briefcase, SlidersHorizontal } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Briefcase, SlidersHorizontal, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import {
@@ -21,10 +21,15 @@ import { filterJobs, sortJobs, paginateResults } from '@/services/mockJobService
 
 const Jobs = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('recent');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
+
+  // Check if user can post jobs (alumni or recruiter)
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const canPostJobs = ['alumni', 'recruiter'].includes(currentUser.role);
 
   // Filters state
   const [filters, setFilters] = useState({
@@ -119,9 +124,20 @@ const Jobs = () => {
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Briefcase className="w-8 h-8 text-blue-600" />
-              <h1 className="text-3xl font-bold">Job Opportunities</h1>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <Briefcase className="w-8 h-8 text-blue-600" />
+                <h1 className="text-3xl font-bold">Job Opportunities</h1>
+              </div>
+              {canPostJobs && (
+                <Button 
+                  onClick={() => navigate('/jobs/post')}
+                  data-testid="post-job-button"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Post Job
+                </Button>
+              )}
             </div>
             <p className="text-gray-600 dark:text-gray-400">
               Discover exciting career opportunities from our alumni network
@@ -271,6 +287,19 @@ const Jobs = () => {
               )}
             </div>
           </div>
+
+          {/* Manage Jobs Link */}
+          {canPostJobs && (
+            <div className="mt-8 text-center">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/jobs/manage')}
+                data-testid="manage-jobs-button"
+              >
+                Manage My Jobs
+              </Button>
+            </div>
+          )}
         </div>
       </main>
 

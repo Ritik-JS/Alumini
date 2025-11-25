@@ -187,6 +187,10 @@
         "website": "https://sarahjohnson.dev"
       },
       "cv_url": "https://storage.example.com/cvs/sarah-johnson-cv.pdf",
+      "industry": "Technology",
+      "years_of_experience": 5,
+      "willing_to_mentor": true,
+      "willing_to_hire": true,
       "profile_completion_percentage": 100,
       "is_verified": true,
       "verified_by": "550e8400-e29b-41d4-a716-446655440000",
@@ -251,6 +255,10 @@
         "twitter": "https://twitter.com/michaelpm"
       },
       "cv_url": "https://storage.example.com/cvs/michael-chen-cv.pdf",
+      "industry": "Technology",
+      "years_of_experience": 6,
+      "willing_to_mentor": true,
+      "willing_to_hire": false,
       "profile_completion_percentage": 95,
       "is_verified": true,
       "verified_by": "550e8400-e29b-41d4-a716-446655440000",
@@ -324,6 +332,10 @@
         "website": "https://priyapatel.design"
       },
       "cv_url": "https://storage.example.com/cvs/priya-patel-portfolio.pdf",
+      "industry": "Design & Technology",
+      "years_of_experience": 5,
+      "willing_to_mentor": true,
+      "willing_to_hire": false,
       "profile_completion_percentage": 100,
       "is_verified": true,
       "verified_by": "550e8400-e29b-41d4-a716-446655440000",
