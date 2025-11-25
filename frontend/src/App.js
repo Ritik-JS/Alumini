@@ -23,6 +23,8 @@ import Home from '@/page/Home';
 // Lazy load other pages for performance
 const AlumniDirectory = lazy(() => import('@/page/AlumniDirectory'));
 const ProfileView = lazy(() => import('@/page/ProfileView'));
+const Profile = lazy(() => import('@/page/Profile'));
+const Settings = lazy(() => import('@/page/Settings'));
 
 // Job Pages
 const Jobs = lazy(() => import('@/page/jobs/Jobs'));
@@ -127,6 +129,24 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProfileView />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* User Profile & Settings - Protected */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             }
           />

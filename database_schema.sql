@@ -381,10 +381,27 @@ CREATE TABLE notification_preferences (
     user_id VARCHAR(36) NOT NULL UNIQUE,
     email_notifications BOOLEAN DEFAULT TRUE,
     push_notifications BOOLEAN DEFAULT TRUE,
-    notification_types JSON,  -- {profile: true, mentorship: true, job: true, ...}
+    notification_types JSON,  -- {profile: true, mentorship: true, job: true, event: true, forum: true, ...}
     notification_frequency ENUM('instant', 'daily', 'weekly') DEFAULT 'instant',
     quiet_hours_start TIME,
     quiet_hours_end TIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Privacy settings
+CREATE TABLE privacy_settings (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(36) NOT NULL UNIQUE,
+    profile_visibility ENUM('public', 'alumni', 'connections', 'private') DEFAULT 'public',
+    show_email BOOLEAN DEFAULT FALSE,
+    show_phone BOOLEAN DEFAULT FALSE,
+    allow_messages BOOLEAN DEFAULT TRUE,
+    allow_mentorship_requests BOOLEAN DEFAULT TRUE,
+    show_in_directory BOOLEAN DEFAULT TRUE,
+    show_activity BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
