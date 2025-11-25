@@ -1,68 +1,78 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from 'sonner';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import ErrorBoundary from '@/components/error/ErrorBoundary';
+import { OfflineIndicator } from '@/components/ui/offline-indicator';
+import { FullPageSkeleton } from '@/components/loading/SkeletonLoaders';
 
-// Auth Pages
+// Auth Pages (not lazy loaded - needed immediately)
 import Login from '@/page/auth/Login';
 import Register from '@/page/auth/Register';
 import ForgotPassword from '@/page/auth/ForgotPassword';
 import ResetPassword from '@/page/auth/ResetPassword';
 
+// Error Pages
+import NotFound from '@/pages/error/NotFound';
+import ServerError from '@/pages/error/ServerError';
+
 // Main Pages
 import Home from '@/page/Home';
-import AlumniDirectory from '@/page/AlumniDirectory';
-import ProfileView from '@/page/ProfileView';
+
+// Lazy load other pages for performance
+const AlumniDirectory = lazy(() => import('@/page/AlumniDirectory'));
+const ProfileView = lazy(() => import('@/page/ProfileView'));
 
 // Job Pages
-import Jobs from '@/page/jobs/Jobs';
-import JobDetails from '@/page/jobs/JobDetails';
-import MyApplications from '@/page/jobs/MyApplications';
-import PostJob from '@/page/jobs/PostJob';
-import ManageJobs from '@/page/jobs/ManageJobs';
-import ApplicationsManager from '@/page/jobs/ApplicationsManager';
+const Jobs = lazy(() => import('@/page/jobs/Jobs'));
+const JobDetails = lazy(() => import('@/page/jobs/JobDetails'));
+const MyApplications = lazy(() => import('@/page/jobs/MyApplications'));
+const PostJob = lazy(() => import('@/page/jobs/PostJob'));
+const ManageJobs = lazy(() => import('@/page/jobs/ManageJobs'));
+const ApplicationsManager = lazy(() => import('@/page/jobs/ApplicationsManager'));
 
 // Mentorship Pages
-import FindMentors from '@/page/mentorship/FindMentors';
-import MentorProfile from '@/page/mentorship/MentorProfile';
-import MentorshipDashboard from '@/page/mentorship/MentorshipDashboard';
-import SessionDetails from '@/page/mentorship/SessionDetails';
+const FindMentors = lazy(() => import('@/page/mentorship/FindMentors'));
+const MentorProfile = lazy(() => import('@/page/mentorship/MentorProfile'));
+const MentorshipDashboard = lazy(() => import('@/page/mentorship/MentorshipDashboard'));
+const SessionDetails = lazy(() => import('@/page/mentorship/SessionDetails'));
 
 // Event Pages
-import Events from '@/page/events/Events';
-import EventDetails from '@/page/events/EventDetails';
-import CreateEvent from '@/page/events/CreateEvent';
-import ManageEvents from '@/page/events/ManageEvents';
-import EventAttendees from '@/page/events/EventAttendees';
+const Events = lazy(() => import('@/page/events/Events'));
+const EventDetails = lazy(() => import('@/page/events/EventDetails'));
+const CreateEvent = lazy(() => import('@/page/events/CreateEvent'));
+const ManageEvents = lazy(() => import('@/page/events/ManageEvents'));
+const EventAttendees = lazy(() => import('@/page/events/EventAttendees'));
 
 // Forum Pages
-import Forum from '@/page/forum/Forum';
-import PostDetails from '@/page/forum/PostDetails';
+const Forum = lazy(() => import('@/page/forum/Forum'));
+const PostDetails = lazy(() => import('@/page/forum/PostDetails'));
 
 // Notification Pages
-import Notifications from '@/page/notifications/Notifications';
-import NotificationPreferences from '@/page/notifications/NotificationPreferences';
+const Notifications = lazy(() => import('@/page/notifications/Notifications'));
+const NotificationPreferences = lazy(() => import('@/page/notifications/NotificationPreferences'));
 
 // Dashboards (Role-specific)
-import StudentDashboard from '@/page/StudentDashboard';
-import AlumniDashboard from '@/page/AlumniDashboard';
-import RecruiterDashboard from '@/page/RecruiterDashboard';
-import AdminDashboard from '@/page/AdminDashboard';
+const StudentDashboard = lazy(() => import('@/page/StudentDashboard'));
+const AlumniDashboard = lazy(() => import('@/page/AlumniDashboard'));
+const RecruiterDashboard = lazy(() => import('@/page/RecruiterDashboard'));
+const AdminDashboard = lazy(() => import('@/page/AdminDashboard'));
 
 // Admin Pages
-import AdminUsers from '@/page/admin/AdminUsers';
-import AdminVerifications from '@/page/admin/AdminVerifications';
-import AdminModeration from '@/page/admin/AdminModeration';
-import AdminAnalytics from '@/page/admin/AdminAnalytics';
-import AdminSettings from '@/page/admin/AdminSettings';
+const AdminUsers = lazy(() => import('@/page/admin/AdminUsers'));
+const AdminVerifications = lazy(() => import('@/page/admin/AdminVerifications'));
+const AdminModeration = lazy(() => import('@/page/admin/AdminModeration'));
+const AdminAnalytics = lazy(() => import('@/page/admin/AdminAnalytics'));
+const AdminSettings = lazy(() => import('@/page/admin/AdminSettings'));
 
 // Phase 9: Advanced Features
-import SkillGraph from '@/page/advanced/SkillGraph';
-import CareerPaths from '@/page/advanced/CareerPaths';
-import Leaderboard from '@/page/advanced/Leaderboard';
-import AlumniCard from '@/page/advanced/AlumniCard';
-import TalentHeatmap from '@/page/advanced/TalentHeatmap';
-import KnowledgeCapsules from '@/page/advanced/KnowledgeCapsules';
+const SkillGraph = lazy(() => import('@/page/advanced/SkillGraph'));
+const CareerPaths = lazy(() => import('@/page/advanced/CareerPaths'));
+const Leaderboard = lazy(() => import('@/page/advanced/Leaderboard'));
+const AlumniCard = lazy(() => import('@/page/advanced/AlumniCard'));
+const TalentHeatmap = lazy(() => import('@/page/advanced/TalentHeatmap'));
+const KnowledgeCapsules = lazy(() => import('@/page/advanced/KnowledgeCapsules'));
 
 import '@/App.css';
 
@@ -89,10 +99,13 @@ const DashboardRouter = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Toaster position="top-right" richColors />
-        <Routes>
+    <ErrorBoundary>
+      <AuthProvider>
+        <BrowserRouter>
+          <OfflineIndicator />
+          <Toaster position="top-right" richColors />
+          <Suspense fallback={<FullPageSkeleton />}>
+            <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -422,11 +435,16 @@ function App() {
             }
           />
 
-          {/* Redirect unknown routes */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Error Pages */}
+          <Route path="/500" element={<ServerError />} />
+          
+          {/* Redirect unknown routes to 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+          </Suspense>
+        </BrowserRouter>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
