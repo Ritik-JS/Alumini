@@ -6,7 +6,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Briefcase, Calendar, AlertCircle, TrendingUp, CheckCircle, UserCheck } from 'lucide-react';
+import { Users, Briefcase, Calendar, AlertCircle, TrendingUp, CheckCircle, UserCheck, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import mockData from '@/mockdata.json';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
