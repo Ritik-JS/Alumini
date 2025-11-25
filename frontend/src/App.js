@@ -56,6 +56,14 @@ import AdminModeration from '@/page/admin/AdminModeration';
 import AdminAnalytics from '@/page/admin/AdminAnalytics';
 import AdminSettings from '@/page/admin/AdminSettings';
 
+// Phase 9: Advanced Features
+import SkillGraph from '@/page/advanced/SkillGraph';
+import CareerPaths from '@/page/advanced/CareerPaths';
+import Leaderboard from '@/page/advanced/Leaderboard';
+import AlumniCard from '@/page/advanced/AlumniCard';
+import TalentHeatmap from '@/page/advanced/TalentHeatmap';
+import KnowledgeCapsules from '@/page/advanced/KnowledgeCapsules';
+
 import '@/App.css';
 
 // Dashboard router component - redirects to role-specific dashboard
@@ -360,6 +368,56 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminSettings />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Phase 9: Advanced Features Routes - Protected */}
+          <Route
+            path="/skills/graph"
+            element={
+              <ProtectedRoute>
+                <SkillGraph />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/career/paths"
+            element={
+              <ProtectedRoute>
+                <CareerPaths />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/leaderboard"
+            element={
+              <ProtectedRoute>
+                <Leaderboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/alumni-card"
+            element={
+              <ProtectedRoute>
+                <AlumniCard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/heatmap"
+            element={
+              <ProtectedRoute>
+                <TalentHeatmap />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/knowledge"
+            element={
+              <ProtectedRoute>
+                <KnowledgeCapsules />
               </ProtectedRoute>
             }
           />

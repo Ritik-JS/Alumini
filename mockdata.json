@@ -1482,6 +1482,247 @@
     }
   ],
 
+  "career_paths": [
+    {
+      "id": "path-001",
+      "starting_role": "Software Engineer",
+      "target_role": "Engineering Manager",
+      "transition_percentage": 35,
+      "avg_years": 5,
+      "common_skills": ["Leadership", "Project Management", "System Design", "Mentoring"],
+      "alumni_count": 42,
+      "success_stories": [
+        {
+          "alumni_id": "770e8400-e29b-41d4-a716-446655440002",
+          "alumni_name": "Michael Chen",
+          "journey": "Started as SWE at startup, became tech lead after 3 years, then EM at Google",
+          "timeline_years": 5
+        }
+      ]
+    },
+    {
+      "id": "path-002",
+      "starting_role": "Software Engineer",
+      "target_role": "Product Manager",
+      "transition_percentage": 18,
+      "avg_years": 4,
+      "common_skills": ["Product Strategy", "User Research", "Communication", "Analytics"],
+      "alumni_count": 28,
+      "success_stories": [
+        {
+          "alumni_id": "660e8400-e29b-41d4-a716-446655440001",
+          "alumni_name": "Sarah Johnson",
+          "journey": "SWE at Google, took PM courses, transitioned to PM role",
+          "timeline_years": 4
+        }
+      ]
+    },
+    {
+      "id": "path-003",
+      "starting_role": "UX Designer",
+      "target_role": "Product Designer",
+      "transition_percentage": 45,
+      "avg_years": 3,
+      "common_skills": ["UI Design", "Design Systems", "Prototyping", "User Testing"],
+      "alumni_count": 35,
+      "success_stories": []
+    },
+    {
+      "id": "path-004",
+      "starting_role": "Data Analyst",
+      "target_role": "Data Scientist",
+      "transition_percentage": 38,
+      "avg_years": 3,
+      "common_skills": ["Machine Learning", "Python", "Statistics", "SQL"],
+      "alumni_count": 31,
+      "success_stories": []
+    },
+    {
+      "id": "path-005",
+      "starting_role": "Frontend Developer",
+      "target_role": "Full Stack Developer",
+      "transition_percentage": 52,
+      "avg_years": 2,
+      "common_skills": ["Backend Development", "Databases", "APIs", "DevOps"],
+      "alumni_count": 58,
+      "success_stories": []
+    }
+  ],
+
+  "leaderboard": [
+    {
+      "rank": 1,
+      "user_id": "660e8400-e29b-41d4-a716-446655440001",
+      "name": "Sarah Johnson",
+      "photo_url": "https://i.pravatar.cc/150?img=1",
+      "role": "alumni",
+      "total_score": 2850,
+      "score_breakdown": {
+        "profile_completeness": 500,
+        "mentorship": 850,
+        "forum_activity": 650,
+        "job_applications": 400,
+        "event_participation": 450
+      },
+      "trend": "up",
+      "badges": ["Top Mentor", "Community Champion", "Knowledge Guru"],
+      "this_week_points": 120,
+      "this_month_points": 485
+    },
+    {
+      "rank": 2,
+      "user_id": "770e8400-e29b-41d4-a716-446655440002",
+      "name": "Michael Chen",
+      "photo_url": "https://i.pravatar.cc/150?img=2",
+      "role": "alumni",
+      "total_score": 2640,
+      "score_breakdown": {
+        "profile_completeness": 500,
+        "mentorship": 720,
+        "forum_activity": 580,
+        "job_applications": 380,
+        "event_participation": 460
+      },
+      "trend": "up",
+      "badges": ["Mentor Elite", "Event Host", "Career Helper"],
+      "this_week_points": 98,
+      "this_month_points": 412
+    },
+    {
+      "rank": 3,
+      "user_id": "aa0e8400-e29b-41d4-a716-446655440005",
+      "name": "Priya Patel",
+      "photo_url": "https://i.pravatar.cc/150?img=5",
+      "role": "alumni",
+      "total_score": 2420,
+      "score_breakdown": {
+        "profile_completeness": 500,
+        "mentorship": 650,
+        "forum_activity": 720,
+        "job_applications": 250,
+        "event_participation": 300
+      },
+      "trend": "same",
+      "badges": ["Forum Star", "Helpful Alumni", "Active Member"],
+      "this_week_points": 85,
+      "this_month_points": 378
+    },
+    {
+      "rank": 4,
+      "user_id": "880e8400-e29b-41d4-a716-446655440003",
+      "name": "Emily Rodriguez",
+      "photo_url": "https://i.pravatar.cc/150?img=3",
+      "role": "student",
+      "total_score": 1980,
+      "score_breakdown": {
+        "profile_completeness": 450,
+        "mentorship": 380,
+        "forum_activity": 520,
+        "job_applications": 380,
+        "event_participation": 250
+      },
+      "trend": "up",
+      "badges": ["Rising Star", "Active Learner"],
+      "this_week_points": 112,
+      "this_month_points": 445
+    },
+    {
+      "rank": 5,
+      "user_id": "bb0e8400-e29b-41d4-a716-446655440006",
+      "name": "James Wilson",
+      "photo_url": "https://i.pravatar.cc/150?img=6",
+      "role": "student",
+      "total_score": 1750,
+      "score_breakdown": {
+        "profile_completeness": 420,
+        "mentorship": 350,
+        "forum_activity": 480,
+        "job_applications": 300,
+        "event_participation": 200
+      },
+      "trend": "up",
+      "badges": ["Engaged Student", "Job Seeker"],
+      "this_week_points": 95,
+      "this_month_points": 398
+    },
+    {
+      "rank": 6,
+      "user_id": "cc0e8400-e29b-41d4-a716-446655440007",
+      "name": "Lisa Anderson",
+      "photo_url": "https://i.pravatar.cc/150?img=7",
+      "role": "alumni",
+      "total_score": 1620,
+      "score_breakdown": {
+        "profile_completeness": 480,
+        "mentorship": 420,
+        "forum_activity": 380,
+        "job_applications": 180,
+        "event_participation": 160
+      },
+      "trend": "down",
+      "badges": ["Mentor", "Alumni"],
+      "this_week_points": 42,
+      "this_month_points": 156
+    }
+  ],
+
+  "badges": [
+    {
+      "id": "badge-top-mentor",
+      "name": "Top Mentor",
+      "description": "Mentored 10+ students successfully",
+      "icon": "trophy",
+      "rarity": "legendary",
+      "requirement": "Complete 10 mentorship sessions with 4.5+ rating",
+      "unlocked_by": 12
+    },
+    {
+      "id": "badge-community-champion",
+      "name": "Community Champion",
+      "description": "Active contributor to the community",
+      "icon": "star",
+      "rarity": "epic",
+      "requirement": "500+ forum posts and comments with 100+ likes",
+      "unlocked_by": 8
+    },
+    {
+      "id": "badge-knowledge-guru",
+      "name": "Knowledge Guru",
+      "description": "Shared valuable knowledge capsules",
+      "icon": "book",
+      "rarity": "epic",
+      "requirement": "Create 5 knowledge capsules with 50+ likes each",
+      "unlocked_by": 5
+    },
+    {
+      "id": "badge-rising-star",
+      "name": "Rising Star",
+      "description": "Fast-growing community member",
+      "icon": "trending-up",
+      "rarity": "rare",
+      "requirement": "Gain 500+ points in one month",
+      "unlocked_by": 15
+    },
+    {
+      "id": "badge-active-learner",
+      "name": "Active Learner",
+      "description": "Always learning and growing",
+      "icon": "graduation-cap",
+      "rarity": "common",
+      "requirement": "Attend 5+ events and complete 3+ mentorship sessions",
+      "unlocked_by": 45
+    },
+    {
+      "id": "badge-event-host",
+      "name": "Event Host",
+      "description": "Organized successful events",
+      "icon": "calendar",
+      "rarity": "rare",
+      "requirement": "Host 3+ events with 20+ attendees each",
+      "unlocked_by": 7
+    }
+  ],
+
   "system_config": [
     {
       "id": "config-platform-name",

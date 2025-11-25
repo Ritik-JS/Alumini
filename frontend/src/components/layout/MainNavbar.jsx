@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Menu, X, Bell, User, LogOut, Settings, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Bell, User, LogOut, Settings, LayoutDashboard, ChevronDown, Network, TrendingUp, Trophy, CreditCard, MapPin, BookOpen } from 'lucide-react';
 import NotificationBell from '@/components/notifications/NotificationBell';
 
 const MainNavbar = () => {
@@ -33,6 +33,15 @@ const MainNavbar = () => {
     { name: 'Events', path: '/events' },
     { name: 'Mentorship', path: '/mentorship' },
     { name: 'Forum', path: '/forum' },
+  ];
+
+  const advancedFeatures = [
+    { name: 'Skill Graph', path: '/skills/graph', icon: Network },
+    { name: 'Career Paths', path: '/career/paths', icon: TrendingUp },
+    { name: 'Leaderboard', path: '/leaderboard', icon: Trophy },
+    { name: 'Alumni Card', path: '/alumni-card', icon: CreditCard },
+    { name: 'Talent Heatmap', path: '/heatmap', icon: MapPin },
+    { name: 'Knowledge', path: '/knowledge', icon: BookOpen },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -68,6 +77,26 @@ const MainNavbar = () => {
                 {link.name}
               </Link>
             ))}
+            
+            {/* More Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 flex items-center gap-1">
+                  More
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Advanced Features</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {advancedFeatures.map((feature) => (
+                  <DropdownMenuItem key={feature.path} onClick={() => navigate(feature.path)}>
+                    <feature.icon className="mr-2 h-4 w-4" />
+                    {feature.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Right Side - Auth & User Menu */}
@@ -161,6 +190,25 @@ const MainNavbar = () => {
                 {link.name}
               </Link>
             ))}
+            
+            {/* Advanced Features Section */}
+            <div className="pt-4">
+              <div className="px-3 py-2 text-sm font-semibold text-gray-500">
+                Advanced Features
+              </div>
+              {advancedFeatures.map((feature) => (
+                <Link
+                  key={feature.path}
+                  to={feature.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                >
+                  <feature.icon className="mr-2 h-4 w-4" />
+                  {feature.name}
+                </Link>
+              ))}
+            </div>
+            
             {!isAuthenticated && (
               <div className="pt-4 space-y-2">
                 <Button
