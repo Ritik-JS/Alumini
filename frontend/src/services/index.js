@@ -18,7 +18,7 @@ const USE_MOCK_DATA = process.env.REACT_APP_USE_MOCK_DATA === 'true';
 console.log(`🔄 Service Mode: ${USE_MOCK_DATA ? 'MOCK DATA' : 'BACKEND API'}`);
 
 // Import mock services
-import { mockAuth } from './mockAuth';
+import { mockAuthService as mockAuth } from './mockAuth';
 import mockJobService from './mockJobService';
 import mockEventService from './mockEventService';
 import mockMentorshipService from './mockMentorshipService';

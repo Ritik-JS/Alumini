@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { mockAuth } from '@/services/mockAuth';
+import { mockAuthService as mockAuth } from '@/services/mockAuth';
 
 const AuthContext = createContext(null);
 
