@@ -1,12 +1,18 @@
-import mockData from '../mockdata.json';
+import { loadMockData } from './mockDataLoader';
 
 // Simulate API delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Helper to get mock data
+const getMockData = async () => {
+  return await loadMockData();
+};
 
 export const mockLeaderboardService = {
   // Get leaderboard with filters
   getLeaderboard: async (filters = {}) => {
     await delay(300);
+    const mockData = await getMockData();
     
     let leaderboard = [...mockData.leaderboard];
     
@@ -27,6 +33,7 @@ export const mockLeaderboardService = {
   // Get user's own score and rank
   getMyScore: async (userId) => {
     await delay(200);
+    const mockData = await getMockData();
     
     const userEntry = mockData.leaderboard.find(entry => entry.user_id === userId);
     
@@ -60,6 +67,7 @@ export const mockLeaderboardService = {
   // Get all badges
   getAllBadges: async () => {
     await delay(200);
+    const mockData = await getMockData();
     
     return {
       success: true,
@@ -70,6 +78,7 @@ export const mockLeaderboardService = {
   // Get user's badges
   getUserBadges: async (userId) => {
     await delay(200);
+    const mockData = await getMockData();
     
     const userEntry = mockData.leaderboard.find(entry => entry.user_id === userId);
     

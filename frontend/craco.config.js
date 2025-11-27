@@ -68,6 +68,14 @@ const webpackConfig = {
         webpackConfig.plugins.push(healthPluginInstance);
       }
 
+      // Ensure JSON files are properly handled in production build
+      // This fixes the issue where mockdata.json wasn't being bundled
+      webpackConfig.module.rules.push({
+        test: /\.json$/,
+        type: 'json',
+        include: path.resolve(__dirname, 'src'),
+      });
+
       return webpackConfig;
     },
   },

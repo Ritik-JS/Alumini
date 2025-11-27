@@ -1,12 +1,18 @@
-import mockData from '../mockdata.json';
+import { loadMockData } from './mockDataLoader';
 
 // Simulate API delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Helper to get mock data
+const getMockData = async () => {
+  return await loadMockData();
+};
 
 export const mockHeatmapService = {
   // Get geographic data for heatmap
   getGeographicData: async (filters = {}) => {
     await delay(300);
+    const mockData = await getMockData();
     
     let geoData = [...mockData.geographic_data];
     
@@ -33,6 +39,7 @@ export const mockHeatmapService = {
   // Get location details
   getLocationDetails: async (locationId) => {
     await delay(200);
+    const mockData = await getMockData();
     
     const location = mockData.geographic_data.find(geo => geo.id === locationId);
     
