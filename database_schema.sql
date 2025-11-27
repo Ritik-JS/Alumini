@@ -1072,3 +1072,508 @@ CREATE INDEX idx_posts_created_pinned ON forum_posts(created_at DESC, is_pinned)
 -- 8. Character set is utf8mb4 for full Unicode support including emojis
 -- 9. For MariaDB, replace UUID() with UUID_SHORT() or use VARCHAR with application-generated UUIDs
 -- 10. Adjust foreign key constraints and ON DELETE behavior based on your requirements
+
+-- ============================================================================
+-- ALUMNI PORTAL SYSTEM - AI SYSTEMS DATABASE SCHEMA UPDATES
+-- Database: MySQL 8.0+ / MariaDB 10.5+
+-- Description: Additional tables for 6 AI Systems + Admin Dataset Upload
+-- Version: 2.0 (AI Enhanced)
+-- ============================================================================
+
+-- This file contains ONLY the new tables for AI systems.
+-- Import the original database_schema.sql first, then this file.
+
+USE alumni_portal;
+
+-- ============================================================================
+-- ADMIN DATASET UPLOAD SYSTEM
+-- ============================================================================
+
+-- 1. Admin Dataset Upload Tracking
+CREATE TABLE dataset_uploads (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    uploaded_by VARCHAR(36) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_url VARCHAR(500) NOT NULL,
+    file_type ENUM('alumni', 'job_market', 'educational') NOT NULL,
+    file_size_kb INT,
+    status ENUM('pending', 'validating', 'cleaning', 'processing', 'completed', 'failed') DEFAULT 'pending',
+    total_rows INT,
+    valid_rows INT,
+    error_rows INT,
+    error_log TEXT,
+    validation_report JSON,
+    processing_start_time TIMESTAMP NULL,
+    processing_end_time TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_status (status),
+    INDEX idx_uploaded_by (uploaded_by),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 2. Dataset Processing Logs
+CREATE TABLE dataset_processing_logs (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    upload_id VARCHAR(36) NOT NULL,
+    stage ENUM('validation', 'cleaning', 'ai_processing', 'storage') NOT NULL,
+    status ENUM('started', 'in_progress', 'completed', 'failed') NOT NULL,
+    message TEXT,
+    details JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (upload_id) REFERENCES dataset_uploads(id) ON DELETE CASCADE,
+    INDEX idx_upload_id (upload_id),
+    INDEX idx_stage (stage)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- AI SYSTEM 1: SKILL GRAPH AI
+-- ============================================================================
+
+-- 3. Skill Embeddings (for semantic similarity)
+CREATE TABLE skill_embeddings (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    skill_name VARCHAR(100) NOT NULL UNIQUE,
+    embedding_vector JSON NOT NULL,  -- 384-dimensional vector from sentence-transformers
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_skill_name (skill_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 4. Skill Similarity Matrix (precomputed for fast lookups)
+CREATE TABLE skill_similarities (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    skill_1 VARCHAR(100) NOT NULL,
+    skill_2 VARCHAR(100) NOT NULL,
+    similarity_score DECIMAL(5,4) NOT NULL,  -- 0.0000 to 1.0000
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_pair (skill_1, skill_2),
+    INDEX idx_skill_1 (skill_1),
+    INDEX idx_skill_2 (skill_2),
+    INDEX idx_similarity_score (similarity_score DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- AI SYSTEM 2: CAREER PATH PREDICTION ENGINE
+-- ============================================================================
+
+-- 5. Career Transition Probabilities (ML-calculated)
+CREATE TABLE career_transition_matrix (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    from_role VARCHAR(255) NOT NULL,
+    to_role VARCHAR(255) NOT NULL,
+    transition_count INT DEFAULT 0,
+    transition_probability DECIMAL(5,4),  -- ML-calculated probability
+    avg_duration_months INT,
+    required_skills JSON,  -- Skills needed for transition
+    success_rate DECIMAL(5,4),
+    college_id VARCHAR(36),  -- Per-college transition data
+    last_calculated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_transition (from_role, to_role, college_id),
+    INDEX idx_from_role (from_role),
+    INDEX idx_to_role (to_role),
+    INDEX idx_probability (transition_probability DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- AI SYSTEM 3: TALENT HEATMAP INTELLIGENCE
+-- ============================================================================
+
+-- 6. Talent Clusters (geographic clustering)
+CREATE TABLE talent_clusters (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    cluster_name VARCHAR(255) NOT NULL,
+    center_latitude DECIMAL(10, 8),
+    center_longitude DECIMAL(11, 8),
+    radius_km DECIMAL(8, 2),
+    alumni_ids JSON,  -- Array of user_ids in this cluster
+    dominant_skills JSON,
+    dominant_industries JSON,
+    cluster_size INT,
+    cluster_density DECIMAL(5,2),  -- Alumni per sq km
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_cluster_name (cluster_name),
+    INDEX idx_coordinates (center_latitude, center_longitude)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- AI SYSTEM 4: AI-VALIDATED DIGITAL ALUMNI ID
+-- ============================================================================
+
+-- 7. Alumni ID Verification Records
+CREATE TABLE alumni_id_verifications (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    card_id VARCHAR(36) NOT NULL,
+    verified_by VARCHAR(36),
+    verification_method ENUM('qr_scan', 'manual', 'api') NOT NULL,
+    verification_location VARCHAR(255),
+    is_valid BOOLEAN,
+    duplicate_check_passed BOOLEAN,
+    rule_validations JSON,  -- AI validation results
+    verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (card_id) REFERENCES alumni_cards(id) ON DELETE CASCADE,
+    INDEX idx_card_id (card_id),
+    INDEX idx_verified_at (verified_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- AI SYSTEM 5: KNOWLEDGE CAPSULES RANKING ENGINE
+-- ============================================================================
+
+-- 8. Knowledge Capsule Rankings (AI-driven personalized)
+CREATE TABLE capsule_rankings (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    capsule_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(36) NOT NULL,  -- Personalized ranking per user
+    relevance_score DECIMAL(5,4),  -- 0.0000 to 1.0000
+    engagement_score DECIMAL(5,4),
+    skill_match_score DECIMAL(5,4),
+    credibility_score DECIMAL(5,4),
+    final_rank_score DECIMAL(5,4),  -- Weighted combination
+    ranking_factors JSON,  -- Detailed breakdown
+    calculated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (capsule_id) REFERENCES knowledge_capsules(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_capsule (capsule_id, user_id),
+    INDEX idx_capsule_id (capsule_id),
+    INDEX idx_user_id (user_id),
+    INDEX idx_final_rank_score (final_rank_score DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- AI SYSTEM 6: ENGAGEMENT SCORING MODEL (already in original schema)
+-- Tables: engagement_scores, contribution_history, badges, user_badges
+-- No additional tables needed - using existing tables
+-- ============================================================================
+
+-- ============================================================================
+-- ML MODEL MANAGEMENT
+-- ============================================================================
+
+-- 9. ML Model Metadata (for versioning and tracking)
+CREATE TABLE ml_models (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    model_name VARCHAR(100) NOT NULL,
+    model_version VARCHAR(50) NOT NULL,
+    model_type ENUM('clustering', 'classification', 'regression', 'ranking', 'embedding') NOT NULL,
+    framework VARCHAR(50),  -- scikit-learn, pytorch, tensorflow, etc.
+    model_file_path VARCHAR(500),
+    hyperparameters JSON,
+    training_metrics JSON,
+    accuracy DECIMAL(5,4),
+    status ENUM('training', 'active', 'deprecated') DEFAULT 'training',
+    trained_at TIMESTAMP,
+    deployed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_model_version (model_name, model_version),
+    INDEX idx_model_name (model_name),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- AI PROCESSING QUEUE
+-- ============================================================================
+
+-- 10. AI Processing Queue (background job tracking)
+CREATE TABLE ai_processing_queue (
+    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    task_type ENUM('skill_graph', 'career_prediction', 'talent_clustering', 'id_validation', 'capsule_ranking', 'engagement_scoring') NOT NULL,
+    priority INT DEFAULT 5,  -- 1=highest, 10=lowest
+    payload JSON NOT NULL,
+    status ENUM('pending', 'processing', 'completed', 'failed') DEFAULT 'pending',
+    worker_id VARCHAR(100),
+    result JSON,
+    error_message TEXT,
+    retry_count INT DEFAULT 0,
+    max_retries INT DEFAULT 3,
+    scheduled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    started_at TIMESTAMP NULL,
+    completed_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_status_priority (status, priority),
+    INDEX idx_task_type (task_type),
+    INDEX idx_scheduled_at (scheduled_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- STORED PROCEDURES FOR AI SYSTEMS
+-- ============================================================================
+
+DELIMITER //
+
+-- Procedure to trigger AI pipeline after dataset upload
+CREATE PROCEDURE trigger_ai_pipeline(IN p_upload_id VARCHAR(36))
+BEGIN
+    DECLARE v_file_type VARCHAR(20);
+    
+    -- Get file type
+    SELECT file_type INTO v_file_type
+    FROM dataset_uploads
+    WHERE id = p_upload_id;
+    
+    -- Queue appropriate AI tasks based on file type
+    IF v_file_type = 'alumni' THEN
+        -- Skill Graph Update
+        INSERT INTO ai_processing_queue (task_type, priority, payload)
+        VALUES ('skill_graph', 5, JSON_OBJECT('upload_id', p_upload_id));
+        
+        -- Career Path Model Retraining
+        INSERT INTO ai_processing_queue (task_type, priority, payload)
+        VALUES ('career_prediction', 7, JSON_OBJECT('upload_id', p_upload_id));
+        
+        -- Talent Heatmap Recalculation
+        INSERT INTO ai_processing_queue (task_type, priority, payload)
+        VALUES ('talent_clustering', 8, JSON_OBJECT('upload_id', p_upload_id));
+        
+        -- Engagement Score Recalculation
+        INSERT INTO ai_processing_queue (task_type, priority, payload)
+        VALUES ('engagement_scoring', 6, JSON_OBJECT('upload_id', p_upload_id));
+    END IF;
+    
+    IF v_file_type = 'job_market' THEN
+        -- Skill Graph Update (industry connections)
+        INSERT INTO ai_processing_queue (task_type, priority, payload)
+        VALUES ('skill_graph', 5, JSON_OBJECT('upload_id', p_upload_id, 'type', 'job_market'));
+    END IF;
+    
+    IF v_file_type = 'educational' THEN
+        -- Career Prediction Update
+        INSERT INTO ai_processing_queue (task_type, priority, payload)
+        VALUES ('career_prediction', 7, JSON_OBJECT('upload_id', p_upload_id));
+        
+        -- Capsule Ranking Refresh
+        INSERT INTO ai_processing_queue (task_type, priority, payload)
+        VALUES ('capsule_ranking', 6, JSON_OBJECT('upload_id', p_upload_id));
+    END IF;
+END //
+
+-- Procedure to calculate personalized capsule rank
+CREATE PROCEDURE calculate_capsule_rank(
+    IN p_user_id VARCHAR(36),
+    IN p_capsule_id VARCHAR(36)
+)
+BEGIN
+    DECLARE v_skill_match DECIMAL(5,4);
+    DECLARE v_engagement DECIMAL(5,4);
+    DECLARE v_credibility DECIMAL(5,4);
+    DECLARE v_recency DECIMAL(5,4);
+    DECLARE v_final_score DECIMAL(5,4);
+    
+    -- Calculate skill match (Jaccard similarity)
+    -- This would be calculated by Python backend, stored here
+    SET v_skill_match = 0.75;  -- Placeholder
+    
+    -- Calculate engagement score (normalized)
+    SELECT 
+        (0.4 * (views_count / (SELECT MAX(views_count) FROM knowledge_capsules)) +
+         0.35 * (likes_count / (SELECT MAX(likes_count) FROM knowledge_capsules)) +
+         0.25 * (bookmarks_count / (SELECT MAX(bookmarks_count) FROM knowledge_capsules)))
+    INTO v_engagement
+    FROM knowledge_capsules
+    WHERE id = p_capsule_id;
+    
+    -- Calculate credibility (author's engagement score)
+    SELECT IFNULL(total_score / 1000, 0.5) INTO v_credibility
+    FROM knowledge_capsules kc
+    JOIN engagement_scores es ON kc.author_id = es.user_id
+    WHERE kc.id = p_capsule_id;
+    
+    -- Calculate recency (exponential decay)
+    SELECT EXP(-0.01 * DATEDIFF(NOW(), created_at)) INTO v_recency
+    FROM knowledge_capsules
+    WHERE id = p_capsule_id;
+    
+    -- Calculate final score (weighted combination)
+    SET v_final_score = (
+        0.30 * v_skill_match +
+        0.25 * v_engagement +
+        0.20 * v_credibility +
+        0.15 * v_recency +
+        0.10 * 0.80  -- Content relevance (from LLM, placeholder)
+    );
+    
+    -- Insert or update ranking
+    INSERT INTO capsule_rankings (
+        capsule_id, user_id, 
+        skill_match_score, engagement_score, credibility_score, 
+        final_rank_score, calculated_at
+    )
+    VALUES (
+        p_capsule_id, p_user_id,
+        v_skill_match, v_engagement, v_credibility,
+        v_final_score, NOW()
+    )
+    ON DUPLICATE KEY UPDATE
+        skill_match_score = v_skill_match,
+        engagement_score = v_engagement,
+        credibility_score = v_credibility,
+        final_rank_score = v_final_score,
+        calculated_at = NOW();
+END //
+
+DELIMITER ;
+
+-- ============================================================================
+-- TRIGGERS FOR AI SYSTEMS
+-- ============================================================================
+
+DELIMITER //
+
+-- Trigger to queue skill graph update when new alumni added
+CREATE TRIGGER after_alumni_profile_insert
+AFTER INSERT ON alumni_profiles
+FOR EACH ROW
+BEGIN
+    INSERT INTO ai_processing_queue (task_type, priority, payload)
+    VALUES ('skill_graph', 8, JSON_OBJECT('profile_id', NEW.id, 'trigger', 'new_profile'));
+END //
+
+-- Trigger to queue career prediction update on career path change
+CREATE TRIGGER after_career_path_insert
+AFTER INSERT ON career_paths
+FOR EACH ROW
+BEGIN
+    INSERT INTO ai_processing_queue (task_type, priority, payload)
+    VALUES ('career_prediction', 7, JSON_OBJECT('path_id', NEW.id, 'trigger', 'new_transition'));
+END //
+
+-- Trigger to recalculate engagement score on major activity
+CREATE TRIGGER after_contribution_insert
+AFTER INSERT ON contribution_history
+FOR EACH ROW
+BEGIN
+    -- Queue engagement score recalculation
+    INSERT INTO ai_processing_queue (task_type, priority, payload)
+    VALUES ('engagement_scoring', 9, JSON_OBJECT('user_id', NEW.user_id, 'trigger', 'contribution'));
+END //
+
+DELIMITER ;
+
+-- ============================================================================
+-- VIEWS FOR AI ANALYTICS
+-- ============================================================================
+
+-- View for skill popularity and trends
+CREATE VIEW skill_popularity_trends AS
+SELECT 
+    sg.skill_name,
+    sg.alumni_count,
+    sg.job_count,
+    sg.popularity_score,
+    COUNT(DISTINCT ap.user_id) as current_alumni_with_skill,
+    COUNT(DISTINCT j.id) as current_jobs_requiring_skill
+FROM skill_graph sg
+LEFT JOIN alumni_profiles ap ON JSON_CONTAINS(ap.skills, JSON_QUOTE(sg.skill_name))
+LEFT JOIN jobs j ON JSON_CONTAINS(j.skills_required, JSON_QUOTE(sg.skill_name))
+GROUP BY sg.skill_name, sg.alumni_count, sg.job_count, sg.popularity_score;
+
+-- View for career path success analysis
+CREATE VIEW career_path_success_analysis AS
+SELECT 
+    ctm.from_role,
+    ctm.to_role,
+    ctm.transition_count,
+    ctm.transition_probability,
+    ctm.avg_duration_months,
+    ctm.success_rate,
+    COUNT(DISTINCT cp.user_id) as alumni_who_made_transition
+FROM career_transition_matrix ctm
+LEFT JOIN career_paths cp ON 
+    ctm.from_role = cp.from_role AND 
+    ctm.to_role = cp.to_role
+GROUP BY ctm.from_role, ctm.to_role, ctm.transition_count, 
+         ctm.transition_probability, ctm.avg_duration_months, ctm.success_rate;
+
+-- View for talent cluster insights
+CREATE VIEW talent_cluster_insights AS
+SELECT 
+    tc.cluster_name,
+    tc.center_latitude,
+    tc.center_longitude,
+    tc.cluster_size,
+    tc.cluster_density,
+    JSON_LENGTH(tc.alumni_ids) as actual_alumni_count,
+    tc.dominant_skills,
+    tc.dominant_industries
+FROM talent_clusters tc;
+
+-- ============================================================================
+-- INDEXES FOR PERFORMANCE OPTIMIZATION
+-- ============================================================================
+
+-- Additional composite indexes for AI queries
+CREATE INDEX idx_alumni_skills ON alumni_profiles((JSON_LENGTH(skills)));
+CREATE INDEX idx_job_skills ON jobs((JSON_LENGTH(skills_required)));
+CREATE INDEX idx_capsule_engagement ON knowledge_capsules(views_count, likes_count, bookmarks_count);
+CREATE INDEX idx_ai_queue_status_scheduled ON ai_processing_queue(status, scheduled_at);
+
+-- ============================================================================
+-- INITIAL DATA SEEDING FOR AI SYSTEMS
+-- ============================================================================
+
+-- Seed initial ML models
+INSERT INTO ml_models (model_name, model_version, model_type, framework, status) VALUES
+('skill_embeddings_model', 'v1.0', 'embedding', 'sentence-transformers', 'active'),
+('career_predictor', 'v1.0', 'classification', 'scikit-learn', 'active'),
+('talent_clustering', 'v1.0', 'clustering', 'scikit-learn', 'active'),
+('capsule_ranking', 'v1.0', 'ranking', 'custom', 'active'),
+('engagement_calculator', 'v1.0', 'regression', 'custom', 'active');
+
+-- ============================================================================
+-- COMMENTS AND DOCUMENTATION
+-- ============================================================================
+
+-- Table Comments
+ALTER TABLE dataset_uploads COMMENT = 'Tracks admin dataset uploads for AI processing';
+ALTER TABLE dataset_processing_logs COMMENT = 'Logs each stage of dataset processing pipeline';
+ALTER TABLE skill_embeddings COMMENT = 'Stores 384-dim embeddings for semantic skill matching';
+ALTER TABLE skill_similarities COMMENT = 'Precomputed skill similarity matrix for fast lookups';
+ALTER TABLE career_transition_matrix COMMENT = 'ML-calculated career transition probabilities';
+ALTER TABLE talent_clusters COMMENT = 'Geographic clusters of alumni talent';
+ALTER TABLE alumni_id_verifications COMMENT = 'AI-validated digital alumni ID verification records';
+ALTER TABLE capsule_rankings COMMENT = 'Personalized knowledge capsule rankings per user';
+ALTER TABLE ml_models COMMENT = 'ML model versioning and metadata tracking';
+ALTER TABLE ai_processing_queue COMMENT = 'Background AI task queue for async processing';
+
+-- ============================================================================
+-- GRANT PERMISSIONS FOR AI PROCESSING
+-- ============================================================================
+
+-- Grant permissions to AI processing service user
+-- CREATE USER 'ai_processor'@'%' IDENTIFIED BY 'ai_secure_password';
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON alumni_portal.dataset_uploads TO 'ai_processor'@'%';
+-- GRANT SELECT, INSERT ON alumni_portal.dataset_processing_logs TO 'ai_processor'@'%';
+-- GRANT SELECT, INSERT, UPDATE ON alumni_portal.skill_embeddings TO 'ai_processor'@'%';
+-- GRANT SELECT, INSERT, UPDATE ON alumni_portal.skill_similarities TO 'ai_processor'@'%';
+-- GRANT SELECT, INSERT, UPDATE ON alumni_portal.career_transition_matrix TO 'ai_processor'@'%';
+-- GRANT SELECT, INSERT, UPDATE ON alumni_portal.talent_clusters TO 'ai_processor'@'%';
+-- GRANT SELECT, INSERT ON alumni_portal.alumni_id_verifications TO 'ai_processor'@'%';
+-- GRANT SELECT, INSERT, UPDATE ON alumni_portal.capsule_rankings TO 'ai_processor'@'%';
+-- GRANT SELECT, INSERT, UPDATE ON alumni_portal.ml_models TO 'ai_processor'@'%';
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON alumni_portal.ai_processing_queue TO 'ai_processor'@'%';
+-- GRANT EXECUTE ON alumni_portal.* TO 'ai_processor'@'%';
+-- FLUSH PRIVILEGES;
+
+-- ============================================================================
+-- END OF AI SYSTEMS SCHEMA
+-- ============================================================================
+
+-- Verification queries to ensure schema is correct
+-- SELECT COUNT(*) as total_tables FROM information_schema.tables WHERE table_schema = 'alumni_portal';
+-- SELECT table_name FROM information_schema.tables WHERE table_schema = 'alumni_portal' AND table_name LIKE '%ai%';
+-- SHOW TABLES LIKE '%dataset%';
+-- SHOW TABLES LIKE '%skill%';
+
+-- Notes:
+-- 1. This schema adds 10 new tables for AI systems
+-- 2. All tables use InnoDB engine for ACID compliance
+-- 3. Foreign key relationships maintain data integrity
+-- 4. Indexes optimize AI query performance
+-- 5. Stored procedures automate AI pipeline triggering
+-- 6. Triggers enable real-time AI updates
+-- 7. Views provide convenient analytics access
+-- 8. JSON columns enable flexible AI metadata storage
+-- 9. Compatible with MySQL 8.0+ and MariaDB 10.5+
+-- 10. Designed for horizontal scalability with read replicas
