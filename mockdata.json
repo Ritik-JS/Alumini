@@ -2529,5 +2529,194 @@
       "last_updated": "2024-12-28T10:00:00Z",
       "next_update": "2025-01-28T10:00:00Z"
     }
+  ],
+
+  "ai_engagement_insights": [
+    {
+      "id": "ai-eng-660e8400-e29b-41d4-a716",
+      "user_id": "660e8400-e29b-41d4-a716-446655440001",
+      "user_name": "Sarah Johnson",
+      "current_score": 485,
+      "current_rank": 1,
+      "engagement_prediction": {
+        "predicted_trend": "stable",
+        "confidence": 0.87,
+        "predicted_score_7days": 510,
+        "predicted_score_30days": 560,
+        "risk_factors": [],
+        "opportunities": ["Increased forum activity", "Event participation"]
+      },
+      "activity_patterns": {
+        "best_posting_times": [
+          { "day": "Tuesday", "hour": 14, "engagement_boost": 1.45 },
+          { "day": "Wednesday", "hour": 10, "engagement_boost": 1.38 },
+          { "day": "Thursday", "hour": 16, "engagement_boost": 1.32 }
+        ],
+        "most_effective_contributions": [
+          { "type": "mentorship", "avg_points": 48, "effectiveness": "high" },
+          { "type": "forum_posts", "avg_points": 12, "effectiveness": "high" },
+          { "type": "event_participation", "avg_points": 8, "effectiveness": "medium" }
+        ],
+        "peak_activity_periods": [
+          { "period": "Weekday Afternoons", "score": 0.82 },
+          { "period": "Tuesday Mornings", "score": 0.76 }
+        ]
+      },
+      "comparison_with_similar_users": {
+        "percentile": 95,
+        "avg_score_similar_users": 420,
+        "your_advantage": "Strong mentorship engagement",
+        "improvement_areas": ["Event hosting", "Knowledge sharing"]
+      },
+      "smart_suggestions": [
+        {
+          "id": "sug-1",
+          "action": "Host a mentorship session",
+          "impact": "high",
+          "estimated_points": 60,
+          "time_investment": "2 hours",
+          "priority": 1,
+          "reason": "You have high mentor engagement rate. Hosting sessions will maximize your impact."
+        },
+        {
+          "id": "sug-2",
+          "action": "Create a knowledge capsule on Product Management",
+          "impact": "high",
+          "estimated_points": 45,
+          "time_investment": "3 hours",
+          "priority": 2,
+          "reason": "Your expertise is in demand. Share your knowledge to help others and boost engagement."
+        },
+        {
+          "id": "sug-3",
+          "action": "Participate in upcoming Tech Career Fair",
+          "impact": "medium",
+          "estimated_points": 25,
+          "time_investment": "4 hours",
+          "priority": 3,
+          "reason": "Event participation aligns with community engagement goals."
+        },
+        {
+          "id": "sug-4",
+          "action": "Reply to 5 forum posts in your expertise area",
+          "impact": "medium",
+          "estimated_points": 20,
+          "time_investment": "1 hour",
+          "priority": 4,
+          "reason": "Quick wins through meaningful community interaction."
+        }
+      ],
+      "contribution_impact_history": [
+        { "date": "2024-11-28", "points": 12, "type": "forum" },
+        { "date": "2024-11-29", "points": 8, "type": "event" },
+        { "date": "2024-12-01", "points": 48, "type": "mentorship" },
+        { "date": "2024-12-03", "points": 15, "type": "forum" },
+        { "date": "2024-12-05", "points": 32, "type": "mentorship" },
+        { "date": "2024-12-08", "points": 10, "type": "event" },
+        { "date": "2024-12-10", "points": 48, "type": "mentorship" },
+        { "date": "2024-12-12", "points": 18, "type": "forum" },
+        { "date": "2024-12-15", "points": 40, "type": "mentorship" },
+        { "date": "2024-12-17", "points": 12, "type": "event" },
+        { "date": "2024-12-19", "points": 45, "type": "mentorship" },
+        { "date": "2024-12-22", "points": 22, "type": "forum" },
+        { "date": "2024-12-24", "points": 38, "type": "mentorship" },
+        { "date": "2024-12-26", "points": 14, "type": "event" },
+        { "date": "2024-12-28", "points": 50, "type": "mentorship" }
+      ],
+      "last_updated": "2024-12-28T10:00:00Z"
+    },
+    {
+      "id": "ai-eng-880e8400-e29b-41d4-a716",
+      "user_id": "880e8400-e29b-41d4-a716-446655440003",
+      "user_name": "Emily Rodriguez",
+      "current_score": 156,
+      "current_rank": 8,
+      "engagement_prediction": {
+        "predicted_trend": "increasing",
+        "confidence": 0.92,
+        "predicted_score_7days": 175,
+        "predicted_score_30days": 220,
+        "risk_factors": [],
+        "opportunities": ["Job applications", "Mentorship participation", "Forum engagement"]
+      },
+      "activity_patterns": {
+        "best_posting_times": [
+          { "day": "Monday", "hour": 18, "engagement_boost": 1.52 },
+          { "day": "Wednesday", "hour": 20, "engagement_boost": 1.41 },
+          { "day": "Saturday", "hour": 11, "engagement_boost": 1.28 }
+        ],
+        "most_effective_contributions": [
+          { "type": "forum_posts", "avg_points": 15, "effectiveness": "high" },
+          { "type": "job_applications", "avg_points": 10, "effectiveness": "medium" },
+          { "type": "event_participation", "avg_points": 8, "effectiveness": "medium" }
+        ],
+        "peak_activity_periods": [
+          { "period": "Evening Hours", "score": 0.88 },
+          { "period": "Weekend Mornings", "score": 0.72 }
+        ]
+      },
+      "comparison_with_similar_users": {
+        "percentile": 68,
+        "avg_score_similar_users": 145,
+        "your_advantage": "Active forum participation",
+        "improvement_areas": ["Mentorship engagement", "Profile completion"]
+      },
+      "smart_suggestions": [
+        {
+          "id": "sug-1",
+          "action": "Request mentorship from a senior alumni",
+          "impact": "high",
+          "estimated_points": 35,
+          "time_investment": "30 minutes",
+          "priority": 1,
+          "reason": "Students with active mentorship see 2.5x engagement increase."
+        },
+        {
+          "id": "sug-2",
+          "action": "Complete your profile with projects and skills",
+          "impact": "high",
+          "estimated_points": 30,
+          "time_investment": "1 hour",
+          "priority": 2,
+          "reason": "Profile completeness directly boosts visibility and opportunities."
+        },
+        {
+          "id": "sug-3",
+          "action": "Apply to 3 relevant job postings",
+          "impact": "medium",
+          "estimated_points": 24,
+          "time_investment": "2 hours",
+          "priority": 3,
+          "reason": "Active job seeking shows engagement and opens networking opportunities."
+        },
+        {
+          "id": "sug-4",
+          "action": "Share your learning journey in a forum post",
+          "impact": "medium",
+          "estimated_points": 18,
+          "time_investment": "45 minutes",
+          "priority": 4,
+          "reason": "Your recent posts have high engagement. Community values your insights."
+        }
+      ],
+      "contribution_impact_history": [
+        { "date": "2024-11-28", "points": 8, "type": "forum" },
+        { "date": "2024-11-30", "points": 6, "type": "event" },
+        { "date": "2024-12-02", "points": 10, "type": "job_application" },
+        { "date": "2024-12-04", "points": 12, "type": "forum" },
+        { "date": "2024-12-06", "points": 8, "type": "event" },
+        { "date": "2024-12-09", "points": 15, "type": "forum" },
+        { "date": "2024-12-11", "points": 10, "type": "job_application" },
+        { "date": "2024-12-13", "points": 7, "type": "event" },
+        { "date": "2024-12-16", "points": 18, "type": "forum" },
+        { "date": "2024-12-18", "points": 10, "type": "job_application" },
+        { "date": "2024-12-20", "points": 14, "type": "forum" },
+        { "date": "2024-12-23", "points": 8, "type": "event" },
+        { "date": "2024-12-25", "points": 16, "type": "forum" },
+        { "date": "2024-12-27", "points": 10, "type": "job_application" },
+        { "date": "2024-12-28", "points": 4, "type": "profile" }
+      ],
+      "last_updated": "2024-12-28T10:00:00Z"
+    }
   ]
 }
