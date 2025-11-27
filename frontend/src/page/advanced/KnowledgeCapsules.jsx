@@ -269,10 +269,9 @@ const KnowledgeCapsules = () => {
               For You (AI)
             </TabsTrigger>
           </TabsList>
-        </Tabs>
 
-        {/* All Capsules Tab */}
-        <TabsContent value="all" className="space-y-6">
+          {/* All Capsules Tab */}
+          <TabsContent value="all" className="space-y-6">
           {/* Search and Filters */}
           <Card data-testid="capsules-filters">
             <CardContent className="pt-6">
@@ -688,6 +687,7 @@ const KnowledgeCapsules = () => {
             </div>
           )}
         </TabsContent>
+        </Tabs>
       </div>
     </MainLayout>
   );

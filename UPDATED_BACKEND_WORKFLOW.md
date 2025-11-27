@@ -2622,7 +2622,7 @@ CELERY_BROKER_URL=redis://redis-host:6379/0
 CELERY_RESULT_BACKEND=redis://redis-host:6379/0
 
 # File Storage
-S3_BUCKET=alumni-portal-files
+S3_BUCKET=alumunity-files
 AWS_ACCESS_KEY_ID=your-key
 AWS_SECRET_ACCESS_KEY=your-secret
 

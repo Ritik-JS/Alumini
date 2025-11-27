@@ -1,0 +1,6 @@
+# Netlify Redirects Configuration for AlumUnity SPA
+# This file ensures that all routes are handled by React Router
+
+# Redirect all routes to index.html for client-side routing
+# The 200 status code serves index.html without changing the URL
+/*    /index.html   200

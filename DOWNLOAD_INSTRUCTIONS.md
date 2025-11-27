@@ -2,9 +2,9 @@
 
 ## 📁 Zip File Created Successfully!
 
-**File Name**: `alumni-portal-workflows.zip`  
+**File Name**: `alumunity-workflows.zip`  
 **File Size**: ~98 KB  
-**Location**: `/app/alumni-portal-workflows.zip`
+**Location**: `/app/alumunity-workflows.zip`
 
 ---
 
@@ -40,8 +40,8 @@
 
 ### 1. Extract the Zip File
 ```bash
-unzip alumni-portal-workflows.zip -d alumni-portal
-cd alumni-portal
+unzip alumunity-workflows.zip -d alumunity
+cd alumunity
 ```
 
 ### 2. Set Up Backend
