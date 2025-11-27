@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { mockLeaderboardService } from '@/services/mockLeaderboardService';
+import { mockEngagementAIService } from '@/services/mockEngagementAIService';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, TrendingUp, TrendingDown, Minus, Crown, Medal, Award, Lock } from 'lucide-react';
+import { Trophy, TrendingUp, TrendingDown, Minus, Crown, Medal, Award, Lock, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import AIInsightsPanel from '@/components/engagement/AIInsightsPanel';
+import SmartSuggestionsCard from '@/components/engagement/SmartSuggestionsCard';
+import ContributionImpactChart from '@/components/engagement/ContributionImpactChart';
 
 const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -17,6 +21,12 @@ const Leaderboard = () => {
   const [loading, setLoading] = useState(true);
   const [timePeriod, setTimePeriod] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
+  
+  // AI Features State
+  const [aiInsights, setAiInsights] = useState(null);
+  const [smartSuggestions, setSmartSuggestions] = useState([]);
+  const [impactHistory, setImpactHistory] = useState([]);
+  const [aiLoading, setAiLoading] = useState(true);
 
   useEffect(() => {
     loadData();
@@ -25,23 +35,33 @@ const Leaderboard = () => {
   const loadData = async () => {
     try {
       setLoading(true);
+      setAiLoading(true);
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       
-      const [leaderboardRes, myScoreRes, badgesRes, myBadgesRes] = await Promise.all([
+      const [leaderboardRes, myScoreRes, badgesRes, myBadgesRes, aiInsightsRes] = await Promise.all([
         mockLeaderboardService.getLeaderboard({ role: roleFilter }),
         mockLeaderboardService.getMyScore(currentUser.id),
         mockLeaderboardService.getAllBadges(),
-        mockLeaderboardService.getUserBadges(currentUser.id)
+        mockLeaderboardService.getUserBadges(currentUser.id),
+        mockEngagementAIService.getEngagementInsights(currentUser.id)
       ]);
 
       if (leaderboardRes.success) setLeaderboard(leaderboardRes.data);
       if (myScoreRes.success) setMyScore(myScoreRes.data);
       if (badgesRes.success) setAllBadges(badgesRes.data);
       if (myBadgesRes.success) setMyBadges(myBadgesRes.data);
+      
+      // Load AI features
+      if (aiInsightsRes.success) {
+        setAiInsights(aiInsightsRes.data);
+        setSmartSuggestions(aiInsightsRes.data.smart_suggestions || []);
+        setImpactHistory(aiInsightsRes.data.contribution_impact_history || []);
+      }
     } catch (error) {
       toast.error('Failed to load leaderboard');
     } finally {
       setLoading(false);
+      setAiLoading(false);
     }
   };
 
@@ -128,9 +148,13 @@ const Leaderboard = () => {
         )}
 
         <Tabs defaultValue="leaderboard" className="space-y-6">
-          <TabsList className="grid w-full md:w-[400px] grid-cols-2">
+          <TabsList className="grid w-full md:w-[600px] grid-cols-3">
             <TabsTrigger value="leaderboard" data-testid="leaderboard-tab">Leaderboard</TabsTrigger>
             <TabsTrigger value="badges" data-testid="badges-tab">Badges</TabsTrigger>
+            <TabsTrigger value="ai-insights" data-testid="ai-insights-tab" className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              AI Insights
+            </TabsTrigger>
           </TabsList>
 
           {/* Leaderboard Tab */}
@@ -330,6 +354,20 @@ const Leaderboard = () => {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </TabsContent>
+
+          {/* AI Insights Tab */}
+          <TabsContent value="ai-insights">
+            <div className="space-y-6">
+              {/* AI Insights Panel */}
+              <AIInsightsPanel insights={aiInsights} loading={aiLoading} />
+
+              {/* Smart Suggestions and Impact Chart */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <SmartSuggestionsCard suggestions={smartSuggestions} loading={aiLoading} />
+                <ContributionImpactChart impactHistory={impactHistory} loading={aiLoading} />
+              </div>
             </div>
           </TabsContent>
         </Tabs>
