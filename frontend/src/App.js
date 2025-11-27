@@ -97,6 +97,9 @@ const TalentHeatmap = lazy(() => import('@/page/advanced/TalentHeatmap'));
 const KnowledgeCapsules = lazy(() => import('@/page/advanced/KnowledgeCapsules'));
 const KnowledgeCapsuleDetail = lazy(() => import('@/page/advanced/KnowledgeCapsuleDetail'));
 
+// Phase 11.2: Career Predictions (AI Features)
+const CareerInsights = lazy(() => import('@/page/career/CareerInsights'));
+
 import '@/App.css';
 
 // Dashboard router component - redirects to role-specific dashboard
@@ -585,6 +588,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin', 'alumni', 'student', 'recruiter']}>
                 <CareerPaths />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/career/insights"
+            element={
+              <ProtectedRoute allowedRoles={['alumni', 'student']}>
+                <CareerInsights />
               </ProtectedRoute>
             }
           />

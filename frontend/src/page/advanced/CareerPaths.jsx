@@ -6,13 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { TrendingUp, ArrowRight, Users, Clock, Target, Star } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TrendingUp, ArrowRight, Users, Clock, Target, Star, Network } from 'lucide-react';
 import { toast } from 'sonner';
+import TransitionFlowDiagram from '@/components/career/TransitionFlowDiagram';
 
 const CareerPaths = () => {
   const [careerPaths, setCareerPaths] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState('list'); // 'list' or 'network'
   const [filters, setFilters] = useState({
     startingRole: '',
     targetRole: ''
@@ -116,7 +119,43 @@ const CareerPaths = () => {
           </CardContent>
         </Card>
 
-        {/* Career Paths */}
+        {/* View Tabs */}
+        <Tabs value={view} onValueChange={setView} className="mb-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="list" className="flex items-center gap-2">
+              <Star className="h-4 w-4" />
+              List View
+            </TabsTrigger>
+            <TabsTrigger value="network" className="flex items-center gap-2">
+              <Network className="h-4 w-4" />
+              Network View
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="network" className="mt-6">
+            {loading ? (
+              <Card>
+                <CardContent className="py-20 text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
+                  <p className="mt-4 text-gray-600">Loading network visualization...</p>
+                </CardContent>
+              </Card>
+            ) : careerPaths.length === 0 ? (
+              <Card>
+                <CardContent className="py-20 text-center">
+                  <Network className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No Data for Network</h3>
+                  <p className="text-gray-600">Try adjusting your search criteria</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <TransitionFlowDiagram careerPaths={careerPaths} />
+            )}
+          </TabsContent>
+
+          <TabsContent value="list" className="mt-6">
+
+        {/* Career Paths - List View */}
         {loading ? (
           <Card>
             <CardContent className="py-20 text-center">
@@ -220,6 +259,8 @@ const CareerPaths = () => {
             ))}
           </div>
         )}
+          </TabsContent>
+        </Tabs>
       </div>
     </MainLayout>
   );

@@ -2003,5 +2003,531 @@
         "2024-11-28T11:23:58 - Data stored successfully"
       ]
     }
+  ],
+
+  "career_predictions": [
+    {
+      "id": "pred-880e8400-e29b-41d4-a716",
+      "user_id": "880e8400-e29b-41d4-a716-446655440003",
+      "user_name": "Emily Rodriguez",
+      "user_role": "student",
+      "current_role": "Computer Science Student",
+      "current_skills": ["JavaScript", "React", "Python", "SQL", "Git"],
+      "experience_level": "entry",
+      "predicted_roles": [
+        {
+          "role_name": "Frontend Developer",
+          "probability": 85,
+          "confidence": "high",
+          "timeframe": "6-12 months",
+          "salary_range": "$70,000 - $95,000",
+          "skills_match": ["JavaScript", "React", "Git"],
+          "skills_gap": ["TypeScript", "CSS-in-JS", "Testing (Jest)", "Redux"],
+          "skill_importance": {
+            "TypeScript": "critical",
+            "CSS-in-JS": "high",
+            "Testing (Jest)": "high",
+            "Redux": "medium"
+          },
+          "learning_path": [
+            {
+              "step": 1,
+              "skill": "TypeScript",
+              "estimated_time": "4 weeks",
+              "resources": ["TypeScript Documentation", "TypeScript Deep Dive (Book)", "Execute Program"],
+              "priority": "critical"
+            },
+            {
+              "step": 2,
+              "skill": "Advanced React & Redux",
+              "estimated_time": "3 weeks",
+              "resources": ["Redux Toolkit Docs", "Epic React Course", "React Testing Library"],
+              "priority": "high"
+            },
+            {
+              "step": 3,
+              "skill": "Testing with Jest",
+              "estimated_time": "2 weeks",
+              "resources": ["Jest Documentation", "Testing JavaScript Course", "React Testing Library"],
+              "priority": "high"
+            },
+            {
+              "step": 4,
+              "skill": "CSS-in-JS (Styled Components/Emotion)",
+              "estimated_time": "1 week",
+              "resources": ["Styled Components Docs", "CSS-in-JS Best Practices"],
+              "priority": "medium"
+            }
+          ],
+          "similar_alumni_count": 45,
+          "transition_success_rate": 88,
+          "avg_transition_duration": "8 months",
+          "industry_insights": "Frontend development continues to be in high demand with strong growth in React ecosystem. Companies are increasingly looking for TypeScript proficiency.",
+          "ai_advice": "Your strong foundation in React and JavaScript puts you in an excellent position for frontend roles. Focus on TypeScript as it's becoming industry standard. Build 2-3 portfolio projects showcasing your React skills with TypeScript. Contributing to open-source React projects will significantly boost your profile."
+        },
+        {
+          "role_name": "Full Stack Developer",
+          "probability": 72,
+          "confidence": "high",
+          "timeframe": "12-18 months",
+          "salary_range": "$80,000 - $110,000",
+          "skills_match": ["JavaScript", "React", "Python", "SQL"],
+          "skills_gap": ["Node.js", "Express", "MongoDB", "REST APIs", "Docker"],
+          "skill_importance": {
+            "Node.js": "critical",
+            "Express": "critical",
+            "REST APIs": "critical",
+            "MongoDB": "high",
+            "Docker": "medium"
+          },
+          "learning_path": [
+            {
+              "step": 1,
+              "skill": "Node.js & Express",
+              "estimated_time": "6 weeks",
+              "resources": ["Node.js Documentation", "Express.js Guide", "Node.js Design Patterns"],
+              "priority": "critical"
+            },
+            {
+              "step": 2,
+              "skill": "REST API Development",
+              "estimated_time": "4 weeks",
+              "resources": ["RESTful API Design", "API Security Best Practices", "Postman Learning"],
+              "priority": "critical"
+            },
+            {
+              "step": 3,
+              "skill": "MongoDB & Database Design",
+              "estimated_time": "3 weeks",
+              "resources": ["MongoDB University", "Database Design Course", "Mongoose Documentation"],
+              "priority": "high"
+            },
+            {
+              "step": 4,
+              "skill": "Docker & Containerization",
+              "estimated_time": "2 weeks",
+              "resources": ["Docker Documentation", "Docker Mastery Course", "Docker Best Practices"],
+              "priority": "medium"
+            }
+          ],
+          "similar_alumni_count": 58,
+          "transition_success_rate": 82,
+          "avg_transition_duration": "14 months",
+          "industry_insights": "Full-stack developers are highly sought after. The MERN stack (MongoDB, Express, React, Node.js) is particularly popular among startups and mid-size companies.",
+          "ai_advice": "Your Python and SQL background gives you a head start in backend development. Complement your React skills with Node.js to become a MERN stack developer. Build a complete full-stack application and deploy it to showcase end-to-end capabilities."
+        },
+        {
+          "role_name": "Software Engineer",
+          "probability": 78,
+          "confidence": "high",
+          "timeframe": "12-18 months",
+          "salary_range": "$85,000 - $120,000",
+          "skills_match": ["JavaScript", "Python", "SQL", "Git"],
+          "skills_gap": ["Data Structures & Algorithms", "System Design", "OOP", "Testing"],
+          "skill_importance": {
+            "Data Structures & Algorithms": "critical",
+            "System Design": "high",
+            "OOP": "high",
+            "Testing": "medium"
+          },
+          "learning_path": [
+            {
+              "step": 1,
+              "skill": "Data Structures & Algorithms",
+              "estimated_time": "8 weeks",
+              "resources": ["LeetCode", "Cracking the Coding Interview", "AlgoExpert"],
+              "priority": "critical"
+            },
+            {
+              "step": 2,
+              "skill": "System Design Fundamentals",
+              "estimated_time": "6 weeks",
+              "resources": ["System Design Primer", "Designing Data-Intensive Applications", "System Design Interview"],
+              "priority": "high"
+            },
+            {
+              "step": 3,
+              "skill": "Object-Oriented Programming",
+              "estimated_time": "4 weeks",
+              "resources": ["Design Patterns", "Clean Code", "SOLID Principles"],
+              "priority": "high"
+            },
+            {
+              "step": 4,
+              "skill": "Testing & TDD",
+              "estimated_time": "3 weeks",
+              "resources": ["Test-Driven Development", "Unit Testing Best Practices", "Integration Testing"],
+              "priority": "medium"
+            }
+          ],
+          "similar_alumni_count": 124,
+          "transition_success_rate": 85,
+          "avg_transition_duration": "15 months",
+          "industry_insights": "Software engineering roles offer diverse opportunities across industries. Strong fundamentals in DSA and system design are key for landing positions at top tech companies.",
+          "ai_advice": "Practice coding problems daily on LeetCode (aim for 200+ problems). Your computer science background gives you theoretical knowledge - now focus on practical application and interview preparation. Join mock interview sessions and contribute to real-world projects."
+        },
+        {
+          "role_name": "Data Analyst",
+          "probability": 65,
+          "confidence": "medium",
+          "timeframe": "9-15 months",
+          "salary_range": "$65,000 - $90,000",
+          "skills_match": ["Python", "SQL"],
+          "skills_gap": ["Data Visualization", "Statistics", "Excel", "Tableau", "pandas"],
+          "skill_importance": {
+            "Data Visualization": "critical",
+            "Statistics": "critical",
+            "pandas": "high",
+            "Tableau": "high",
+            "Excel": "medium"
+          },
+          "learning_path": [
+            {
+              "step": 1,
+              "skill": "Statistics & Probability",
+              "estimated_time": "5 weeks",
+              "resources": ["Khan Academy Statistics", "Statistics for Data Science", "Practical Statistics"],
+              "priority": "critical"
+            },
+            {
+              "step": 2,
+              "skill": "Data Analysis with pandas",
+              "estimated_time": "4 weeks",
+              "resources": ["pandas Documentation", "Python for Data Analysis", "DataCamp pandas Course"],
+              "priority": "high"
+            },
+            {
+              "step": 3,
+              "skill": "Data Visualization (Tableau/PowerBI)",
+              "estimated_time": "3 weeks",
+              "resources": ["Tableau Public Gallery", "Data Visualization Best Practices", "Storytelling with Data"],
+              "priority": "high"
+            },
+            {
+              "step": 4,
+              "skill": "Advanced Excel & Reporting",
+              "estimated_time": "2 weeks",
+              "resources": ["Excel for Data Analysis", "Dashboard Design", "Business Intelligence Fundamentals"],
+              "priority": "medium"
+            }
+          ],
+          "similar_alumni_count": 31,
+          "transition_success_rate": 75,
+          "avg_transition_duration": "12 months",
+          "industry_insights": "Data analyst roles are growing across all industries. Strong SQL and visualization skills are essential. Many companies use this as a stepping stone to data science roles.",
+          "ai_advice": "Your Python and SQL skills provide a solid foundation. Focus on statistical analysis and data visualization. Create a portfolio of data analysis projects with clear insights and visualizations. Consider getting certified in Tableau or PowerBI."
+        },
+        {
+          "role_name": "UI/UX Developer",
+          "probability": 58,
+          "confidence": "medium",
+          "timeframe": "12-18 months",
+          "salary_range": "$70,000 - $100,000",
+          "skills_match": ["JavaScript", "React"],
+          "skills_gap": ["UI Design", "Figma", "CSS/SASS", "Design Systems", "User Research"],
+          "skill_importance": {
+            "UI Design": "critical",
+            "Figma": "critical",
+            "CSS/SASS": "high",
+            "Design Systems": "high",
+            "User Research": "medium"
+          },
+          "learning_path": [
+            {
+              "step": 1,
+              "skill": "UI Design Fundamentals",
+              "estimated_time": "6 weeks",
+              "resources": ["Design Principles", "Color Theory", "Typography", "UI Design Patterns"],
+              "priority": "critical"
+            },
+            {
+              "step": 2,
+              "skill": "Figma & Prototyping",
+              "estimated_time": "4 weeks",
+              "resources": ["Figma Tutorial", "Prototyping Best Practices", "Design Handoff"],
+              "priority": "critical"
+            },
+            {
+              "step": 3,
+              "skill": "Advanced CSS & SASS",
+              "estimated_time": "3 weeks",
+              "resources": ["CSS Grid & Flexbox", "SASS Documentation", "CSS Animation"],
+              "priority": "high"
+            },
+            {
+              "step": 4,
+              "skill": "Design Systems",
+              "estimated_time": "3 weeks",
+              "resources": ["Building Design Systems", "Component Libraries", "Storybook"],
+              "priority": "high"
+            }
+          ],
+          "similar_alumni_count": 22,
+          "transition_success_rate": 70,
+          "avg_transition_duration": "15 months",
+          "industry_insights": "UI/UX developer role bridges design and development. Companies value developers who can implement designs with pixel-perfect accuracy while understanding design principles.",
+          "ai_advice": "Combine your React skills with design knowledge. Start by recreating beautiful UI designs, then move to creating your own. Build a design portfolio showcasing both design and implementation skills."
+        }
+      ],
+      "last_updated": "2024-12-28T10:00:00Z",
+      "next_update": "2025-01-28T10:00:00Z"
+    },
+    {
+      "id": "pred-660e8400-e29b-41d4-a716",
+      "user_id": "660e8400-e29b-41d4-a716-446655440001",
+      "user_name": "Sarah Johnson",
+      "user_role": "alumni",
+      "current_role": "Senior Product Manager",
+      "current_skills": ["Product Management", "Agile", "User Research", "Data Analysis", "Roadmapping", "Stakeholder Management"],
+      "experience_level": "senior",
+      "predicted_roles": [
+        {
+          "role_name": "Director of Product",
+          "probability": 82,
+          "confidence": "high",
+          "timeframe": "18-24 months",
+          "salary_range": "$160,000 - $220,000",
+          "skills_match": ["Product Management", "Stakeholder Management", "Roadmapping"],
+          "skills_gap": ["Team Leadership", "P&L Management", "Strategy Development", "Executive Communication"],
+          "skill_importance": {
+            "Team Leadership": "critical",
+            "Strategy Development": "critical",
+            "P&L Management": "high",
+            "Executive Communication": "high"
+          },
+          "learning_path": [
+            {
+              "step": 1,
+              "skill": "Team Leadership & Management",
+              "estimated_time": "6 months",
+              "resources": ["Leadership Training", "Managing Product Managers", "High Output Management"],
+              "priority": "critical"
+            },
+            {
+              "step": 2,
+              "skill": "Strategic Product Planning",
+              "estimated_time": "4 months",
+              "resources": ["Product Strategy", "OKRs Masterclass", "Strategic Thinking"],
+              "priority": "critical"
+            },
+            {
+              "step": 3,
+              "skill": "P&L and Business Metrics",
+              "estimated_time": "3 months",
+              "resources": ["Business Finance for PMs", "Unit Economics", "Financial Modeling"],
+              "priority": "high"
+            },
+            {
+              "step": 4,
+              "skill": "Executive Communication",
+              "estimated_time": "2 months",
+              "resources": ["Executive Presence", "Storytelling for Leaders", "Board Presentations"],
+              "priority": "high"
+            }
+          ],
+          "similar_alumni_count": 18,
+          "transition_success_rate": 78,
+          "avg_transition_duration": "20 months",
+          "industry_insights": "Director roles require proven ability to lead teams and drive product strategy. Experience managing multiple PMs and demonstrating business impact are key.",
+          "ai_advice": "You're well-positioned for this transition with your senior PM experience. Focus on developing leadership skills and taking on more strategic responsibilities. Mentor junior PMs and lead cross-functional initiatives to demonstrate leadership capability."
+        },
+        {
+          "role_name": "VP of Product",
+          "probability": 68,
+          "confidence": "medium",
+          "timeframe": "30-36 months",
+          "salary_range": "$200,000 - $300,000",
+          "skills_match": ["Product Management", "Stakeholder Management", "Strategy"],
+          "skills_gap": ["Executive Leadership", "Org Building", "Vision Setting", "Board Communication", "M&A Experience"],
+          "skill_importance": {
+            "Executive Leadership": "critical",
+            "Vision Setting": "critical",
+            "Org Building": "critical",
+            "Board Communication": "high",
+            "M&A Experience": "medium"
+          },
+          "learning_path": [
+            {
+              "step": 1,
+              "skill": "Executive Leadership",
+              "estimated_time": "12 months",
+              "resources": ["Executive MBA", "Leadership at Scale", "Executive Coaching"],
+              "priority": "critical"
+            },
+            {
+              "step": 2,
+              "skill": "Product Vision & Strategy",
+              "estimated_time": "6 months",
+              "resources": ["Product Leadership", "Vision Setting Workshops", "Strategic Product Management"],
+              "priority": "critical"
+            },
+            {
+              "step": 3,
+              "skill": "Organization Building",
+              "estimated_time": "6 months",
+              "resources": ["Building Product Teams", "Org Design", "Scaling Product Organizations"],
+              "priority": "critical"
+            },
+            {
+              "step": 4,
+              "skill": "Board-Level Communication",
+              "estimated_time": "3 months",
+              "resources": ["Board Presentation Skills", "C-Suite Communication", "Executive Storytelling"],
+              "priority": "high"
+            }
+          ],
+          "similar_alumni_count": 8,
+          "transition_success_rate": 65,
+          "avg_transition_duration": "33 months",
+          "industry_insights": "VP Product roles typically require 10+ years of product experience with proven track record of building and scaling product organizations. Often need experience at multiple companies.",
+          "ai_advice": "This is a significant leap requiring extensive leadership experience. Consider the Director path first. Build relationships with executives, take on strategic company-wide initiatives, and develop a strong network in the product community."
+        },
+        {
+          "role_name": "Chief Product Officer (CPO)",
+          "probability": 45,
+          "confidence": "low",
+          "timeframe": "48-60 months",
+          "salary_range": "$250,000 - $400,000+",
+          "skills_match": ["Product Strategy", "Stakeholder Management"],
+          "skills_gap": ["C-Suite Experience", "Board Management", "Company Strategy", "Fundraising", "M&A", "P&L Ownership"],
+          "skill_importance": {
+            "C-Suite Experience": "critical",
+            "Company Strategy": "critical",
+            "Board Management": "critical",
+            "P&L Ownership": "high",
+            "Fundraising": "medium"
+          },
+          "learning_path": [
+            {
+              "step": 1,
+              "skill": "C-Level Leadership",
+              "estimated_time": "24 months",
+              "resources": ["Executive MBA", "C-Suite Coaching", "Leadership at Scale"],
+              "priority": "critical"
+            },
+            {
+              "step": 2,
+              "skill": "Company-Level Strategy",
+              "estimated_time": "12 months",
+              "resources": ["Corporate Strategy", "Business Model Innovation", "Strategic Planning"],
+              "priority": "critical"
+            },
+            {
+              "step": 3,
+              "skill": "Board Relations & Governance",
+              "estimated_time": "6 months",
+              "resources": ["Board Governance", "Investor Relations", "Corporate Governance"],
+              "priority": "critical"
+            }
+          ],
+          "similar_alumni_count": 3,
+          "transition_success_rate": 55,
+          "avg_transition_duration": "54 months",
+          "industry_insights": "CPO roles are rare and highly competitive. Usually requires proven track record as VP or Director at successful companies, often with multiple successful product launches.",
+          "ai_advice": "This is a long-term goal requiring significant experience progression through Director and VP roles first. Focus on building a strong track record of product success and leadership. Consider startup CPO roles as an alternative faster path."
+        }
+      ],
+      "last_updated": "2024-12-28T10:00:00Z",
+      "next_update": "2025-01-28T10:00:00Z"
+    },
+    {
+      "id": "pred-bb0e8400-e29b-41d4-a716",
+      "user_id": "bb0e8400-e29b-41d4-a716-446655440006",
+      "user_name": "James Wilson",
+      "user_role": "student",
+      "current_role": "Business Analytics Student",
+      "current_skills": ["Excel", "SQL", "Python", "Statistics", "Data Visualization"],
+      "experience_level": "entry",
+      "predicted_roles": [
+        {
+          "role_name": "Business Analyst",
+          "probability": 88,
+          "confidence": "high",
+          "timeframe": "6-12 months",
+          "salary_range": "$60,000 - $80,000",
+          "skills_match": ["Excel", "SQL", "Data Visualization"],
+          "skills_gap": ["Business Process Modeling", "Requirements Gathering", "Stakeholder Management", "Agile/Scrum"],
+          "skill_importance": {
+            "Business Process Modeling": "critical",
+            "Requirements Gathering": "critical",
+            "Stakeholder Management": "high",
+            "Agile/Scrum": "high"
+          },
+          "learning_path": [
+            {
+              "step": 1,
+              "skill": "Business Analysis Fundamentals",
+              "estimated_time": "4 weeks",
+              "resources": ["BABOK Guide", "Business Analysis Certification", "Requirements Gathering"],
+              "priority": "critical"
+            },
+            {
+              "step": 2,
+              "skill": "Process Modeling & Documentation",
+              "estimated_time": "3 weeks",
+              "resources": ["BPMN", "Process Mapping", "UML Basics"],
+              "priority": "critical"
+            },
+            {
+              "step": 3,
+              "skill": "Agile Methodologies",
+              "estimated_time": "2 weeks",
+              "resources": ["Scrum Guide", "Agile for Business Analysts", "User Stories"],
+              "priority": "high"
+            }
+          ],
+          "similar_alumni_count": 67,
+          "transition_success_rate": 92,
+          "avg_transition_duration": "9 months",
+          "industry_insights": "Business analyst roles bridge business and technology. Strong analytical skills and communication are essential. Entry-level positions are abundant across industries.",
+          "ai_advice": "Your analytical background is perfect for BA roles. Focus on understanding business processes and improving communication skills. Get certified (CBAP or similar) to stand out. Practice writing clear requirements documents."
+        },
+        {
+          "role_name": "Data Analyst",
+          "probability": 85,
+          "confidence": "high",
+          "timeframe": "6-12 months",
+          "salary_range": "$65,000 - $85,000",
+          "skills_match": ["SQL", "Python", "Statistics", "Data Visualization"],
+          "skills_gap": ["Tableau", "pandas", "Advanced Statistics", "A/B Testing"],
+          "skill_importance": {
+            "Tableau": "critical",
+            "pandas": "high",
+            "Advanced Statistics": "high",
+            "A/B Testing": "medium"
+          },
+          "learning_path": [
+            {
+              "step": 1,
+              "skill": "Advanced Data Visualization",
+              "estimated_time": "3 weeks",
+              "resources": ["Tableau Desktop Specialist", "Data Visualization Best Practices", "Dashboard Design"],
+              "priority": "critical"
+            },
+            {
+              "step": 2,
+              "skill": "Python for Data Analysis",
+              "estimated_time": "4 weeks",
+              "resources": ["pandas", "numpy", "matplotlib", "seaborn"],
+              "priority": "high"
+            },
+            {
+              "step": 3,
+              "skill": "Statistical Analysis",
+              "estimated_time": "4 weeks",
+              "resources": ["Inferential Statistics", "Hypothesis Testing", "Regression Analysis"],
+              "priority": "high"
+            }
+          ],
+          "similar_alumni_count": 52,
+          "transition_success_rate": 87,
+          "avg_transition_duration": "8 months",
+          "industry_insights": "Data analyst positions continue growing. Companies value ability to extract insights from data and communicate findings effectively.",
+          "ai_advice": "Your foundation is strong. Build a portfolio of data analysis projects with clear business insights. Master Tableau for visualization. Practice presenting data stories to non-technical audiences."
+        }
+      ],
+      "last_updated": "2024-12-28T10:00:00Z",
+      "next_update": "2025-01-28T10:00:00Z"
+    }
   ]
 }
