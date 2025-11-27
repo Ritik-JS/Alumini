@@ -1772,5 +1772,236 @@
       "description": "Whether profile verification is mandatory",
       "is_public": true
     }
+  ],
+
+  "datasetUploads": [
+    {
+      "id": "upload-001",
+      "fileName": "alumni_data_2024_q1.csv",
+      "fileSize": 2548736,
+      "datasetType": "alumni",
+      "description": "Q1 2024 alumni database export with career updates",
+      "uploadedBy": "550e8400-e29b-41d4-a716-446655440000",
+      "uploadedByName": "Admin User",
+      "uploadDate": "2024-12-15T10:30:00Z",
+      "status": "completed",
+      "progress": 100,
+      "currentStage": "stored",
+      "totalRows": 1250,
+      "processedRows": 1250,
+      "validRows": 1235,
+      "errorRows": 15,
+      "processingTime": 145,
+      "dataQualityScore": 98.8,
+      "validationErrors": [
+        {
+          "row": 45,
+          "field": "email",
+          "error": "Invalid email format",
+          "value": "invalid.email"
+        },
+        {
+          "row": 127,
+          "field": "batch_year",
+          "error": "Year out of range",
+          "value": "1899"
+        },
+        {
+          "row": 234,
+          "field": "skills",
+          "error": "Invalid JSON format",
+          "value": "[React, Node.js"
+        }
+      ],
+      "aiSystemsTriggered": [
+        {
+          "system": "Skill Graph AI",
+          "status": "completed",
+          "updatedAt": "2024-12-15T10:35:00Z"
+        },
+        {
+          "system": "Career Prediction",
+          "status": "completed",
+          "updatedAt": "2024-12-15T10:38:00Z"
+        },
+        {
+          "system": "Talent Clustering",
+          "status": "completed",
+          "updatedAt": "2024-12-15T10:40:00Z"
+        }
+      ],
+      "logs": [
+        "2024-12-15T10:30:15 - Upload started",
+        "2024-12-15T10:30:45 - Validation complete: 1235/1250 rows valid",
+        "2024-12-15T10:31:20 - Data cleaning in progress",
+        "2024-12-15T10:32:00 - AI processing triggered",
+        "2024-12-15T10:33:25 - Data stored successfully"
+      ]
+    },
+    {
+      "id": "upload-002",
+      "fileName": "job_market_trends_2024.xlsx",
+      "fileSize": 4123456,
+      "datasetType": "job_market",
+      "description": "External job market data for AI prediction training",
+      "uploadedBy": "550e8400-e29b-41d4-a716-446655440000",
+      "uploadedByName": "Admin User",
+      "uploadDate": "2024-12-20T14:15:00Z",
+      "status": "processing",
+      "progress": 67,
+      "currentStage": "ai_processing",
+      "totalRows": 5000,
+      "processedRows": 3350,
+      "validRows": 3340,
+      "errorRows": 10,
+      "processingTime": 89,
+      "dataQualityScore": 99.7,
+      "validationErrors": [
+        {
+          "row": 89,
+          "field": "salary_range",
+          "error": "Invalid format",
+          "value": "50k-60k dollars"
+        }
+      ],
+      "aiSystemsTriggered": [
+        {
+          "system": "Career Prediction",
+          "status": "processing",
+          "updatedAt": "2024-12-20T14:25:00Z"
+        }
+      ],
+      "logs": [
+        "2024-12-20T14:15:10 - Upload started",
+        "2024-12-20T14:15:45 - Validation complete: 3340/3350 rows valid",
+        "2024-12-20T14:16:30 - Data cleaning completed",
+        "2024-12-20T14:17:00 - AI processing in progress (67%)"
+      ]
+    },
+    {
+      "id": "upload-003",
+      "fileName": "educational_programs.json",
+      "fileSize": 987234,
+      "datasetType": "educational",
+      "description": "Educational programs and courses data",
+      "uploadedBy": "550e8400-e29b-41d4-a716-446655440000",
+      "uploadedByName": "Admin User",
+      "uploadDate": "2024-12-10T09:00:00Z",
+      "status": "completed",
+      "progress": 100,
+      "currentStage": "stored",
+      "totalRows": 450,
+      "processedRows": 450,
+      "validRows": 448,
+      "errorRows": 2,
+      "processingTime": 45,
+      "dataQualityScore": 99.6,
+      "validationErrors": [
+        {
+          "row": 123,
+          "field": "duration",
+          "error": "Missing required field",
+          "value": null
+        }
+      ],
+      "aiSystemsTriggered": [
+        {
+          "system": "Capsule Ranking",
+          "status": "completed",
+          "updatedAt": "2024-12-10T09:05:00Z"
+        }
+      ],
+      "logs": [
+        "2024-12-10T09:00:15 - Upload started",
+        "2024-12-10T09:00:30 - Validation complete: 448/450 rows valid",
+        "2024-12-10T09:00:45 - AI processing completed",
+        "2024-12-10T09:01:00 - Data stored successfully"
+      ]
+    },
+    {
+      "id": "upload-004",
+      "fileName": "alumni_skills_database.csv",
+      "fileSize": 1567890,
+      "datasetType": "alumni",
+      "description": "Comprehensive skills mapping for alumni profiles",
+      "uploadedBy": "550e8400-e29b-41d4-a716-446655440000",
+      "uploadedByName": "Admin User",
+      "uploadDate": "2024-12-05T16:45:00Z",
+      "status": "failed",
+      "progress": 35,
+      "currentStage": "validating",
+      "totalRows": 890,
+      "processedRows": 312,
+      "validRows": 280,
+      "errorRows": 32,
+      "processingTime": 23,
+      "dataQualityScore": 89.7,
+      "validationErrors": [
+        {
+          "row": 45,
+          "field": "user_id",
+          "error": "User not found",
+          "value": "invalid-uuid"
+        },
+        {
+          "row": 67,
+          "field": "skills",
+          "error": "Too many validation errors",
+          "value": "corrupt data"
+        }
+      ],
+      "aiSystemsTriggered": [],
+      "logs": [
+        "2024-12-05T16:45:10 - Upload started",
+        "2024-12-05T16:45:30 - Validation failed: Too many errors (>10%)",
+        "2024-12-05T16:45:35 - Upload aborted"
+      ]
+    },
+    {
+      "id": "upload-005",
+      "fileName": "career_transitions_2023.csv",
+      "fileSize": 3245678,
+      "datasetType": "job_market",
+      "description": "Historical career transition data for ML training",
+      "uploadedBy": "550e8400-e29b-41d4-a716-446655440000",
+      "uploadedByName": "Admin User",
+      "uploadDate": "2024-11-28T11:20:00Z",
+      "status": "completed",
+      "progress": 100,
+      "currentStage": "stored",
+      "totalRows": 2340,
+      "processedRows": 2340,
+      "validRows": 2335,
+      "errorRows": 5,
+      "processingTime": 178,
+      "dataQualityScore": 99.8,
+      "validationErrors": [
+        {
+          "row": 456,
+          "field": "transition_date",
+          "error": "Invalid date format",
+          "value": "2023-13-01"
+        }
+      ],
+      "aiSystemsTriggered": [
+        {
+          "system": "Career Prediction",
+          "status": "completed",
+          "updatedAt": "2024-11-28T11:25:00Z"
+        },
+        {
+          "system": "Skill Graph AI",
+          "status": "completed",
+          "updatedAt": "2024-11-28T11:28:00Z"
+        }
+      ],
+      "logs": [
+        "2024-11-28T11:20:10 - Upload started",
+        "2024-11-28T11:21:00 - Validation complete: 2335/2340 rows valid",
+        "2024-11-28T11:22:15 - Data cleaning completed",
+        "2024-11-28T11:23:00 - AI processing completed",
+        "2024-11-28T11:23:58 - Data stored successfully"
+      ]
+    }
   ]
 }
