@@ -82,6 +82,12 @@ const AdminAuditLogs = lazy(() => import('@/page/admin/AdminAuditLogs'));
 const AdminFileUploads = lazy(() => import('@/page/admin/AdminFileUploads'));
 const AdminNotifications = lazy(() => import('@/page/admin/AdminNotifications'));
 
+// Phase 11.1: Dataset Upload (AI Features)
+const DatasetUpload = lazy(() => import('@/page/admin/datasets/DatasetUpload'));
+const DatasetProgress = lazy(() => import('@/page/admin/datasets/DatasetProgress'));
+const DatasetReport = lazy(() => import('@/page/admin/datasets/DatasetReport'));
+const DatasetHistory = lazy(() => import('@/page/admin/datasets/DatasetHistory'));
+
 // Phase 9: Advanced Features
 const SkillGraph = lazy(() => import('@/page/advanced/SkillGraph'));
 const CareerPaths = lazy(() => import('@/page/advanced/CareerPaths'));
@@ -527,6 +533,40 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminNotifications />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Phase 11.1: Dataset Upload Routes - Protected (Admin Only) */}
+          <Route
+            path="/admin/datasets/upload"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <DatasetUpload />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/datasets/upload/:uploadId/progress"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <DatasetProgress />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/datasets/upload/:uploadId/report"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <DatasetReport />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/datasets/history"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <DatasetHistory />
               </ProtectedRoute>
             }
           />

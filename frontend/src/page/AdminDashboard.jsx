@@ -223,6 +223,11 @@ const AdminDashboard = () => {
                     <div className="text-sm font-medium text-gray-900">System Settings</div>
                     <div className="text-xs text-gray-500 mt-1">Configure platform</div>
                   </Link>
+                  <Link to="/admin/datasets/history" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-red-500 transition-all bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300" data-testid="admin-link-datasets">
+                    <TrendingUp className="h-8 w-8 text-blue-600 mb-2" />
+                    <div className="text-sm font-medium text-gray-900">AI Dataset Upload</div>
+                    <div className="text-xs text-gray-500 mt-1">Upload & manage datasets</div>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
