@@ -100,6 +100,8 @@ const AlumniCard = lazy(() => import('@/page/advanced/AlumniCard'));
 const TalentHeatmap = lazy(() => import('@/page/advanced/TalentHeatmap'));
 const KnowledgeCapsules = lazy(() => import('@/page/advanced/KnowledgeCapsules'));
 const KnowledgeCapsuleDetail = lazy(() => import('@/page/advanced/KnowledgeCapsuleDetail'));
+const CreateKnowledgeCapsule = lazy(() => import('@/page/advanced/CreateKnowledgeCapsule'));
+const LearningPath = lazy(() => import('@/page/advanced/LearningPath'));
 
 // Phase 11.2: Career Predictions (AI Features)
 const CareerInsights = lazy(() => import('@/page/career/CareerInsights'));
@@ -652,6 +654,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin', 'alumni', 'student', 'recruiter']}>
                 <KnowledgeCapsules />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/knowledge/create"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'alumni']}>
+                <CreateKnowledgeCapsule />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/knowledge/learning-path"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'alumni', 'student', 'recruiter']}>
+                <LearningPath />
               </ProtectedRoute>
             }
           />
