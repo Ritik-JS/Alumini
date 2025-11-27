@@ -6,7 +6,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Briefcase, Calendar, AlertCircle, TrendingUp, CheckCircle, UserCheck, Award } from 'lucide-react';
+import { Users, Briefcase, Calendar, AlertCircle, TrendingUp, CheckCircle, UserCheck, Award, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import mockData from '@/mockdata.json';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -227,6 +227,11 @@ const AdminDashboard = () => {
                     <TrendingUp className="h-8 w-8 text-blue-600 mb-2" />
                     <div className="text-sm font-medium text-gray-900">AI Dataset Upload</div>
                     <div className="text-xs text-gray-500 mt-1">Upload & manage datasets</div>
+                  </Link>
+                  <Link to="/admin/ai/monitor" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-red-500 transition-all bg-gradient-to-br from-purple-50 to-pink-50 border-purple-300" data-testid="admin-link-ai-monitor">
+                    <Activity className="h-8 w-8 text-purple-600 mb-2" />
+                    <div className="text-sm font-medium text-gray-900">AI System Monitor</div>
+                    <div className="text-xs text-gray-500 mt-1">Monitor AI health & metrics</div>
                   </Link>
                 </div>
               </CardContent>

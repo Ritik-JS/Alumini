@@ -89,6 +89,9 @@ const DatasetProgress = lazy(() => import('@/page/admin/datasets/DatasetProgress
 const DatasetReport = lazy(() => import('@/page/admin/datasets/DatasetReport'));
 const DatasetHistory = lazy(() => import('@/page/admin/datasets/DatasetHistory'));
 
+// Phase 11.8: AI System Health Monitor (Admin)
+const AdminAIMonitor = lazy(() => import('@/page/admin/AdminAIMonitor'));
+
 // Phase 9: Advanced Features
 const SkillGraph = lazy(() => import('@/page/advanced/SkillGraph'));
 const CareerPaths = lazy(() => import('@/page/advanced/CareerPaths'));
@@ -581,6 +584,16 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminCardVerifications />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Phase 11.8: AI System Health Monitor (Admin) */}
+          <Route
+            path="/admin/ai/monitor"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminAIMonitor />
               </ProtectedRoute>
             }
           />
