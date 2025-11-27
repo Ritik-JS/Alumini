@@ -1,10 +1,11 @@
-# 🔧 BACKEND WORKFLOW - Alumni Portal System
+# 🔧 COMPREHENSIVE BACKEND WORKFLOW - Alumni Portal System
+## Production-Ready Backend with AI Systems Integration
 
 ## Overview
-This workflow outlines the complete backend development for the Alumni Portal, divided into phases of 4-5 credits each. Each phase builds upon the previous one and includes testing checkpoints.
+This workflow outlines the complete backend development for the Alumni Portal, divided into **11 phases** of 4-5 credits each. The workflow now includes **6 AI/ML Systems** and an **Admin Dataset Upload Pipeline** for intelligent features.
 
 ## 🗄️ Database Schema
-**IMPORTANT**: A comprehensive MySQL 8.0 / MariaDB 10.5+ compatible database schema is available in `/app/database_schema.sql`. This schema covers all phases and must be imported before starting backend development.
+**IMPORTANT**: A comprehensive MySQL 8.0 / MariaDB 10.5+ compatible database schema is available in `/app/database_schema.sql`. This schema includes **all base tables + AI system tables** and must be imported before starting backend development.
 
 ### Database Setup Instructions
 1. **Using MySQL 8.0 CLI**:
@@ -25,7 +26,7 @@ This workflow outlines the complete backend development for the Alumni Portal, d
 
 ### Schema Overview
 The database schema includes:
-- ✅ 40+ normalized tables covering all features
+- ✅ 50+ normalized tables covering all features + AI systems
 - ✅ Foreign key relationships and constraints
 - ✅ Optimized indexes for query performance
 - ✅ JSON columns for flexible data storage
@@ -33,13 +34,52 @@ The database schema includes:
 - ✅ Stored procedures for complex operations
 - ✅ Views for common complex queries
 - ✅ Initial data seeding for badges and config
+- ✅ **AI System Tables**: skill_embeddings, career_transition_matrix, talent_clusters, etc.
+- ✅ **Dataset Upload Tables**: dataset_uploads, dataset_processing_logs, ai_processing_queue
 
-### Note for LLM API Integration
-When using MySQL/MariaDB with the backend:
-- Replace MongoDB connection code with MySQL connector (e.g., `mysql-connector-python` or `aiomysql` for async)
-- Use SQL queries instead of MongoDB queries
-- Leverage stored procedures for complex operations
-- JSON columns support flexible schemas similar to MongoDB documents
+## 🛠️ Technology Stack
+
+### Backend Core
+```python
+FastAPI==0.110.1          # Modern async web framework
+uvicorn==0.25.0           # ASGI server
+aiomysql==0.2.0           # Async MySQL driver
+redis==5.0.0              # Redis client for caching
+celery==5.3.4             # Background task queue
+```
+
+### AI/ML Stack (Phase 10)
+```python
+# Python ML Libraries
+scikit-learn==1.4.0       # ML algorithms (clustering, classification)
+pandas==2.2.0             # Data manipulation
+numpy==1.26.0             # Numerical computing
+scipy==1.12.0             # Scientific computing
+
+# Embeddings & Similarity
+sentence-transformers==2.3.1  # Text embeddings for skill matching
+faiss-cpu==1.7.4          # Fast similarity search
+
+# LLM Integration (via Emergent LLM Key)
+openai==1.10.0            # For GPT models
+anthropic==0.18.0         # For Claude models
+google-generativeai==0.3.2  # For Gemini models
+```
+
+### Data Processing
+```python
+python-multipart==0.0.9   # File upload handling
+openpyxl==3.1.2          # Excel file processing
+xlrd==2.0.1              # Legacy Excel support
+```
+
+### Security & Auth
+```python
+python-jose==3.3.0        # JWT tokens
+passlib==1.7.4           # Password hashing
+bcrypt==4.1.3            # Secure hashing
+pyjwt==2.10.1            # JWT implementation
+```
 
 ---
 
@@ -622,7 +662,849 @@ When using MySQL/MariaDB with the backend:
 
 ---
 
-## 📋 PHASE 10: Performance, Security & Deployment (4-5 credits)
+## 📋 PHASE 10: AI Systems Integration & Admin Dataset Upload (10-12 credits)
+## 🤖 Production-Ready AI/ML Backend Systems
+
+### Overview
+This phase implements **6 AI/ML Systems** and an **Admin Dataset Upload Pipeline** to create intelligent features that analyze alumni data, predict career paths, cluster talent geographically, validate identities, rank content, and score engagement.
+
+### Objectives
+- Set up AI/ML infrastructure (Redis, Celery, ML libraries)
+- Implement Admin Dataset Upload System with validation pipeline
+- Build 6 AI Systems: Skill Graph, Career Prediction, Talent Heatmap, Alumni ID Validation, Capsule Ranking, Engagement Scoring
+- Create background job processing for AI tasks
+- Integrate LLM capabilities via Emergent LLM Key
+
+---
+
+### SUB-PHASE 10.1: Infrastructure Setup (2-3 credits)
+
+#### Tasks
+1. **Redis Configuration**
+   - Install Redis server
+   - Configure connection pooling
+   - Set up Redis for caching and queuing
+   - Test connection from FastAPI
+   - Configure Redis keys schema:
+     ```
+     session:{user_id} → user session data
+     api:cache:{endpoint}:{params_hash} → API response cache
+     ai:embeddings:{skill_name} → skill embedding vectors
+     ai:predictions:{user_id} → career predictions
+     queue:ai_processing:{task_id} → task status
+     ```
+
+2. **Celery Configuration**
+   - Install Celery and dependencies
+   - Configure Celery workers (3 queues: default, ai_processing, file_processing)
+   - Set up Celery beat for scheduled tasks
+   - Create celery.py configuration:
+     ```python
+     # celery.py
+     from celery import Celery
+     
+     app = Celery(
+         'alumni_portal',
+         broker='redis://localhost:6379/0',
+         backend='redis://localhost:6379/0'
+     )
+     
+     app.conf.update(
+         task_routes={
+             'upload.*': {'queue': 'file_processing'},
+             'ai.*': {'queue': 'ai_processing'},
+         },
+         task_serializer='json',
+         result_serializer='json',
+         timezone='UTC',
+     )
+     ```
+   - Test task execution
+   - Monitor worker health
+
+3. **ML Libraries Installation**
+   - Install core ML libraries:
+     ```bash
+     pip install scikit-learn==1.4.0 pandas==2.2.0 numpy==1.26.0 scipy==1.12.0
+     pip install sentence-transformers==2.3.1 faiss-cpu==1.7.4
+     ```
+   - Test library imports and basic functionality
+   - Set up model storage directory structure
+
+4. **File Storage Setup**
+   - Configure S3 or local file storage for:
+     - Uploaded datasets (CSV/Excel/JSON)
+     - Trained ML models
+     - Profile photos and CVs
+   - Test file upload/download
+   - Set up file retention policies
+
+#### Testing Checkpoints
+- Verify Redis connection and caching
+- Test Celery task execution
+- Verify ML libraries work
+- Test file storage operations
+
+#### Deliverables
+- Redis configuration and connection
+- Celery workers with queue management
+- ML environment setup
+- File storage infrastructure
+
+---
+
+### SUB-PHASE 10.2: Admin Dataset Upload System (2-3 credits)
+
+#### Database Tables
+- `dataset_uploads` - Track upload metadata and status
+- `dataset_processing_logs` - Log each processing stage
+- (Tables already created in database_schema.sql)
+
+#### Upload Flow Architecture
+```
+1. File Upload (Admin) → 2. Validation → 3. Cleaning → 4. AI Pipeline Trigger → 5. Storage → 6. Notification
+```
+
+#### Tasks
+1. **Upload Endpoint**
+   ```python
+   POST /api/admin/datasets/upload
+   Content-Type: multipart/form-data
+   
+   Request:
+   {
+     "file": <file_binary>,
+     "dataset_type": "alumni",  # or "job_market", "educational"
+     "description": "Q1 2025 Alumni Data"
+   }
+   
+   Response:
+   {
+     "success": true,
+     "data": {
+       "upload_id": "uuid-123",
+       "status": "pending",
+       "file_name": "alumni_data.csv",
+       "estimated_processing_time": "5-10 minutes"
+     }
+   }
+   ```
+   - File format validation (CSV, Excel, JSON)
+   - File size limit enforcement (50MB)
+   - Store metadata in `dataset_uploads` table
+   - Upload file to S3/storage
+
+2. **Progress Tracking**
+   ```python
+   GET /api/admin/datasets/upload/{upload_id}/progress
+   
+   Response:
+   {
+     "upload_id": "uuid-123",
+     "status": "processing",
+     "progress_percentage": 65,
+     "current_stage": "cleaning",
+     "total_rows": 1000,
+     "processed_rows": 650,
+     "valid_rows": 640,
+     "error_rows": 10
+   }
+   ```
+   - Real-time progress via Redis
+   - WebSocket support for live updates (optional)
+
+3. **Validation Service**
+   - Schema validation for each file type:
+     - **Alumni Dataset**: email, name, batch_year, department, current_company, skills, location
+     - **Job Market Dataset**: job_title, company, industry, location, salary_range, required_skills
+     - **Educational Dataset**: student_id, email, course_name, grade, skills_learned
+   - Data type checks
+   - Required field validation
+   - Duplicate detection
+   - Create validation report
+
+4. **Cleaning Service**
+   - Remove invalid rows
+   - Normalize text fields (trim, lowercase)
+   - Standardize dates
+   - Handle missing values
+   - Fix encoding issues
+   - Log cleaning operations
+
+5. **Background Task Implementation**
+   ```python
+   @celery_app.task(name='upload.process_dataset', bind=True)
+   async def process_dataset_task(self, upload_id: str):
+       """Process uploaded dataset with validation, cleaning, and AI pipeline"""
+       try:
+           # Update status
+           await update_upload_status(upload_id, 'validating')
+           
+           # 1. Validation
+           validation_result = await validate_dataset(upload_id)
+           if not validation_result['is_valid']:
+               await update_upload_status(upload_id, 'failed')
+               return
+           
+           # 2. Cleaning
+           await update_upload_status(upload_id, 'cleaning')
+           cleaned_data = await clean_dataset(upload_id)
+           
+           # 3. AI Pipeline Trigger
+           await update_upload_status(upload_id, 'processing')
+           await trigger_ai_pipeline(upload_id)
+           
+           # 4. Storage
+           await store_cleaned_data(upload_id, cleaned_data)
+           
+           # 5. Complete
+           await update_upload_status(upload_id, 'completed')
+           await send_completion_notification(upload_id)
+           
+       except Exception as e:
+           await update_upload_status(upload_id, 'failed', error=str(e))
+   ```
+
+6. **Report Generation**
+   ```python
+   GET /api/admin/datasets/upload/{upload_id}/report
+   
+   Response:
+   {
+     "upload_id": "uuid-123",
+     "status": "completed",
+     "summary": {
+       "total_rows": 1000,
+       "valid_rows": 950,
+       "error_rows": 50,
+       "processing_time_seconds": 320
+     },
+     "validation_report": {
+       "errors": [
+         {"row": 15, "error": "Invalid email format"},
+         {"row": 23, "error": "Missing batch_year"}
+       ]
+     },
+     "ai_processing_triggered": [
+       "skill_graph_update",
+       "career_path_recalculation"
+     ]
+   }
+   ```
+
+#### Testing Checkpoints
+- Upload CSV with 1000 rows
+- Verify validation catches errors
+- Confirm cleaning normalizes data
+- Check progress updates work
+- Validate report generation
+- Test corrupted file handling
+
+#### Deliverables
+- File upload API
+- Validation and cleaning pipeline
+- Progress tracking system
+- Report generation
+- Background task processing
+
+---
+
+### SUB-PHASE 10.3: Skill Graph AI System (2 credits)
+
+#### Purpose
+Build dynamic skill relationship graph to understand which skills are related, identify skill clusters, and track emerging trends.
+
+#### Database Tables
+- `skill_embeddings` - Store 384-dim vectors for semantic similarity
+- `skill_similarities` - Precomputed similarity matrix
+- `skill_graph` - Skill relationships and metadata
+
+#### Architecture
+```
+Data Sources → Skill Extraction → Embedding Generation → Similarity Calculation → Graph Construction → API Responses
+```
+
+#### Tasks
+1. **Skill Extraction & Normalization**
+   ```python
+   async def extract_skills():
+       # Extract from alumni profiles
+       alumni_skills = await db.query(
+           "SELECT DISTINCT skill FROM alumni_profiles, JSON_TABLE(skills, '$[*]' COLUMNS(skill VARCHAR(100) PATH '$')) AS extracted"
+       )
+       
+       # Extract from job postings
+       job_skills = await db.query(
+           "SELECT DISTINCT skill FROM jobs, JSON_TABLE(skills_required, '$[*]' COLUMNS(skill VARCHAR(100) PATH '$')) AS extracted"
+       )
+       
+       # Normalize (lowercase, trim, merge similar)
+       all_skills = normalize_skills(alumni_skills + job_skills)
+       return all_skills
+   ```
+
+2. **Embedding Generation**
+   ```python
+   from sentence_transformers import SentenceTransformer
+   
+   class SkillGraphAI:
+       def __init__(self):
+           self.model = SentenceTransformer('all-MiniLM-L6-v2')
+           self.dimension = 384
+       
+       async def generate_embeddings(self, skills: list) -> dict:
+           """Generate 384-dim embeddings for skills"""
+           embeddings = self.model.encode(skills)
+           
+           # Store in database
+           for skill, embedding in zip(skills, embeddings):
+               await db.execute(
+                   "INSERT INTO skill_embeddings (skill_name, embedding_vector) VALUES (%s, %s) ON DUPLICATE KEY UPDATE embedding_vector=%s",
+                   (skill, json.dumps(embedding.tolist()), json.dumps(embedding.tolist()))
+               )
+           
+           # Cache in Redis
+           for skill, embedding in zip(skills, embeddings):
+               await redis.set(f"ai:embeddings:{skill}", json.dumps(embedding.tolist()), ex=86400)
+           
+           return {skill: emb.tolist() for skill, emb in zip(skills, embeddings)}
+   ```
+
+3. **Similarity Calculation with FAISS**
+   ```python
+   import faiss
+   import numpy as np
+   
+   async def calculate_similarities(embeddings: np.array, skills: list):
+       # Build FAISS index
+       index = faiss.IndexFlatIP(384)  # Inner product for cosine similarity
+       faiss.normalize_L2(embeddings)  # Normalize for cosine
+       index.add(embeddings)
+       
+       # Find top 10 similar skills for each skill
+       similarities = []
+       for i, skill in enumerate(skills):
+           embedding = embeddings[i:i+1]
+           distances, indices = index.search(embedding, 11)  # Get 11 (including self)
+           
+           for j, (idx, dist) in enumerate(zip(indices[0][1:], distances[0][1:])):
+               if dist > 0.3:  # Threshold
+                   similarities.append({
+                       'skill_1': skill,
+                       'skill_2': skills[idx],
+                       'similarity_score': float(dist)
+                   })
+       
+       # Store in database
+       await db.execute_many(
+           "INSERT INTO skill_similarities (skill_1, skill_2, similarity_score) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE similarity_score=%s",
+           [(s['skill_1'], s['skill_2'], s['similarity_score'], s['similarity_score']) for s in similarities]
+       )
+   ```
+
+4. **API Endpoints**
+   ```python
+   # Get skill network data
+   GET /api/ai/skill-graph/network
+   Response:
+   {
+     "nodes": [
+       {"id": "Python", "alumni_count": 150, "job_count": 45, "popularity": 0.85},
+       {"id": "React", "alumni_count": 120, "job_count": 38, "popularity": 0.78}
+     ],
+     "edges": [
+       {"source": "Python", "target": "Django", "weight": 0.85},
+       {"source": "Python", "target": "ML", "weight": 0.79}
+     ]
+   }
+   
+   # Get related skills
+   GET /api/ai/skill-graph/related/{skill_name}?limit=10
+   Response:
+   {
+     "skill": "Python",
+     "related_skills": [
+       {"skill": "Django", "similarity": 0.85},
+       {"skill": "Machine Learning", "similarity": 0.79}
+     ]
+   }
+   ```
+
+5. **Background Task**
+   ```python
+   @celery_app.task(name='ai.update_skill_graph')
+   async def update_skill_graph_task():
+       """Daily task to update skill graph"""
+       skills = await extract_skills()
+       embeddings = await generate_embeddings(skills)
+       await calculate_similarities(embeddings, skills)
+       await update_skill_graph_metadata(skills)
+   ```
+
+#### Testing Checkpoints
+- Generate embeddings for 100 skills
+- Verify similarity scores are accurate
+- Test API responses
+- Verify graph construction
+
+#### Deliverables
+- Skill embedding generation
+- Similarity calculation engine
+- Skill graph APIs
+- Background update task
+
+---
+
+### SUB-PHASE 10.4: Career Path Prediction Engine (2-3 credits)
+
+#### Purpose
+Predict career progression for students/alumni based on historical data, skills, and industry trends.
+
+#### Database Tables
+- `career_paths` - Historical career transitions
+- `career_predictions` - ML-generated predictions
+- `career_transition_matrix` - Transition probabilities
+- `ml_models` - Model versioning
+
+#### Tasks
+1. **Feature Engineering**
+   ```python
+   from sklearn.preprocessing import LabelEncoder, MultiLabelBinarizer
+   
+   class CareerPathPredictor:
+       def __init__(self):
+           self.role_encoder = LabelEncoder()
+           self.skill_encoder = MultiLabelBinarizer()
+       
+       async def prepare_features(self, user_profile: dict):
+           """Extract features from user profile"""
+           current_role = user_profile.get('current_role')
+           skills = user_profile.get('skills', [])
+           experience_years = user_profile.get('years_of_experience', 0)
+           
+           # Encode role
+           role_encoded = self.role_encoder.transform([current_role])[0]
+           
+           # Encode skills (multi-hot)
+           skills_encoded = self.skill_encoder.transform([skills])[0]
+           
+           # Combine features
+           features = [role_encoded, experience_years] + skills_encoded.tolist()
+           return features
+   ```
+
+2. **Transition Matrix Calculation**
+   ```python
+   async def calculate_transition_matrix():
+       """Calculate role-to-role transition probabilities"""
+       transitions = await db.query(
+           "SELECT from_role, to_role, COUNT(*) as count FROM career_paths GROUP BY from_role, to_role"
+       )
+       
+       matrix = {}
+       for trans in transitions:
+           key = (trans['from_role'], trans['to_role'])
+           total = await db.query(
+               "SELECT COUNT(*) as total FROM career_paths WHERE from_role = %s",
+               (trans['from_role'],)
+           )
+           probability = trans['count'] / total[0]['total']
+           
+           await db.execute(
+               "INSERT INTO career_transition_matrix (from_role, to_role, transition_count, transition_probability) VALUES (%s, %s, %s, %s)",
+               (trans['from_role'], trans['to_role'], trans['count'], probability)
+           )
+   ```
+
+3. **ML Model Training**
+   ```python
+   from sklearn.ensemble import RandomForestClassifier
+   import joblib
+   
+   async def train_career_model():
+       """Train Random Forest classifier for career prediction"""
+       # Get training data
+       training_data = await db.query(
+           "SELECT * FROM career_paths WHERE transition_date >= DATE_SUB(NOW(), INTERVAL 3 YEAR)"
+       )
+       
+       X = []  # Features
+       y = []  # Target (next role)
+       
+       for record in training_data:
+           features = await prepare_features(record['current_state'])
+           X.append(features)
+           y.append(record['to_role'])
+       
+       # Train model
+       model = RandomForestClassifier(
+           n_estimators=100,
+           max_depth=10,
+           random_state=42
+       )
+       model.fit(X, y)
+       
+       # Save model
+       model_path = 'models/career_predictor_v1.pkl'
+       joblib.dump(model, model_path)
+       
+       # Store metadata
+       await db.execute(
+           "INSERT INTO ml_models (model_name, model_version, model_type, framework, model_file_path, status) VALUES (%s, %s, %s, %s, %s, %s)",
+           ('career_predictor', 'v1.0', 'classification', 'scikit-learn', model_path, 'active')
+       )
+   ```
+
+4. **Prediction API**
+   ```python
+   POST /api/ai/career-path/predict
+   Request:
+   {
+     "user_id": "uuid-123",
+     "target_role": "Engineering Manager"  # Optional
+   }
+   
+   Response:
+   {
+     "current_role": "Senior Software Engineer",
+     "predictions": [
+       {
+         "role": "Engineering Manager",
+         "probability": 0.68,
+         "timeframe": "18-24 months",
+         "required_skills": ["Leadership", "Project Management"],
+         "skills_gap": ["Leadership"],
+         "similar_alumni_count": 15
+       }
+     ],
+     "personalized_advice": "Based on your profile, you're well-positioned for an Engineering Manager role..."
+   }
+   ```
+
+5. **LLM Enhancement**
+   ```python
+   from emergent_integrations import EmergentLLM
+   
+   async def generate_career_advice(user_profile, predictions):
+       """Use Emergent LLM Key to generate personalized advice"""
+       llm = EmergentLLM(api_key=os.getenv('EMERGENT_LLM_KEY'))
+       
+       prompt = f"""
+       Generate career advice for an alumni:
+       Current Role: {user_profile['current_role']}
+       Skills: {user_profile['skills']}
+       Experience: {user_profile['years_of_experience']} years
+       
+       Top Predicted Roles:
+       {predictions}
+       
+       Provide actionable advice for career growth.
+       """
+       
+       advice = await llm.generate(prompt)
+       return advice
+   ```
+
+#### Testing Checkpoints
+- Train model with 500 transitions
+- Verify prediction accuracy >70%
+- Test API with sample users
+- Validate advice generation
+
+#### Deliverables
+- Feature engineering pipeline
+- Trained ML model
+- Prediction API
+- LLM-enhanced advice
+
+---
+
+### SUB-PHASE 10.5: Talent Heatmap Intelligence (1-2 credits)
+
+#### Purpose
+Visualize geographic distribution of alumni to identify talent hubs and emerging markets.
+
+#### Database Tables
+- `geographic_data` - Location aggregated data
+- `talent_clusters` - Geographic clusters
+
+#### Tasks
+1. **Geocoding & Clustering**
+   ```python
+   from sklearn.cluster import DBSCAN
+   import numpy as np
+   
+   async def cluster_talent():
+       """Cluster alumni by geographic proximity"""
+       # Get alumni locations
+       alumni = await db.query(
+           "SELECT id, user_id, location, latitude, longitude FROM alumni_profiles WHERE latitude IS NOT NULL"
+       )
+       
+       # Extract coordinates
+       coords = np.array([[a['latitude'], a['longitude']] for a in alumni])
+       
+       # DBSCAN clustering
+       clustering = DBSCAN(eps=0.5, min_samples=5, metric='haversine')
+       labels = clustering.fit_predict(np.radians(coords))
+       
+       # Store clusters
+       for label in set(labels):
+           if label == -1:  # Noise
+               continue
+           
+           cluster_alumni = [alumni[i] for i, l in enumerate(labels) if l == label]
+           center_lat = np.mean([a['latitude'] for a in cluster_alumni])
+           center_lng = np.mean([a['longitude'] for a in cluster_alumni])
+           
+           await db.execute(
+               "INSERT INTO talent_clusters (cluster_name, center_latitude, center_longitude, cluster_size, alumni_ids) VALUES (%s, %s, %s, %s, %s)",
+               (f"Cluster {label}", center_lat, center_lng, len(cluster_alumni), json.dumps([a['user_id'] for a in cluster_alumni]))
+           )
+   ```
+
+2. **Heatmap API**
+   ```python
+   GET /api/ai/heatmap/global?skill=Python&industry=Technology
+   
+   Response:
+   {
+     "type": "FeatureCollection",
+     "features": [
+       {
+         "type": "Feature",
+         "geometry": {"type": "Point", "coordinates": [-122.4194, 37.7749]},
+         "properties": {
+           "location": "San Francisco Bay Area",
+           "alumni_count": 150,
+           "jobs_count": 45,
+           "density": "high",
+           "top_skills": ["Python", "React", "ML"]
+         }
+       }
+     ]
+   }
+   ```
+
+#### Testing Checkpoints
+- Cluster 200 alumni locations
+- Verify heatmap data
+- Test GeoJSON format
+
+#### Deliverables
+- Geographic clustering
+- Heatmap API
+- Cluster statistics
+
+---
+
+### SUB-PHASE 10.6: AI-Validated Digital Alumni ID (1-2 credits)
+
+#### Purpose
+Generate and validate digital alumni ID cards with AI-powered duplicate detection.
+
+#### Database Tables
+- `alumni_cards` - ID card data
+- `alumni_id_verifications` - Verification logs
+
+#### Tasks
+1. **Duplicate Detection**
+   ```python
+   from Levenshtein import distance
+   
+   async def check_duplicate(name: str, batch_year: int):
+       """Fuzzy name matching to detect duplicates"""
+       existing = await db.query(
+           "SELECT name FROM alumni_profiles WHERE batch_year = %s",
+           (batch_year,)
+       )
+       
+       for existing_name in existing:
+           similarity = 1 - (distance(name.lower(), existing_name['name'].lower()) / max(len(name), len(existing_name['name'])))
+           if similarity > 0.85:
+               return {"duplicate_found": True, "similar_name": existing_name['name']}
+       
+       return {"duplicate_found": False}
+   ```
+
+2. **QR Code Generation**
+   ```python
+   import qrcode
+   from cryptography.fernet import Fernet
+   
+   async def generate_alumni_card(user_id: str):
+       # Create card data
+       card_data = {
+           "card_id": generate_uuid(),
+           "user_id": user_id,
+           "card_number": generate_card_number(),
+           "issued_at": datetime.now().isoformat()
+       }
+       
+       # Encrypt
+       cipher = Fernet(ENCRYPTION_KEY)
+       encrypted = cipher.encrypt(json.dumps(card_data).encode())
+       
+       # Generate QR code
+       qr = qrcode.QRCode(version=1, box_size=10, border=4)
+       qr.add_data(encrypted.decode())
+       qr.make(fit=True)
+       img = qr.make_image()
+       
+       # Save to storage
+       qr_url = await save_qr_image(img, card_data['card_id'])
+       
+       return {"card_id": card_data['card_id'], "qr_code_url": qr_url}
+   ```
+
+#### Testing Checkpoints
+- Generate 10 ID cards
+- Verify QR codes scan correctly
+- Test duplicate detection
+
+#### Deliverables
+- ID card generation
+- QR code system
+- Duplicate detection
+
+---
+
+### SUB-PHASE 10.7: Knowledge Capsules Ranking Engine (1-2 credits)
+
+#### Purpose
+Intelligently rank and recommend knowledge capsules based on user profile and engagement.
+
+#### Database Tables
+- `capsule_rankings` - Personalized rankings
+
+#### Tasks
+1. **Ranking Algorithm**
+   ```python
+   async def calculate_capsule_rank(user_id: str, capsule_id: str):
+       """Calculate personalized rank score"""
+       user = await get_user_profile(user_id)
+       capsule = await get_capsule(capsule_id)
+       
+       # 1. Skill Match (30%)
+       user_skills = set(user['skills'])
+       capsule_tags = set(capsule['tags'])
+       skill_match = len(user_skills & capsule_tags) / len(user_skills | capsule_tags)
+       
+       # 2. Engagement Score (25%)
+       max_views = await db.query("SELECT MAX(views_count) FROM knowledge_capsules")
+       engagement = (0.4 * capsule['views_count']/max_views[0] + 
+                    0.35 * capsule['likes_count']/max_views[0] + 
+                    0.25 * capsule['bookmarks_count']/max_views[0])
+       
+       # 3. Credibility Score (20%)
+       author_score = await get_engagement_score(capsule['author_id'])
+       credibility = author_score / 1000
+       
+       # 4. Recency Score (15%)
+       days_old = (datetime.now() - capsule['created_at']).days
+       recency = np.exp(-0.01 * days_old)
+       
+       # 5. Content Relevance (10% - LLM-based)
+       relevance = await calculate_llm_relevance(user, capsule)
+       
+       # Final score
+       final_score = (0.30 * skill_match + 
+                     0.25 * engagement + 
+                     0.20 * credibility + 
+                     0.15 * recency + 
+                     0.10 * relevance)
+       
+       # Store ranking
+       await db.execute(
+           "INSERT INTO capsule_rankings (capsule_id, user_id, final_rank_score, calculated_at) VALUES (%s, %s, %s, %s)",
+           (capsule_id, user_id, final_score, datetime.now())
+       )
+       
+       return final_score
+   ```
+
+2. **Ranking API**
+   ```python
+   GET /api/ai/knowledge/ranked?user_id={user_id}&limit=20
+   
+   Response:
+   {
+     "capsules": [
+       {
+         "capsule_id": "uuid-123",
+         "title": "Advanced Python Patterns",
+         "rank_score": 0.87,
+         "match_reason": "High skill match (Python, FastAPI)"
+       }
+     ]
+   }
+   ```
+
+#### Testing Checkpoints
+- Calculate rankings for 20 capsules
+- Verify personalized recommendations
+- Test LLM integration
+
+#### Deliverables
+- Ranking algorithm
+- Personalized recommendation API
+- LLM-enhanced relevance
+
+---
+
+### SUB-PHASE 10.8: Enhanced Engagement Scoring (1 credit)
+
+#### Purpose
+Enhance existing engagement scoring with AI-powered activity analysis.
+
+#### Tasks
+1. **Enhanced Score Calculation**
+   - Use existing `update_engagement_score(user_id)` stored procedure
+   - Add AI-powered activity pattern analysis
+   - Implement predictive engagement scoring
+
+2. **Background Task**
+   ```python
+   @celery_app.task(name='ai.update_engagement_scores')
+   async def update_all_engagement_scores():
+       """Daily task to recalculate engagement scores"""
+       users = await db.query("SELECT id FROM users WHERE is_active = TRUE")
+       for user in users:
+           await db.execute("CALL update_engagement_score(%s)", (user['id'],))
+   ```
+
+#### Deliverables
+- Enhanced engagement calculation
+- Daily update task
+
+---
+
+### PHASE 10 Summary
+
+#### Total Duration: 10-12 credits
+
+#### Testing Checkpoints (Phase 10 Overall)
+- ✅ All AI systems operational
+- ✅ Dataset upload pipeline working
+- ✅ Background jobs executing
+- ✅ ML models trained and deployed
+- ✅ API endpoints responding
+- ✅ Redis caching functional
+- ✅ Celery workers healthy
+
+#### Deliverables
+- ✅ Complete AI infrastructure (Redis, Celery, ML libraries)
+- ✅ Admin dataset upload system with validation
+- ✅ 6 AI systems fully implemented
+- ✅ Background job processing
+- ✅ LLM integration via Emergent LLM Key
+- ✅ 20+ AI-powered API endpoints
+- ✅ ML models for prediction and clustering
+- ✅ Real-time progress tracking
+
+---
+
+## 📋 PHASE 11: Performance, Security & Deployment (4-5 credits)
 
 ### Objectives
 - Optimize database queries and API performance
@@ -633,7 +1515,7 @@ When using MySQL/MariaDB with the backend:
 ### Tasks
 1. **Performance Optimization**
    - Add database indexes for frequently queried fields
-   - Implement caching with Redis (optional)
+   - Implement caching with Redis
    - Optimize complex queries (aggregations, joins)
    - Add pagination for all list endpoints
    - Implement request throttling
@@ -655,6 +1537,7 @@ When using MySQL/MariaDB with the backend:
      - Database queries
      - Authentication attempts
      - Admin actions
+     - AI processing tasks
    - Set up error tracking (Sentry integration)
    - Create health check endpoints
 
@@ -666,7 +1549,7 @@ When using MySQL/MariaDB with the backend:
 
 5. **Deployment Setup**
    - Configure environment variables
-   - Set up production database (MongoDB Atlas)
+   - Set up production database (MySQL/MariaDB)
    - Configure file storage (AWS S3)
    - Set up email service (SendGrid/SES)
    - Create deployment scripts
@@ -675,6 +1558,8 @@ When using MySQL/MariaDB with the backend:
 6. **Monitoring & Health Checks**
    - GET `/api/health` - Health check endpoint
    - GET `/api/health/db` - Database connection check
+   - GET `/api/health/redis` - Redis connection check
+   - GET `/api/health/celery` - Celery workers check
    - GET `/api/metrics` - Performance metrics
    - Set up application monitoring
 
@@ -698,8 +1583,8 @@ When using MySQL/MariaDB with the backend:
 
 ## 🎯 Summary
 
-**Total Phases: 10**
-**Total Estimated Credits: 45-50 credits**
+**Total Phases: 11**
+**Total Estimated Credits: 55-60 credits**
 
 ### Phase Overview:
 1. ✅ Core Authentication (4-5 credits)
@@ -711,7 +1596,17 @@ When using MySQL/MariaDB with the backend:
 7. ✅ Admin Dashboard & Analytics (5 credits)
 8. ✅ Smart Algorithms (4-5 credits)
 9. ✅ Innovative Features (5 credits)
-10. ✅ Performance & Deployment (4-5 credits)
+10. ✅ **AI Systems Integration** (10-12 credits) 🤖 **NEW**
+11. ✅ Performance & Deployment (4-5 credits)
+
+### Key AI Features Added (Phase 10):
+- 🧠 **Skill Graph AI** - Semantic skill relationship mapping
+- 📈 **Career Path Prediction** - ML-based career trajectory forecasting
+- 🗺️ **Talent Heatmap** - Geographic clustering and analytics
+- 🪪 **AI-Validated Alumni ID** - Duplicate detection and verification
+- 📚 **Knowledge Capsules Ranking** - Personalized content recommendations
+- ⭐ **Enhanced Engagement Scoring** - AI-powered activity analysis
+- 📤 **Admin Dataset Upload** - Automated data processing pipeline
 
 ### Execution Strategy:
 - Each phase is independently testable
@@ -725,8 +1620,29 @@ When using MySQL/MariaDB with the backend:
 - Phase 2 required before Phase 3, 4, 7, 8
 - Phase 6 can run parallel to Phases 3-5
 - Phase 9 requires Phases 2-4 completion
-- Phase 10 is the final integration phase
+- **Phase 10 (AI) requires Phases 1-9 completion**
+- Phase 11 is the final integration phase
+
+### Technology Stack:
+- **Backend**: FastAPI, Python 3.11+
+- **Database**: MySQL 8.0 / MariaDB 10.5+
+- **Cache**: Redis 5.0+
+- **Queue**: Celery 5.3+
+- **ML**: scikit-learn, sentence-transformers, FAISS
+- **LLM**: Emergent LLM Key (OpenAI, Anthropic, Google)
 
 ---
 
-**Note**: Each phase includes comprehensive testing, error handling, and documentation to ensure production-ready code quality.
+**Note**: Each phase includes comprehensive testing, error handling, and documentation to ensure production-ready code quality. Phase 10 adds enterprise-grade AI capabilities that differentiate this platform from competitors.
+
+## 📚 Additional Resources
+
+- **Database Schema**: `/app/database_schema.sql` (Complete schema with AI tables)
+- **AI Implementation Roadmap**: See Phase 10 sub-phases for detailed AI implementation
+- **API Documentation**: Will be generated via OpenAPI/Swagger in Phase 11
+
+---
+
+**Last Updated**: January 2025
+**Version**: 2.0 (AI-Enhanced)
+**Status**: Ready for Implementation
