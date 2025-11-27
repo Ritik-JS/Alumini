@@ -1,12 +1,18 @@
-import mockData from '../mockdata.json';
+import { loadMockData } from './mockDataLoader';
 
 // Simulate API delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Helper to get mock data
+const getMockData = async () => {
+  return await loadMockData();
+};
 
 export const mockEngagementAIService = {
   // Get AI engagement insights for a user
   getEngagementInsights: async (userId) => {
     await delay(400);
+    const mockData = await getMockData();
     
     const insights = mockData.ai_engagement_insights.find(
       insight => insight.user_id === userId
@@ -65,6 +71,7 @@ export const mockEngagementAIService = {
   // Get engagement prediction
   getEngagementPrediction: async (userId) => {
     await delay(300);
+    const mockData = await getMockData();
     
     const insights = mockData.ai_engagement_insights.find(
       insight => insight.user_id === userId
@@ -91,6 +98,7 @@ export const mockEngagementAIService = {
   // Get activity patterns analysis
   getActivityPatterns: async (userId) => {
     await delay(300);
+    const mockData = await getMockData();
     
     const insights = mockData.ai_engagement_insights.find(
       insight => insight.user_id === userId
@@ -116,6 +124,7 @@ export const mockEngagementAIService = {
   // Get smart suggestions
   getSmartSuggestions: async (userId) => {
     await delay(250);
+    const mockData = await getMockData();
     
     const insights = mockData.ai_engagement_insights.find(
       insight => insight.user_id === userId
@@ -137,6 +146,7 @@ export const mockEngagementAIService = {
   // Get contribution impact history
   getContributionImpact: async (userId, days = 30) => {
     await delay(300);
+    const mockData = await getMockData();
     
     const insights = mockData.ai_engagement_insights.find(
       insight => insight.user_id === userId
@@ -166,6 +176,7 @@ export const mockEngagementAIService = {
   // Get comparison with similar users
   getUserComparison: async (userId) => {
     await delay(250);
+    const mockData = await getMockData();
     
     const insights = mockData.ai_engagement_insights.find(
       insight => insight.user_id === userId
