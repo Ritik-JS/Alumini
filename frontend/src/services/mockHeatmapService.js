@@ -77,5 +77,99 @@ export const mockHeatmapService = {
       success: true,
       data: Array.from(industries).sort()
     };
+  },
+
+  // Get talent clusters
+  getTalentClusters: async (filters = {}) => {
+    await delay(300);
+    
+    let clusters = [...mockData.talent_clusters];
+    
+    // Filter by skill
+    if (filters.skill) {
+      clusters = clusters.filter(cluster => 
+        cluster.top_skills.includes(filters.skill)
+      );
+    }
+    
+    // Filter by industry
+    if (filters.industry) {
+      clusters = clusters.filter(cluster => 
+        cluster.dominant_industries.some(ind => ind.name === filters.industry)
+      );
+    }
+    
+    // Filter by experience level (simulated - in real app would filter alumni by experience)
+    if (filters.experienceLevel && filters.experienceLevel !== 'all') {
+      // For mock, we'll just return all clusters but in real implementation
+      // this would filter based on alumni experience levels in the cluster
+    }
+    
+    return {
+      success: true,
+      data: clusters
+    };
+  },
+
+  // Get cluster details
+  getClusterDetails: async (clusterId) => {
+    await delay(200);
+    
+    const cluster = mockData.talent_clusters.find(c => c.id === clusterId);
+    
+    if (!cluster) {
+      return {
+        success: false,
+        error: 'Cluster not found'
+      };
+    }
+    
+    return {
+      success: true,
+      data: cluster
+    };
+  },
+
+  // Get emerging hubs (fastest growing locations)
+  getEmergingHubs: async () => {
+    await delay(300);
+    
+    // Sort clusters by growth rate
+    const emergingHubs = [...mockData.talent_clusters]
+      .sort((a, b) => b.growth_rate - a.growth_rate)
+      .slice(0, 5)
+      .map(cluster => ({
+        ...cluster,
+        growth_label: cluster.growth_rate > 30 ? 'Rapid' : 
+                     cluster.growth_rate > 20 ? 'High' : 
+                     cluster.growth_rate > 10 ? 'Moderate' : 'Slow'
+      }));
+    
+    return {
+      success: true,
+      data: emergingHubs
+    };
+  },
+
+  // Export cluster data
+  exportClusterData: async (clusterId) => {
+    await delay(500);
+    
+    const cluster = mockData.talent_clusters.find(c => c.id === clusterId);
+    
+    if (!cluster) {
+      return {
+        success: false,
+        error: 'Cluster not found'
+      };
+    }
+    
+    // In real implementation, this would generate a CSV/Excel file
+    // For mock, we'll return the data as JSON
+    return {
+      success: true,
+      data: cluster,
+      format: 'json'
+    };
   }
 };
