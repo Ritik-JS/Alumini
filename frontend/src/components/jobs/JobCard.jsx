@@ -1,11 +1,33 @@
-import { MapPin, Briefcase, Clock, DollarSign, Eye, Users } from 'lucide-react';
+import { MapPin, Briefcase, Clock, DollarSign, Eye, Users, Target, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
+import { skillRecommendationService } from '@/services/mockSkillRecommendationService';
+import { useState, useEffect } from 'react';
+import mockData from '@/mockdata.json';
 
 const JobCard = ({ job, onApply }) => {
   const navigate = useNavigate();
+  const [matchData, setMatchData] = useState(null);
+  
+  // Get current user and their skills
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  
+  useEffect(() => {
+    if (currentUser.id) {
+      // Find user's profile to get their skills
+      const userProfile = mockData.alumni_profiles?.find(p => p.user_id === currentUser.id);
+      if (userProfile && userProfile.skills) {
+        const match = skillRecommendationService.calculateJobMatch(
+          userProfile.skills,
+          job.skills_required || []
+        );
+        setMatchData(match);
+      }
+    }
+  }, [currentUser.id, job.skills_required]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -30,11 +52,38 @@ const JobCard = ({ job, onApply }) => {
     return colors[type] || 'bg-gray-100 text-gray-800';
   };
 
+  const getMatchScoreColor = (score) => {
+    if (score >= 80) return 'text-green-600 bg-green-50 border-green-200';
+    if (score >= 60) return 'text-blue-600 bg-blue-50 border-blue-200';
+    if (score >= 40) return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+    return 'text-gray-600 bg-gray-50 border-gray-200';
+  };
+
+  const getMatchScoreLabel = (score) => {
+    if (score >= 80) return 'Excellent Match';
+    if (score >= 60) return 'Good Match';
+    if (score >= 40) return 'Fair Match';
+    return 'Low Match';
+  };
+
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer" data-testid={`job-card-${job.id}`}>
+    <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer relative" data-testid={`job-card-${job.id}`}>
+      {/* AI Match Score Badge */}
+      {matchData && matchData.matchScore > 0 && (
+        <div className="absolute top-2 right-2 z-10">
+          <Badge 
+            className={`flex items-center gap-1 font-semibold border ${getMatchScoreColor(matchData.matchScore)}`}
+            data-testid="match-score-badge"
+          >
+            <Target className="h-3 w-3" />
+            {matchData.matchScore}% Match
+          </Badge>
+        </div>
+      )}
+
       <CardHeader className="pb-3" onClick={() => navigate(`/jobs/${job.id}`)}>
         <div className="flex items-start justify-between mb-2">
-          <div className="flex-1">
+          <div className="flex-1 pr-20">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 line-clamp-1" data-testid="job-title">
               {job.title}
             </h3>
@@ -66,17 +115,48 @@ const JobCard = ({ job, onApply }) => {
       </CardHeader>
 
       <CardContent className="pb-3" onClick={() => navigate(`/jobs/${job.id}`)}>
+        {/* AI Match Details */}
+        {matchData && matchData.matchScore > 0 && (
+          <div className="mb-3 p-2 bg-gray-50 rounded-md border border-gray-200" data-testid="skill-overlap-section">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-gray-700">Skill Match</span>
+              <span className="text-xs text-gray-600">{matchData.matchPercentage}% of required skills</span>
+            </div>
+            <Progress value={matchData.matchPercentage} className="h-1.5 mb-2" />
+            
+            <div className="flex items-center gap-2 text-xs">
+              {matchData.matching.length > 0 && (
+                <div className="flex items-center gap-1 text-green-600">
+                  <CheckCircle2 className="h-3 w-3" />
+                  <span>{matchData.matching.length} match</span>
+                </div>
+              )}
+              {matchData.missing.length > 0 && (
+                <div className="flex items-center gap-1 text-orange-600">
+                  <XCircle className="h-3 w-3" />
+                  <span>{matchData.missing.length} to learn</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-1.5 mb-3">
-          {job.skills_required?.slice(0, 4).map((skill, index) => (
-            <Badge key={index} variant="secondary" className="text-xs" data-testid={`skill-${index}`}>
-              {skill}
-            </Badge>
-          ))}
-          {job.skills_required?.length > 4 && (
-            <Badge variant="secondary" className="text-xs">
-              +{job.skills_required.length - 4}
-            </Badge>
-          )}
+          {job.skills_required?.map((skill, index) => {
+            const isMatching = matchData?.matching.includes(skill);
+            const isMissing = matchData?.missing.includes(skill);
+            
+            return (
+              <Badge 
+                key={index} 
+                variant={isMatching ? "default" : "secondary"}
+                className={`text-xs ${isMatching ? 'bg-green-100 text-green-800 border-green-300' : isMissing ? 'bg-orange-100 text-orange-700 border-orange-300' : ''}`}
+                data-testid={`skill-${index}`}
+              >
+                {skill}
+              </Badge>
+            );
+          })}
         </div>
 
         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">

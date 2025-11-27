@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { mockSkillGraphService } from '@/services/mockSkillGraphService';
+import { skillRecommendationService } from '@/services/mockSkillRecommendationService';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Network, Users, Briefcase, TrendingUp } from 'lucide-react';
+import { Search, Network, Users, Briefcase, TrendingUp, Lightbulb, TrendingUpIcon, ExternalLink, Zap, ArrowUpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const SkillGraph = () => {
@@ -14,10 +15,15 @@ const SkillGraph = () => {
   const [industries, setIndustries] = useState([]);
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [recommendations, setRecommendations] = useState([]);
+  const [trendingSkills, setTrendingSkills] = useState([]);
   const [filters, setFilters] = useState({
     search: '',
     industry: ''
   });
+
+  // Get current user
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
     loadData();
@@ -26,13 +32,17 @@ const SkillGraph = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [skillsRes, industriesRes] = await Promise.all([
+      const [skillsRes, industriesRes, recommendationsRes, trendsRes] = await Promise.all([
         mockSkillGraphService.getSkillGraph(),
-        mockSkillGraphService.getIndustries()
+        mockSkillGraphService.getIndustries(),
+        skillRecommendationService.getRecommendations(currentUser.id),
+        skillRecommendationService.getTopTrendingSkills(10)
       ]);
 
       if (skillsRes.success) setSkills(skillsRes.data);
       if (industriesRes.success) setIndustries(industriesRes.data);
+      if (recommendationsRes.success) setRecommendations(recommendationsRes.data);
+      if (trendsRes.success) setTrendingSkills(trendsRes.data);
     } catch (error) {
       toast.error('Failed to load skill graph data');
     } finally {
@@ -83,6 +93,23 @@ const SkillGraph = () => {
     return 'text-base p-4';
   };
 
+  const getDemandColor = (demand) => {
+    const colors = {
+      'very-high': 'bg-red-100 text-red-800 border-red-300',
+      'high': 'bg-orange-100 text-orange-800 border-orange-300',
+      'medium': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+      'low': 'bg-gray-100 text-gray-800 border-gray-300'
+    };
+    return colors[demand] || colors['medium'];
+  };
+
+  const getRelevanceColor = (score) => {
+    if (score >= 90) return 'text-green-600';
+    if (score >= 75) return 'text-blue-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-gray-600';
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto p-6 max-w-7xl" data-testid="skill-graph-page">
@@ -96,6 +123,122 @@ const SkillGraph = () => {
             Explore the network of skills, their connections, and the alumni who possess them.
           </p>
         </div>
+
+        {/* AI-Powered Recommendations Panel */}
+        {recommendations.length > 0 && (
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            {/* Skills You Should Learn */}
+            <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white" data-testid="skill-recommendations-panel">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-purple-600" />
+                  Skills You Should Learn
+                </CardTitle>
+                <CardDescription>
+                  AI-powered recommendations based on your profile and career goals
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recommendations.slice(0, 3).map((rec, index) => (
+                    <div 
+                      key={index} 
+                      className="p-4 bg-white rounded-lg border shadow-sm hover:shadow-md transition-shadow"
+                      data-testid={`recommendation-${index}`}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-semibold text-lg">{rec.skill_name}</h4>
+                        <Badge className={getDemandColor(rec.job_demand)} data-testid="demand-badge">
+                          {rec.job_demand.replace('-', ' ')} demand
+                        </Badge>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 mb-2 text-sm">
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-600">Relevance:</span>
+                          <span className={`font-semibold ${getRelevanceColor(rec.relevance_score)}`}>
+                            {rec.relevance_score}%
+                          </span>
+                        </div>
+                        {rec.trending && (
+                          <Badge variant="secondary" className="flex items-center gap-1">
+                            <TrendingUpIcon className="h-3 w-3" />
+                            +{rec.growth_rate}%
+                          </Badge>
+                        )}
+                      </div>
+
+                      <p className="text-sm text-gray-600 mb-3">{rec.reason}</p>
+
+                      {rec.learning_resources && rec.learning_resources.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {rec.learning_resources.slice(0, 2).map((resource, idx) => (
+                            <a
+                              key={idx}
+                              href={resource.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              {resource.title}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Trending Skills */}
+            <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white" data-testid="trending-skills-panel">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-blue-600" />
+                  Trending Skills in Tech
+                </CardTitle>
+                <CardDescription>
+                  Fastest growing skills with emerging opportunities
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {trendingSkills.slice(0, 5).map((trend, index) => (
+                    <div 
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-white rounded-lg border hover:shadow-sm transition-shadow"
+                      data-testid={`trending-skill-${index}`}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h5 className="font-semibold">{trend.skill_name}</h5>
+                          <Badge variant="outline" className="text-xs">
+                            {trend.category}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <Briefcase className="h-3 w-3" />
+                            {trend.job_count} jobs
+                          </span>
+                          <span className="text-green-600 font-medium">
+                            {trend.avg_salary_increase} avg increase
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 text-green-600 font-semibold">
+                        <ArrowUpCircle className="h-4 w-4" />
+                        {trend.growth_rate}%
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Filters */}
         <Card className="mb-8" data-testid="skill-graph-filters">
