@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This roadmap provides a **phased implementation plan** for integrating 6 AI systems and the Admin Dataset Upload feature into the Alumni Portal backend. The implementation is designed to be incremental, allowing for testing and validation at each phase.
+This roadmap provides a **phased implementation plan** for integrating 6 AI systems and the Admin Dataset Upload feature into the AlumUnity backend. The implementation is designed to be incremental, allowing for testing and validation at each phase.
 
 ---
 

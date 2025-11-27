@@ -16,9 +16,9 @@ const AdminSettings = () => {
   const { user } = useAuth();
   const [settings, setSettings] = useState({
     // General Settings
-    platformName: 'Alumni Portal',
-    platformUrl: 'https://alumni-portal.com',
-    supportEmail: 'support@alumni-portal.com',
+    platformName: 'AlumUnity',
+    platformUrl: 'https://alumunity.com',
+    supportEmail: 'support@alumunity.com',
     // Notification Settings
     emailNotifications: true,
     pushNotifications: false,

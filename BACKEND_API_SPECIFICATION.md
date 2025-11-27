@@ -1,7 +1,7 @@
-# 🔌 Backend API Specification for Alumni Portal
+# 🔌 Backend API Specification for AlumUnity
 
 ## Overview
-This document provides complete API endpoint specifications needed to implement the backend for the Alumni Portal. The frontend is already configured to toggle between mock data and these backend APIs using the `.env` configuration.
+This document provides complete API endpoint specifications needed to implement the backend for AlumUnity. The frontend is already configured to toggle between mock data and these backend APIs using the `.env` configuration.
 
 ## 🔧 Configuration
 

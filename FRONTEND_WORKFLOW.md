@@ -1,8 +1,8 @@
-# 🎨 COMPREHENSIVE FRONTEND WORKFLOW - Alumni Portal System
+# 🎨 COMPREHENSIVE FRONTEND WORKFLOW - AlumUnity System
 ## Production-Ready Frontend with AI Features UI
 
 ## Overview
-This workflow outlines the complete frontend development for the Alumni Portal, divided into **11 phases** of 4-5 credits each. The workflow now includes **AI Features UI** for displaying intelligent predictions, visualizations, and admin dataset management.
+This workflow outlines the complete frontend development for AlumUnity, divided into **11 phases** of 4-5 credits each. The workflow now includes **AI Features UI** for displaying intelligent predictions, visualizations, and admin dataset management.
 
 ## 🗄️ Database & API Reference
 **IMPORTANT**: The backend uses a MySQL 8.0 / MariaDB 10.5+ database. Complete schema is available in `/app/database_schema.sql`. 

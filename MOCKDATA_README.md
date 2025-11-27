@@ -1,7 +1,7 @@
-# 📦 Mock Data Documentation - Alumni Portal
+# 📦 Mock Data Documentation - AlumUnity
 
 ## Overview
-This document provides comprehensive guidance on using the mock data file (`/app/mockdata.json`) for developing the Alumni Portal frontend.
+This document provides comprehensive guidance on using the mock data file (`/app/mockdata.json`) for developing the AlumUnity frontend.
 
 ## 🎯 Purpose
 The mock data file serves as:
@@ -21,7 +21,7 @@ The mock data file serves as:
 ```json
 {
   "_meta": {
-    "description": "Comprehensive mock data for Alumni Portal System",
+    "description": "Comprehensive mock data for AlumUnity System",
     "version": "1.0",
     "compatible_with": "MySQL 8.0+ / MariaDB 10.5+",
     "last_updated": "2025-01-01"

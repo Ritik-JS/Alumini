@@ -1,8 +1,8 @@
-# 🎓 Alumni Portal
+# 🎓 AlumUnity
 
 <div align="center">
 
-![Alumni Portal](https://img.shields.io/badge/Alumni-Portal-blue?style=for-the-badge)
+![AlumUnity](https://img.shields.io/badge/AlumUnity-blue?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110-009688?style=for-the-badge&logo=fastapi)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql)
@@ -43,7 +43,7 @@
 
 ## 🌟 Overview
 
-Alumni Portal is a full-stack web application designed to foster meaningful connections within academic communities. It provides a comprehensive ecosystem where alumni can share opportunities, students can seek mentorship, recruiters can find talent, and administrators can manage the entire platform efficiently.
+AlumUnity is a full-stack web application designed to foster meaningful connections within academic communities. It provides a comprehensive ecosystem where alumni can share opportunities, students can seek mentorship, recruiters can find talent, and administrators can manage the entire platform efficiently.
 
 ### Key Highlights
 

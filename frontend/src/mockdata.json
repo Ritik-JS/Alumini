@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "description": "Comprehensive mock data for Alumni Portal System",
+    "description": "Comprehensive mock data for AlumUnity System",
     "version": "1.0",
     "compatible_with": "MySQL 8.0+ / MariaDB 10.5+",
     "last_updated": "2025-01-01",
@@ -1912,7 +1912,7 @@
     {
       "id": "config-platform-name",
       "config_key": "platform_name",
-      "config_value": "Alumni Portal",
+      "config_value": "AlumUnity",
       "config_type": "string",
       "description": "Name of the platform",
       "is_public": true

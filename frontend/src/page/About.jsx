@@ -80,7 +80,7 @@ const About = () => {
           className="max-w-4xl mx-auto text-center"
         >
           <h1 className="text-4xl md:text-5xl font-bold mb-6" data-testid="about-title">
-            About Alumni Portal
+            About AlumUnity
           </h1>
           <p className="text-xl text-blue-100 leading-relaxed" data-testid="about-description">
             Connecting alumni, students, and recruiters to build a thriving professional community.

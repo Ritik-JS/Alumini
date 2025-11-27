@@ -164,7 +164,7 @@ const AlumniCard = () => {
                     {/* Card Header */}
                     <div className="flex justify-between items-start mb-8">
                       <div>
-                        <h2 className="text-2xl font-bold mb-1">Alumni Portal</h2>
+                        <h2 className="text-2xl font-bold mb-1">AlumUnity</h2>
                         <p className="text-blue-200 text-sm">Official Alumni ID Card</p>
                       </div>
                       <div className="flex flex-col gap-2 items-end">

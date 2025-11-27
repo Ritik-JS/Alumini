@@ -1,7 +1,7 @@
-"# 📋 Alumni Portal - Comprehensive Features Summary
+"# 📋 AlumUnity - Comprehensive Features Summary
 
 ## 🎯 Project Overview
-**Alumni Portal** is a full-stack web application designed to connect alumni, students, recruiters, and administrators. Built with React, FastAPI, and MySQL, it provides a comprehensive platform for networking, mentorship, job opportunities, and community engagement.
+**AlumUnity** is a full-stack web application designed to connect alumni, students, recruiters, and administrators. Built with React, FastAPI, and MySQL, it provides a comprehensive platform for networking, mentorship, job opportunities, and community engagement.
 
 ---
 
@@ -956,7 +956,7 @@ This project demonstrates proficiency in:
 
 ## 💡 Conclusion
 
-The Alumni Portal is a **production-ready, feature-rich application** that provides comprehensive networking and engagement tools for alumni communities. With its modern tech stack, intuitive UI, and extensive feature set, it serves as an excellent portfolio project and a solid foundation for a real-world deployment.
+The AlumUnity is a **production-ready, feature-rich application** that provides comprehensive networking and engagement tools for alumni communities. With its modern tech stack, intuitive UI, and extensive feature set, it serves as an excellent portfolio project and a solid foundation for a real-world deployment.
 
 **Total Development Effort**: ~85-100 credits (3-4 months)
 
@@ -966,5 +966,5 @@ The Alumni Portal is a **production-ready, feature-rich application** that provi
 
 **Last Updated**: January 2025
 **Version**: 1.0.0
-**Maintainer**: Alumni Portal Development Team
+**Maintainer**: AlumUnity Development Team
 "

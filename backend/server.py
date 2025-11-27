@@ -55,7 +55,7 @@ class StatusCheckCreate(BaseModel):
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World - Alumni Portal API"}
+    return {"message": "Hello World - AlumUnity API"}
 
 @api_router.get("/health")
 async def health_check():

@@ -1,7 +1,7 @@
 # 🔄 Frontend Mock Data & Backend API Toggle Guide
 
 ## Overview
-The Alumni Portal frontend now supports seamless toggling between **Mock Data** (for development) and **Backend API** (for production) using a single environment variable.
+The AlumUnity frontend now supports seamless toggling between **Mock Data** (for development) and **Backend API** (for production) using a single environment variable.
 
 ---
 

@@ -14,7 +14,7 @@ const Footer = () => {
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold">A</span>
               </div>
-              <span className="text-lg font-bold text-gray-900">Alumni Portal</span>
+              <span className="text-lg font-bold text-gray-900">AlumUnity</span>
             </div>
             <p className="text-sm text-gray-600">
               Connecting alumni, students, and recruiters to build a stronger community.
@@ -114,8 +114,8 @@ const Footer = () => {
         </div>
 
         <div className="mt-8 pt-8 border-t border-gray-200">
-          <p className="text-center text-sm text-gray-600">
-            © {currentYear} Alumni Portal. All rights reserved.
+            <p className="text-center text-sm text-gray-600">
+            © {currentYear} AlumUnity. All rights reserved.
           </p>
         </div>
       </div>

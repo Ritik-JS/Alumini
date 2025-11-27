@@ -1,8 +1,8 @@
-# 🔧 COMPREHENSIVE BACKEND WORKFLOW - Alumni Portal System
+# 🔧 COMPREHENSIVE BACKEND WORKFLOW - AlumUnity System
 ## Production-Ready Backend with AI Systems Integration
 
 ## Overview
-This workflow outlines the complete backend development for the Alumni Portal, divided into **11 phases** of 4-5 credits each. The workflow now includes **6 AI/ML Systems** and an **Admin Dataset Upload Pipeline** for intelligent features.
+This workflow outlines the complete backend development for AlumUnity, divided into **11 phases** of 4-5 credits each. The workflow now includes **6 AI/ML Systems** and an **Admin Dataset Upload Pipeline** for intelligent features.
 
 ## 🗄️ Database Schema
 **IMPORTANT**: A comprehensive MySQL 8.0 / MariaDB 10.5+ compatible database schema is available in `/app/database_schema.sql`. This schema includes **all base tables + AI system tables** and must be imported before starting backend development.

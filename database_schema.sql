@@ -1,19 +1,19 @@
 -- ============================================================================
--- ALUMNI PORTAL SYSTEM - DATABASE SCHEMA
+-- AlumUnity - DATABASE SCHEMA
 -- Database: MySQL 8.0+ / MariaDB 10.5+
--- Description: Comprehensive database schema for Alumni Portal Management System
+-- Description: Comprehensive database schema for AlumUnity Management System
 -- Version: 1.0
 -- ============================================================================
 
 -- Drop database if exists (use with caution in production)
--- DROP DATABASE IF EXISTS alumni_portal;
+-- DROP DATABASE IF EXISTS AlumUnity;
 
 -- Create database
-CREATE DATABASE IF NOT EXISTS alumni_portal
+CREATE DATABASE IF NOT EXISTS AlumUnity
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
-USE alumni_portal;
+USE AlumUnity;
 
 -- ============================================================================
 -- PHASE 1: CORE AUTHENTICATION & USER MANAGEMENT
@@ -1028,7 +1028,7 @@ INSERT INTO badges (name, description, rarity, points, requirements) VALUES
 
 -- Insert default system config
 INSERT INTO system_config (config_key, config_value, config_type, description, is_public) VALUES
-('platform_name', 'Alumni Portal', 'string', 'Name of the platform', TRUE),
+('platform_name', 'AlumUnity', 'string', 'Name of the platform', TRUE),
 ('max_job_posting_days', '90', 'number', 'Maximum days a job posting remains active', FALSE),
 ('max_mentees_per_mentor', '5', 'number', 'Default maximum mentees per mentor', FALSE),
 ('profile_verification_required', 'true', 'boolean', 'Whether profile verification is mandatory', TRUE),
@@ -1074,7 +1074,7 @@ CREATE INDEX idx_posts_created_pinned ON forum_posts(created_at DESC, is_pinned)
 -- 10. Adjust foreign key constraints and ON DELETE behavior based on your requirements
 
 -- ============================================================================
--- ALUMNI PORTAL SYSTEM - AI SYSTEMS DATABASE SCHEMA UPDATES
+-- ALUMUNITY SYSTEM - AI SYSTEMS DATABASE SCHEMA UPDATES
 -- Database: MySQL 8.0+ / MariaDB 10.5+
 -- Description: Additional tables for 6 AI Systems + Admin Dataset Upload
 -- Version: 2.0 (AI Enhanced)
@@ -1083,7 +1083,7 @@ CREATE INDEX idx_posts_created_pinned ON forum_posts(created_at DESC, is_pinned)
 -- This file contains ONLY the new tables for AI systems.
 -- Import the original database_schema.sql first, then this file.
 
-USE alumni_portal;
+USE AlumUnity;
 
 -- ============================================================================
 -- ADMIN DATASET UPLOAD SYSTEM

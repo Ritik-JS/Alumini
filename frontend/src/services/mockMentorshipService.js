@@ -1,4 +1,4 @@
-// Mock Mentorship Service for Alumni Portal
+// Mock Mentorship Service for AlumUnity
 // This provides mock data and API calls for mentorship-related features
 
 import mockData from '../mockdata.json';
