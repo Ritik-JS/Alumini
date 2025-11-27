@@ -145,7 +145,7 @@ const Register = () => {
           <CardDescription className="text-center">
             {registrationComplete
               ? 'Check your email to verify your account'
-              : 'Join the Alumni Portal community'}
+              : 'Join the AlumUnity community'}
           </CardDescription>
         </CardHeader>
         <CardContent>

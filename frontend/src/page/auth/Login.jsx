@@ -128,7 +128,7 @@ const Login = () => {
           </div>
           <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
-            Sign in to your Alumni Portal account
+            Sign in to your AlumUnity account
           </CardDescription>
         </CardHeader>
         <CardContent>

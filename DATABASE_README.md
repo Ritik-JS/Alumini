@@ -1,7 +1,7 @@
-# Alumni Portal Database Schema Documentation
+# AlumUnity Database Schema Documentation
 
 ## 📌 Overview
-This document provides a comprehensive guide to the MySQL 8.0 / MariaDB 10.5+ database schema for the Alumni Portal System.
+This document provides a comprehensive guide to the MySQL 8.0 / MariaDB 10.5+ database schema for the AlumUnity System.
 
 ## 📁 Files Updated
 1. **`/app/database_schema.sql`** - Complete MySQL database schema (NEW)

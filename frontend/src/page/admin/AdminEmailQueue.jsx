@@ -30,10 +30,10 @@ const AdminEmailQueue = () => {
     // Mock email queue data
     const mockEmails = [
       {
-        id: '1',
-        recipient_email: 'student@alumni.edu',
-        subject: 'Welcome to Alumni Portal',
-        body: 'Thank you for joining our alumni network...',
+      id: '1',
+      recipient_email: 'student@alumni.edu',
+      subject: 'Welcome to AlumUnity',
+      body: 'Thank you for joining our alumni network...',
         template_name: 'welcome',
         status: 'pending',
         retry_count: 0,

@@ -1,7 +1,7 @@
-# 🚀 MASTER WORKFLOW - Alumni Portal Development
+# 🚀 MASTER WORKFLOW - AlumUnity Development
 
 ## Overview
-This master workflow provides a strategic execution plan for the Alumni Portal, coordinating frontend and backend development phases for optimal efficiency and parallel execution where possible.
+This master workflow provides a strategic execution plan for AlumUnity, coordinating frontend and backend development phases for optimal efficiency and parallel execution where possible.
 
 ---
 
@@ -531,7 +531,7 @@ For fastest results with high quality:
    - Core value propositions of the portal
    
 4. **Week 7-8**: Phase 4 (Mentorship)
-   - Key differentiator for alumni portal
+   - Key differentiator for AlumUnity
    
 5. **Week 9-10**: Phase 5 (Events & Community)
    - Community engagement features

@@ -7,14 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Heart, Bookmark, Eye, Clock, Calendar, Share2 } from 'lucide-react';
+import { ArrowLeft, Heart, Bookmark, Eye, Clock, Calendar, Share2, Sparkles, TrendingUp, Target } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 
 const KnowledgeCapsuleDetail = () => {
   const { capsuleId } = useParams();
   const navigate = useNavigate();
   const [capsule, setCapsule] = useState(null);
+  const [aiInsights, setAiInsights] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingInsights, setLoadingInsights] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
@@ -23,6 +26,7 @@ const KnowledgeCapsuleDetail = () => {
   useEffect(() => {
     loadCapsule();
     checkUserInteractions();
+    loadAIInsights();
   }, [capsuleId]);
 
   const loadCapsule = async () => {
@@ -61,6 +65,23 @@ const KnowledgeCapsuleDetail = () => {
     // Check if user has bookmarked this capsule
     const userBookmarks = JSON.parse(localStorage.getItem('user_capsule_bookmarks') || '{}');
     setIsBookmarked(userBookmarks[currentUser.id]?.includes(capsuleId) || false);
+  };
+
+  const loadAIInsights = async () => {
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!currentUser.id) return;
+
+    try {
+      setLoadingInsights(true);
+      const res = await mockKnowledgeService.getCapsuleAIInsights(capsuleId, currentUser.id);
+      if (res.success) {
+        setAiInsights(res.data);
+      }
+    } catch (error) {
+      console.error('Failed to load AI insights:', error);
+    } finally {
+      setLoadingInsights(false);
+    }
   };
 
   const incrementViewCount = () => {
@@ -336,6 +357,101 @@ const KnowledgeCapsuleDetail = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* AI Insights Panel */}
+        {aiInsights && (
+          <Card className="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+            <CardHeader>
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-blue-600" />
+                AI Insights
+              </h2>
+              <p className="text-sm text-gray-600">
+                Why this capsule is recommended for you
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Why Recommended */}
+              <div>
+                <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                  <Target className="h-4 w-4 text-green-600" />
+                  Why Recommended
+                </h3>
+                <p className="text-gray-700">{aiInsights.why_recommended}</p>
+              </div>
+
+              {/* Relevance Breakdown */}
+              <div>
+                <h3 className="font-semibold text-sm mb-3">Relevance Breakdown</h3>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-600">Skill Match</span>
+                      <span className="font-semibold">{aiInsights.relevance_breakdown.skill_match}%</span>
+                    </div>
+                    <Progress value={aiInsights.relevance_breakdown.skill_match} className="h-2" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-600">Popularity</span>
+                      <span className="font-semibold">{aiInsights.relevance_breakdown.popularity}%</span>
+                    </div>
+                    <Progress value={aiInsights.relevance_breakdown.popularity} className="h-2" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-600">Engagement</span>
+                      <span className="font-semibold">{aiInsights.relevance_breakdown.engagement}%</span>
+                    </div>
+                    <Progress value={aiInsights.relevance_breakdown.engagement} className="h-2" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Related Skills */}
+              {aiInsights.related_skills && aiInsights.related_skills.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-sm mb-2">Related Skills</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {aiInsights.related_skills.map((skill, idx) => (
+                      <Badge key={idx} variant="secondary">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Similar Capsules */}
+              {aiInsights.similar_capsules && aiInsights.similar_capsules.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-purple-600" />
+                    Similar Capsules You Might Like
+                  </h3>
+                  <div className="space-y-2">
+                    {aiInsights.similar_capsules.map((similar) => (
+                      <div 
+                        key={similar.id}
+                        className="p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/knowledge/${similar.id}`)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <p className="font-medium text-sm text-gray-900 flex-1">
+                            {similar.title}
+                          </p>
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            {similar.similarity_score}% match
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </MainLayout>
   );

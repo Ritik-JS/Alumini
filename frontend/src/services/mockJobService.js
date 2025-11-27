@@ -1,4 +1,4 @@
-// Mock Job Service for Alumni Portal
+// Mock Job Service for AlumUnity
 // This provides mock data and API calls for job-related features
 
 import mockData from '../mockdata.json';

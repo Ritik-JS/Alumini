@@ -136,7 +136,7 @@ const MainNavbar = () => {
             <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xl">A</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">Alumni Portal</span>
+            <span className="text-xl font-bold text-gray-900">AlumUnity</span>
           </Link>
 
           {/* Desktop Navigation */}
