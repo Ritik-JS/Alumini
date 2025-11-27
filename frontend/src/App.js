@@ -89,6 +89,9 @@ const DatasetProgress = lazy(() => import('@/page/admin/datasets/DatasetProgress
 const DatasetReport = lazy(() => import('@/page/admin/datasets/DatasetReport'));
 const DatasetHistory = lazy(() => import('@/page/admin/datasets/DatasetHistory'));
 
+// Phase 11.8: AI System Health Monitor (Admin)
+const AdminAIMonitor = lazy(() => import('@/page/admin/AdminAIMonitor'));
+
 // Phase 9: Advanced Features
 const SkillGraph = lazy(() => import('@/page/advanced/SkillGraph'));
 const CareerPaths = lazy(() => import('@/page/advanced/CareerPaths'));
@@ -97,6 +100,8 @@ const AlumniCard = lazy(() => import('@/page/advanced/AlumniCard'));
 const TalentHeatmap = lazy(() => import('@/page/advanced/TalentHeatmap'));
 const KnowledgeCapsules = lazy(() => import('@/page/advanced/KnowledgeCapsules'));
 const KnowledgeCapsuleDetail = lazy(() => import('@/page/advanced/KnowledgeCapsuleDetail'));
+const CreateKnowledgeCapsule = lazy(() => import('@/page/advanced/CreateKnowledgeCapsule'));
+const LearningPath = lazy(() => import('@/page/advanced/LearningPath'));
 
 // Phase 11.2: Career Predictions (AI Features)
 const CareerInsights = lazy(() => import('@/page/career/CareerInsights'));
@@ -585,6 +590,16 @@ function App() {
             }
           />
 
+          {/* Phase 11.8: AI System Health Monitor (Admin) */}
+          <Route
+            path="/admin/ai/monitor"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminAIMonitor />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Phase 9: Advanced Features Routes - Protected */}
           <Route
             path="/skills/graph"
@@ -639,6 +654,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin', 'alumni', 'student', 'recruiter']}>
                 <KnowledgeCapsules />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/knowledge/create"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'alumni']}>
+                <CreateKnowledgeCapsule />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/knowledge/learning-path"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'alumni', 'student', 'recruiter']}>
+                <LearningPath />
               </ProtectedRoute>
             }
           />
