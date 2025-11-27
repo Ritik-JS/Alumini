@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Download, Share2, Printer, CheckCircle, QrCode, Search } from 'lucide-react';
+import { CreditCard, Download, Share2, Printer, CheckCircle, QrCode, Search, Camera, Shield, AlertCircle, Clock, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import QRScanner from '@/components/advanced/QRScanner';
+import VerificationHistory from '@/components/advanced/VerificationHistory';
 
 const AlumniCard = () => {
   const [cardData, setCardData] = useState(null);
@@ -15,6 +17,8 @@ const AlumniCard = () => {
   const [verificationResult, setVerificationResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     loadCard();
@@ -23,8 +27,9 @@ const AlumniCard = () => {
   const loadCard = async () => {
     try {
       setLoading(true);
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-      const res = await mockAlumniCardService.getMyCard(currentUser.id);
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      setCurrentUser(user);
+      const res = await mockAlumniCardService.getMyCard(user.id);
 
       if (res.success) {
         setCardData(res.data);
@@ -38,28 +43,54 @@ const AlumniCard = () => {
     }
   };
 
-  const handleVerify = async () => {
-    if (!verifyInput.trim()) {
+  const handleVerify = async (cardNumber = null) => {
+    const identifier = cardNumber || verifyInput;
+    
+    if (!identifier.trim()) {
       toast.error('Please enter a card number or scan QR code');
       return;
     }
 
     try {
       setVerifying(true);
-      const res = await mockAlumniCardService.verifyCard(verifyInput);
+      const res = await mockAlumniCardService.verifyCard(identifier);
 
+      // Always set result to show AI validation checks
+      setVerificationResult(res.data);
+      
       if (res.success) {
-        setVerificationResult(res.data);
         toast.success('Card verified successfully!');
       } else {
-        setVerificationResult({ verified: false, error: res.error });
-        toast.error(res.error);
+        toast.error(res.error || 'Verification failed');
       }
     } catch (error) {
       toast.error('Verification failed');
+      setVerificationResult({ 
+        verified: false, 
+        error: 'System error occurred',
+        aiValidation: {
+          duplicate_check: 'unknown',
+          signature_check: 'unknown',
+          expiry_check: 'unknown',
+          confidence_score: 0,
+          validation_status: 'error'
+        }
+      });
     } finally {
       setVerifying(false);
     }
+  };
+
+  const handleQRScan = (scannedData) => {
+    setVerifyInput(scannedData);
+    setShowScanner(false);
+    handleVerify(scannedData);
+  };
+
+  const getConfidenceBadge = (score) => {
+    if (score >= 85) return <Badge className="bg-green-100 text-green-800">High Confidence ({score}%)</Badge>;
+    if (score >= 60) return <Badge className="bg-yellow-100 text-yellow-800">Medium Confidence ({score}%)</Badge>;
+    return <Badge className="bg-red-100 text-red-800">Low Confidence ({score}%)</Badge>;
   };
 
   const handleDownload = async () => {
@@ -102,9 +133,10 @@ const AlumniCard = () => {
         </div>
 
         <Tabs defaultValue="card" className="space-y-6">
-          <TabsList className="grid w-full md:w-[400px] grid-cols-2">
+          <TabsList className="grid w-full md:w-[600px] grid-cols-3">
             <TabsTrigger value="card" data-testid="my-card-tab">My Card</TabsTrigger>
             <TabsTrigger value="verify" data-testid="verify-tab">Verify Card</TabsTrigger>
+            <TabsTrigger value="history" data-testid="history-tab">Verification History</TabsTrigger>
           </TabsList>
 
           {/* My Card Tab */}
@@ -135,12 +167,20 @@ const AlumniCard = () => {
                         <h2 className="text-2xl font-bold mb-1">Alumni Portal</h2>
                         <p className="text-blue-200 text-sm">Official Alumni ID Card</p>
                       </div>
-                      {cardData.profile?.is_verified && (
-                        <Badge className="bg-green-500 text-white">
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Verified
-                        </Badge>
-                      )}
+                      <div className="flex flex-col gap-2 items-end">
+                        {cardData.profile?.is_verified && (
+                          <Badge className="bg-green-500 text-white">
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Verified
+                          </Badge>
+                        )}
+                        {cardData.ai_validation_status && (
+                          <Badge className="bg-purple-500 text-white">
+                            <Shield className="h-4 w-4 mr-1" />
+                            AI Validated
+                          </Badge>
+                        )}
+                      </div>
                     </div>
 
                     {/* Card Body */}
@@ -201,8 +241,82 @@ const AlumniCard = () => {
                   </div>
                 </Card>
 
+                {/* AI Validation Status */}
+                {cardData.ai_validation_status && (
+                  <Card className="max-w-2xl mx-auto mb-6">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-purple-600" />
+                        AI Validation Status
+                      </CardTitle>
+                      <CardDescription>
+                        Your card has been validated using advanced AI security checks
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium text-gray-700">Validation Status:</span>
+                          <Badge className={
+                            cardData.ai_validation_status === 'verified' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-yellow-100 text-yellow-800'
+                          }>
+                            {cardData.ai_validation_status}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium text-gray-700">AI Confidence:</span>
+                          {getConfidenceBadge(cardData.ai_confidence_score)}
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium text-gray-700">Duplicate Check:</span>
+                          <Badge className={
+                            cardData.duplicate_check_passed 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }>
+                            {cardData.duplicate_check_passed ? 'Passed' : 'Failed'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium text-gray-700">Signature Verified:</span>
+                          <Badge className={
+                            cardData.signature_verified 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }>
+                            {cardData.signature_verified ? 'Valid' : 'Invalid'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium text-gray-700">Total Verifications:</span>
+                          <Badge variant="outline" className="flex items-center gap-1">
+                            <TrendingUp className="h-3 w-3" />
+                            {cardData.verification_count || 0}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm font-medium text-gray-700">Last Verified:</span>
+                          <Badge variant="outline" className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {cardData.last_verified 
+                              ? new Date(cardData.last_verified).toLocaleDateString() 
+                              : 'Never'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Actions */}
-                <Card>
+                <Card className="max-w-2xl mx-auto mb-6">
                   <CardHeader>
                     <CardTitle>Card Actions</CardTitle>
                     <CardDescription>Download, share, or print your alumni card</CardDescription>
@@ -234,11 +348,11 @@ const AlumniCard = () => {
               <CardHeader>
                 <CardTitle>Verify Alumni Card</CardTitle>
                 <CardDescription>
-                  Enter card number or scan QR code to verify authenticity
+                  Enter card number or scan QR code to verify authenticity with AI validation
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <div className="relative flex-1">
                     <Input
                       placeholder="Enter card number (e.g., ALM-2019-00287)"
@@ -248,18 +362,26 @@ const AlumniCard = () => {
                       data-testid="verify-input"
                     />
                   </div>
-                  <Button onClick={handleVerify} disabled={verifying} data-testid="verify-button">
+                  <Button onClick={() => handleVerify()} disabled={verifying} data-testid="verify-button">
                     <Search className="mr-2 h-4 w-4" />
                     {verifying ? 'Verifying...' : 'Verify'}
+                  </Button>
+                  <Button 
+                    onClick={() => setShowScanner(true)} 
+                    variant="outline"
+                    data-testid="scan-qr-button"
+                  >
+                    <Camera className="mr-2 h-4 w-4" />
+                    Scan QR
                   </Button>
                 </div>
 
                 {/* Verification Result */}
                 {verificationResult && (
                   <Card className={verificationResult.verified ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}>
-                    <CardContent className="pt-6">
+                    <CardContent className="pt-6 space-y-4">
                       {verificationResult.verified ? (
-                        <div className="space-y-4">
+                        <>
                           <div className="flex items-center gap-3 text-green-700">
                             <CheckCircle className="h-8 w-8" />
                             <div>
@@ -273,16 +395,82 @@ const AlumniCard = () => {
                             <p><span className="font-semibold">Batch Year:</span> {verificationResult.profile?.batch_year}</p>
                             <p><span className="font-semibold">Valid Until:</span> {new Date(verificationResult.card?.expiry_date).toLocaleDateString()}</p>
                           </div>
-                        </div>
+                        </>
                       ) : (
                         <div className="flex items-center gap-3 text-red-700">
-                          <div className="h-8 w-8 rounded-full border-2 border-red-700 flex items-center justify-center">
-                            <span className="text-xl">✕</span>
-                          </div>
+                          <AlertCircle className="h-8 w-8" />
                           <div>
                             <h3 className="text-xl font-bold">Verification Failed</h3>
                             <p className="text-sm">{verificationResult.error}</p>
                           </div>
+                        </div>
+                      )}
+
+                      {/* AI Validation Checks */}
+                      {verificationResult.aiValidation && (
+                        <div className="bg-white p-4 rounded-lg">
+                          <h4 className="font-semibold mb-3 flex items-center gap-2">
+                            <Shield className="h-5 w-5 text-purple-600" />
+                            AI Validation Checks
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                              <span className="text-sm text-gray-700">Duplicate Check:</span>
+                              <Badge className={
+                                verificationResult.aiValidation.duplicate_check === 'passed' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }>
+                                {verificationResult.aiValidation.duplicate_check}
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                              <span className="text-sm text-gray-700">Signature:</span>
+                              <Badge className={
+                                verificationResult.aiValidation.signature_check === 'valid' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }>
+                                {verificationResult.aiValidation.signature_check}
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                              <span className="text-sm text-gray-700">Expiry Status:</span>
+                              <Badge className={
+                                verificationResult.aiValidation.expiry_check === 'active' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }>
+                                {verificationResult.aiValidation.expiry_check}
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                              <span className="text-sm text-gray-700">AI Confidence:</span>
+                              {getConfidenceBadge(verificationResult.aiValidation.confidence_score)}
+                            </div>
+                          </div>
+
+                          {/* Verification Timestamp & History */}
+                          {verificationResult.aiValidation.verification_timestamp && (
+                            <div className="mt-3 pt-3 border-t border-gray-200 text-sm text-gray-600">
+                              <p className="flex items-center gap-1">
+                                <Clock className="h-4 w-4" />
+                                Verified at: {new Date(verificationResult.aiValidation.verification_timestamp).toLocaleString()}
+                              </p>
+                            </div>
+                          )}
+
+                          {verificationResult.verificationHistory && (
+                            <div className="mt-2 text-sm text-gray-600">
+                              <p>Total verifications: <strong>{verificationResult.verificationHistory.total_verifications}</strong></p>
+                              {verificationResult.verificationHistory.last_verified && (
+                                <p>Last verified: {new Date(verificationResult.verificationHistory.last_verified).toLocaleDateString()}</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                     </CardContent>
@@ -291,7 +479,23 @@ const AlumniCard = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Verification History Tab */}
+          <TabsContent value="history">
+            <VerificationHistory 
+              cardId={cardData?.id} 
+              isAdmin={currentUser?.role === 'admin'}
+            />
+          </TabsContent>
         </Tabs>
+
+        {/* QR Scanner Modal */}
+        {showScanner && (
+          <QRScanner 
+            onScan={handleQRScan} 
+            onClose={() => setShowScanner(false)} 
+          />
+        )}
       </div>
 
       {/* Print Styles */}

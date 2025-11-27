@@ -81,6 +81,7 @@ const AdminEmailQueue = lazy(() => import('@/page/admin/AdminEmailQueue'));
 const AdminAuditLogs = lazy(() => import('@/page/admin/AdminAuditLogs'));
 const AdminFileUploads = lazy(() => import('@/page/admin/AdminFileUploads'));
 const AdminNotifications = lazy(() => import('@/page/admin/AdminNotifications'));
+const AdminCardVerifications = lazy(() => import('@/page/admin/AdminCardVerifications'));
 
 // Phase 11.1: Dataset Upload (AI Features)
 const DatasetUpload = lazy(() => import('@/page/admin/datasets/DatasetUpload'));
@@ -570,6 +571,16 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <DatasetHistory />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Phase 11.5: Card Verification Management (Admin) */}
+          <Route
+            path="/admin/card-verifications"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminCardVerifications />
               </ProtectedRoute>
             }
           />

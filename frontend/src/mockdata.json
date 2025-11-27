@@ -1480,6 +1480,10 @@
       "is_active": true,
       "verification_count": 8,
       "last_verified": "2024-12-15T10:30:00Z",
+      "ai_validation_status": "verified",
+      "ai_confidence_score": 98.5,
+      "duplicate_check_passed": true,
+      "signature_verified": true,
       "created_at": "2023-06-15T09:00:00Z",
       "updated_at": "2024-12-15T10:30:00Z"
     },
@@ -1493,8 +1497,173 @@
       "is_active": true,
       "verification_count": 5,
       "last_verified": "2024-11-22T14:15:00Z",
+      "ai_validation_status": "verified",
+      "ai_confidence_score": 95.2,
+      "duplicate_check_passed": true,
+      "signature_verified": true,
       "created_at": "2023-08-20T10:00:00Z",
       "updated_at": "2024-11-22T14:15:00Z"
+    },
+    {
+      "id": "card-aa0e8400-e29b-41d4-a716",
+      "user_id": "aa0e8400-e29b-41d4-a716-446655440005",
+      "card_number": "ALM-2020-00423",
+      "qr_code_data": "eyJhbHVtbmlfaWQiOiJhYTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDUiLCJuYW1lIjoiUHJpeWEgUGF0ZWwiLCJiYXRjaF95ZWFyIjoyMDIwLCJ2ZXJpZmllZCI6dHJ1ZX0=",
+      "issue_date": "2023-09-10",
+      "expiry_date": "2028-09-10",
+      "is_active": true,
+      "verification_count": 12,
+      "last_verified": "2024-12-20T15:45:00Z",
+      "ai_validation_status": "verified",
+      "ai_confidence_score": 92.8,
+      "duplicate_check_passed": true,
+      "signature_verified": true,
+      "created_at": "2023-09-10T11:00:00Z",
+      "updated_at": "2024-12-20T15:45:00Z"
+    },
+    {
+      "id": "card-cc0e8400-e29b-41d4-a716",
+      "user_id": "cc0e8400-e29b-41d4-a716-446655440007",
+      "card_number": "ALM-2017-00089",
+      "qr_code_data": "eyJhbHVtbmlfaWQiOiJjYzBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDciLCJuYW1lIjoiTGlzYSBBbmRlcnNvbiIsImJhdGNoX3llYXIiOjIwMTcsInZlcmlmaWVkIjp0cnVlfQ==",
+      "issue_date": "2023-05-05",
+      "expiry_date": "2028-05-05",
+      "is_active": true,
+      "verification_count": 3,
+      "last_verified": "2024-10-10T09:20:00Z",
+      "ai_validation_status": "verified",
+      "ai_confidence_score": 89.4,
+      "duplicate_check_passed": true,
+      "signature_verified": true,
+      "created_at": "2023-05-05T08:30:00Z",
+      "updated_at": "2024-10-10T09:20:00Z"
+    }
+  ],
+
+  "card_verifications": [
+    {
+      "id": "verify-001",
+      "card_id": "card-660e8400-e29b-41d4-a716",
+      "card_number": "ALM-2019-00287",
+      "verified_by": "system",
+      "verification_method": "qr_scan",
+      "verification_status": "valid",
+      "verification_timestamp": "2024-12-15T10:30:00Z",
+      "duplicate_check": "passed",
+      "signature_check": "valid",
+      "expiry_check": "active",
+      "ai_confidence": 98.5,
+      "location": "San Francisco, CA",
+      "device_info": "iOS Safari"
+    },
+    {
+      "id": "verify-002",
+      "card_id": "card-770e8400-e29b-41d4-a716",
+      "card_number": "ALM-2018-00156",
+      "verified_by": "system",
+      "verification_method": "manual",
+      "verification_status": "valid",
+      "verification_timestamp": "2024-11-22T14:15:00Z",
+      "duplicate_check": "passed",
+      "signature_check": "valid",
+      "expiry_check": "active",
+      "ai_confidence": 95.2,
+      "location": "New York, NY",
+      "device_info": "Chrome Desktop"
+    },
+    {
+      "id": "verify-003",
+      "card_id": "card-aa0e8400-e29b-41d4-a716",
+      "card_number": "ALM-2020-00423",
+      "verified_by": "admin@alumni.edu",
+      "verification_method": "qr_scan",
+      "verification_status": "valid",
+      "verification_timestamp": "2024-12-20T15:45:00Z",
+      "duplicate_check": "passed",
+      "signature_check": "valid",
+      "expiry_check": "active",
+      "ai_confidence": 92.8,
+      "location": "Boston, MA",
+      "device_info": "Android Chrome"
+    },
+    {
+      "id": "verify-004",
+      "card_id": "card-660e8400-e29b-41d4-a716",
+      "card_number": "ALM-2019-00287",
+      "verified_by": "system",
+      "verification_method": "qr_scan",
+      "verification_status": "valid",
+      "verification_timestamp": "2024-12-10T08:15:00Z",
+      "duplicate_check": "passed",
+      "signature_check": "valid",
+      "expiry_check": "active",
+      "ai_confidence": 98.5,
+      "location": "Seattle, WA",
+      "device_info": "iOS Safari"
+    },
+    {
+      "id": "verify-005",
+      "card_id": "fake-card-001",
+      "card_number": "ALM-2021-99999",
+      "verified_by": "system",
+      "verification_method": "manual",
+      "verification_status": "invalid",
+      "verification_timestamp": "2024-12-05T16:30:00Z",
+      "duplicate_check": "failed",
+      "signature_check": "invalid",
+      "expiry_check": "unknown",
+      "ai_confidence": 12.3,
+      "location": "Unknown",
+      "device_info": "Chrome Desktop",
+      "suspicious": true,
+      "reason": "Card number not found in database"
+    },
+    {
+      "id": "verify-006",
+      "card_id": "card-770e8400-e29b-41d4-a716",
+      "card_number": "ALM-2018-00156",
+      "verified_by": "system",
+      "verification_method": "qr_scan",
+      "verification_status": "valid",
+      "verification_timestamp": "2024-11-18T11:00:00Z",
+      "duplicate_check": "passed",
+      "signature_check": "valid",
+      "expiry_check": "active",
+      "ai_confidence": 95.2,
+      "location": "Austin, TX",
+      "device_info": "Safari Desktop"
+    },
+    {
+      "id": "verify-007",
+      "card_id": "card-cc0e8400-e29b-41d4-a716",
+      "card_number": "ALM-2017-00089",
+      "verified_by": "system",
+      "verification_method": "manual",
+      "verification_status": "valid",
+      "verification_timestamp": "2024-10-10T09:20:00Z",
+      "duplicate_check": "passed",
+      "signature_check": "valid",
+      "expiry_check": "active",
+      "ai_confidence": 89.4,
+      "location": "Chicago, IL",
+      "device_info": "Firefox Desktop"
+    },
+    {
+      "id": "verify-008",
+      "card_id": "fake-card-002",
+      "card_number": "ALM-2019-00000",
+      "verified_by": "system",
+      "verification_method": "qr_scan",
+      "verification_status": "invalid",
+      "verification_timestamp": "2024-11-15T13:25:00Z",
+      "duplicate_check": "warning",
+      "signature_check": "invalid",
+      "expiry_check": "unknown",
+      "ai_confidence": 8.7,
+      "location": "Unknown",
+      "device_info": "Unknown",
+      "suspicious": true,
+      "reason": "Invalid QR code format"
     }
   ],
 
@@ -2528,286 +2697,6 @@
       ],
       "last_updated": "2024-12-28T10:00:00Z",
       "next_update": "2025-01-28T10:00:00Z"
-    }
-  ],
-
-  "skill_recommendations": [
-    {
-      "id": "skill-rec-001",
-      "user_id": "660e8400-e29b-41d4-a716-446655440001",
-      "recommended_skills": [
-        {
-          "skill_name": "TypeScript",
-          "relevance_score": 92,
-          "job_demand": "high",
-          "trending": true,
-          "growth_rate": 18.5,
-          "reason": "Complements your JavaScript expertise and highly demanded in modern web development",
-          "learning_resources": [
-            {
-              "title": "TypeScript Deep Dive",
-              "url": "https://basarat.gitbook.io/typescript/",
-              "type": "documentation"
-            },
-            {
-              "title": "TypeScript for JavaScript Programmers",
-              "url": "https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes.html",
-              "type": "course"
-            }
-          ]
-        },
-        {
-          "skill_name": "Go",
-          "relevance_score": 85,
-          "job_demand": "high",
-          "trending": true,
-          "growth_rate": 22.3,
-          "reason": "Perfect complement to your backend skills, excellent for cloud-native applications",
-          "learning_resources": [
-            {
-              "title": "Tour of Go",
-              "url": "https://go.dev/tour/",
-              "type": "interactive"
-            },
-            {
-              "title": "Effective Go",
-              "url": "https://go.dev/doc/effective_go",
-              "type": "documentation"
-            }
-          ]
-        },
-        {
-          "skill_name": "Terraform",
-          "relevance_score": 78,
-          "job_demand": "medium",
-          "trending": true,
-          "growth_rate": 15.7,
-          "reason": "Infrastructure as Code is essential for cloud engineers at Google",
-          "learning_resources": [
-            {
-              "title": "Terraform Getting Started",
-              "url": "https://learn.hashicorp.com/terraform",
-              "type": "course"
-            }
-          ]
-        },
-        {
-          "skill_name": "GraphQL",
-          "relevance_score": 88,
-          "job_demand": "medium",
-          "trending": true,
-          "growth_rate": 12.4,
-          "reason": "You already know GraphQL, but deepening expertise will open more senior opportunities",
-          "learning_resources": [
-            {
-              "title": "GraphQL Best Practices",
-              "url": "https://graphql.org/learn/best-practices/",
-              "type": "documentation"
-            }
-          ]
-        },
-        {
-          "skill_name": "Rust",
-          "relevance_score": 72,
-          "job_demand": "medium",
-          "trending": true,
-          "growth_rate": 28.9,
-          "reason": "Fastest growing systems language, valuable for performance-critical applications",
-          "learning_resources": [
-            {
-              "title": "The Rust Book",
-              "url": "https://doc.rust-lang.org/book/",
-              "type": "documentation"
-            }
-          ]
-        }
-      ],
-      "generated_at": "2024-12-28T10:00:00Z"
-    },
-    {
-      "id": "skill-rec-002",
-      "user_id": "880e8400-e29b-41d4-a716-446655440003",
-      "recommended_skills": [
-        {
-          "skill_name": "React",
-          "relevance_score": 95,
-          "job_demand": "high",
-          "trending": true,
-          "growth_rate": 14.2,
-          "reason": "Most in-demand frontend framework, essential for modern web development",
-          "learning_resources": [
-            {
-              "title": "React Documentation",
-              "url": "https://react.dev",
-              "type": "documentation"
-            },
-            {
-              "title": "React Tutorial for Beginners",
-              "url": "https://react.dev/learn",
-              "type": "course"
-            }
-          ]
-        },
-        {
-          "skill_name": "Node.js",
-          "relevance_score": 90,
-          "job_demand": "high",
-          "trending": false,
-          "growth_rate": 8.5,
-          "reason": "Backend JavaScript - complements your frontend skills for full-stack development",
-          "learning_resources": [
-            {
-              "title": "Node.js Getting Started",
-              "url": "https://nodejs.org/en/docs/guides/getting-started-guide",
-              "type": "documentation"
-            }
-          ]
-        },
-        {
-          "skill_name": "Git",
-          "relevance_score": 88,
-          "job_demand": "high",
-          "trending": false,
-          "growth_rate": 5.2,
-          "reason": "Essential for any developer - version control is fundamental",
-          "learning_resources": [
-            {
-              "title": "Git Handbook",
-              "url": "https://guides.github.com/introduction/git-handbook/",
-              "type": "documentation"
-            }
-          ]
-        },
-        {
-          "skill_name": "Docker",
-          "relevance_score": 82,
-          "job_demand": "high",
-          "trending": true,
-          "growth_rate": 11.3,
-          "reason": "Containerization is industry standard for deployment and development",
-          "learning_resources": [
-            {
-              "title": "Docker Getting Started",
-              "url": "https://docs.docker.com/get-started/",
-              "type": "documentation"
-            }
-          ]
-        }
-      ],
-      "generated_at": "2024-12-28T10:00:00Z"
-    }
-  ],
-
-  "skill_trends": [
-    {
-      "skill_name": "AI/Machine Learning",
-      "category": "Emerging Technology",
-      "growth_rate": 45.8,
-      "job_count": 1247,
-      "avg_salary_increase": "$25k",
-      "demand_level": "very-high",
-      "trending_since": "2023-01-01",
-      "industries": ["Technology", "Finance", "Healthcare", "Consulting"],
-      "related_skills": ["Python", "TensorFlow", "PyTorch", "Data Science"]
-    },
-    {
-      "skill_name": "Rust",
-      "category": "Programming Language",
-      "growth_rate": 28.9,
-      "job_count": 342,
-      "avg_salary_increase": "$18k",
-      "demand_level": "high",
-      "trending_since": "2023-06-01",
-      "industries": ["Technology", "Security", "Systems"],
-      "related_skills": ["C++", "Systems Programming", "WebAssembly"]
-    },
-    {
-      "skill_name": "Go",
-      "category": "Programming Language",
-      "growth_rate": 22.3,
-      "job_count": 568,
-      "avg_salary_increase": "$15k",
-      "demand_level": "high",
-      "trending_since": "2022-09-01",
-      "industries": ["Technology", "Cloud Computing", "DevOps"],
-      "related_skills": ["Kubernetes", "Docker", "Microservices"]
-    },
-    {
-      "skill_name": "TypeScript",
-      "category": "Programming Language",
-      "growth_rate": 18.5,
-      "job_count": 892,
-      "avg_salary_increase": "$12k",
-      "demand_level": "very-high",
-      "trending_since": "2022-03-01",
-      "industries": ["Technology", "Startups", "Enterprise"],
-      "related_skills": ["JavaScript", "React", "Angular", "Node.js"]
-    },
-    {
-      "skill_name": "Kubernetes",
-      "category": "DevOps/Infrastructure",
-      "growth_rate": 17.2,
-      "job_count": 734,
-      "avg_salary_increase": "$20k",
-      "demand_level": "very-high",
-      "trending_since": "2022-01-01",
-      "industries": ["Technology", "Cloud Computing", "Enterprise"],
-      "related_skills": ["Docker", "AWS", "DevOps", "Terraform"]
-    },
-    {
-      "skill_name": "React Native",
-      "category": "Mobile Development",
-      "growth_rate": 16.8,
-      "job_count": 445,
-      "avg_salary_increase": "$14k",
-      "demand_level": "high",
-      "trending_since": "2023-02-01",
-      "industries": ["Technology", "Mobile", "Startups"],
-      "related_skills": ["React", "JavaScript", "Mobile Development"]
-    },
-    {
-      "skill_name": "Terraform",
-      "category": "DevOps/Infrastructure",
-      "growth_rate": 15.7,
-      "job_count": 523,
-      "avg_salary_increase": "$17k",
-      "demand_level": "high",
-      "trending_since": "2022-08-01",
-      "industries": ["Technology", "Cloud Computing", "DevOps"],
-      "related_skills": ["AWS", "Azure", "Infrastructure as Code"]
-    },
-    {
-      "skill_name": "React",
-      "category": "Frontend Framework",
-      "growth_rate": 14.2,
-      "job_count": 1523,
-      "avg_salary_increase": "$10k",
-      "demand_level": "very-high",
-      "trending_since": "2021-01-01",
-      "industries": ["Technology", "Startups", "Enterprise"],
-      "related_skills": ["JavaScript", "TypeScript", "Redux", "Next.js"]
-    },
-    {
-      "skill_name": "GraphQL",
-      "category": "API Technology",
-      "growth_rate": 12.4,
-      "job_count": 387,
-      "avg_salary_increase": "$13k",
-      "demand_level": "medium",
-      "trending_since": "2023-03-01",
-      "industries": ["Technology", "Startups"],
-      "related_skills": ["REST API", "Node.js", "Apollo"]
-    },
-    {
-      "skill_name": "Docker",
-      "category": "DevOps/Infrastructure",
-      "growth_rate": 11.3,
-      "job_count": 1089,
-      "avg_salary_increase": "$15k",
-      "demand_level": "very-high",
-      "trending_since": "2021-06-01",
-      "industries": ["Technology", "DevOps", "Enterprise"],
-      "related_skills": ["Kubernetes", "Containerization", "DevOps"]
     }
   ]
 }
