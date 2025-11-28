@@ -14,6 +14,18 @@ export const mockHeatmapService = {
     await delay(300);
     const mockData = await getMockData();
     
+    console.log('mockHeatmapService.getGeographicData - mockData:', mockData);
+    console.log('mockHeatmapService.getGeographicData - geographic_data:', mockData?.geographic_data?.length || 0);
+    
+    if (!mockData || !mockData.geographic_data || !Array.isArray(mockData.geographic_data)) {
+      console.error('Geographic data is missing or invalid');
+      return {
+        success: false,
+        data: [],
+        error: 'Geographic data is not available'
+      };
+    }
+    
     let geoData = [...mockData.geographic_data];
     
     // Filter by skill
@@ -29,6 +41,8 @@ export const mockHeatmapService = {
         geo.top_industries.includes(filters.industry)
       );
     }
+    
+    console.log('mockHeatmapService.getGeographicData - returning:', geoData.length, 'locations');
     
     return {
       success: true,
@@ -101,6 +115,8 @@ export const mockHeatmapService = {
     await delay(300);
     const mockData = await getMockData();
     
+    console.log('mockHeatmapService.getTalentClusters - talent_clusters:', mockData?.talent_clusters?.length || 0);
+    
     let clusters = mockData.talent_clusters ? [...mockData.talent_clusters] : [];
     
     // Filter by skill
@@ -122,6 +138,8 @@ export const mockHeatmapService = {
       // For mock, we'll just return all clusters but in real implementation
       // this would filter based on alumni experience levels in the cluster
     }
+    
+    console.log('mockHeatmapService.getTalentClusters - returning:', clusters.length, 'clusters');
     
     return {
       success: true,

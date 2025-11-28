@@ -14,6 +14,18 @@ export const mockLeaderboardService = {
     await delay(300);
     const mockData = await getMockData();
     
+    console.log('mockLeaderboardService.getLeaderboard - mockData:', mockData);
+    console.log('mockLeaderboardService.getLeaderboard - leaderboard array:', mockData?.leaderboard);
+    
+    if (!mockData || !mockData.leaderboard || !Array.isArray(mockData.leaderboard)) {
+      console.error('Leaderboard data is missing or invalid');
+      return {
+        success: false,
+        data: [],
+        error: 'Leaderboard data is not available'
+      };
+    }
+    
     let leaderboard = [...mockData.leaderboard];
     
     // Filter by role
@@ -23,6 +35,8 @@ export const mockLeaderboardService = {
     
     // Filter by time period (for demo, return same data)
     // In real app, this would filter based on this_week_points or this_month_points
+    
+    console.log('mockLeaderboardService.getLeaderboard - returning:', leaderboard.length, 'entries');
     
     return {
       success: true,
@@ -69,9 +83,11 @@ export const mockLeaderboardService = {
     await delay(200);
     const mockData = await getMockData();
     
+    console.log('mockLeaderboardService.getAllBadges - badges:', mockData?.badges?.length || 0);
+    
     return {
       success: true,
-      data: mockData.badges
+      data: mockData.badges || []
     };
   },
 

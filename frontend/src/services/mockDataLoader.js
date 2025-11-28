@@ -5,17 +5,25 @@ let mockDataCache = null;
 export const loadMockData = async () => {
   // Return cached data if available
   if (mockDataCache) {
+    console.log('Returning cached mock data');
     return mockDataCache;
   }
 
   try {
     // Fetch the mockdata.json from the public folder
+    console.log('Fetching mock data from /mockdata.json');
     const response = await fetch('/mockdata.json');
     if (!response.ok) {
       throw new Error(`Failed to load mock data: ${response.statusText}`);
     }
     
     mockDataCache = await response.json();
+    console.log('Mock data loaded successfully:', {
+      leaderboard: mockDataCache.leaderboard?.length || 0,
+      geographic_data: mockDataCache.geographic_data?.length || 0,
+      talent_clusters: mockDataCache.talent_clusters?.length || 0,
+      badges: mockDataCache.badges?.length || 0
+    });
     return mockDataCache;
   } catch (error) {
     console.error('Error loading mock data:', error);
@@ -40,6 +48,8 @@ export const loadMockData = async () => {
       skill_graph: [],
       knowledge_capsules: [],
       leaderboard: [],
+      geographic_data: [],
+      talent_clusters: [],
       ai_engagement_insights: []
     };
   }
