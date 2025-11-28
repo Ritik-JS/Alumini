@@ -50,7 +50,13 @@ export const loadMockData = async () => {
       leaderboard: [],
       geographic_data: [],
       talent_clusters: [],
-      ai_engagement_insights: []
+      ai_engagement_insights: [],
+      alumni_cards: [],
+      card_verifications: [],
+      career_paths: [],
+      career_predictions: [],
+      datasetUploads: [],
+      system_config: []
     };
   }
 };

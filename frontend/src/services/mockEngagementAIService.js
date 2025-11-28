@@ -14,7 +14,7 @@ export const mockEngagementAIService = {
     await delay(400);
     const mockData = await getMockData();
     
-    const insights = mockData.ai_engagement_insights.find(
+    const insights = mockData.ai_engagement_insights?.find(
       insight => insight.user_id === userId
     );
     
@@ -73,7 +73,7 @@ export const mockEngagementAIService = {
     await delay(300);
     const mockData = await getMockData();
     
-    const insights = mockData.ai_engagement_insights.find(
+    const insights = mockData.ai_engagement_insights?.find(
       insight => insight.user_id === userId
     );
     
@@ -100,7 +100,7 @@ export const mockEngagementAIService = {
     await delay(300);
     const mockData = await getMockData();
     
-    const insights = mockData.ai_engagement_insights.find(
+    const insights = mockData.ai_engagement_insights?.find(
       insight => insight.user_id === userId
     );
     
@@ -126,7 +126,7 @@ export const mockEngagementAIService = {
     await delay(250);
     const mockData = await getMockData();
     
-    const insights = mockData.ai_engagement_insights.find(
+    const insights = mockData.ai_engagement_insights?.find(
       insight => insight.user_id === userId
     );
     
@@ -148,7 +148,7 @@ export const mockEngagementAIService = {
     await delay(300);
     const mockData = await getMockData();
     
-    const insights = mockData.ai_engagement_insights.find(
+    const insights = mockData.ai_engagement_insights?.find(
       insight => insight.user_id === userId
     );
     
@@ -178,7 +178,7 @@ export const mockEngagementAIService = {
     await delay(250);
     const mockData = await getMockData();
     
-    const insights = mockData.ai_engagement_insights.find(
+    const insights = mockData.ai_engagement_insights?.find(
       insight => insight.user_id === userId
     );
     
