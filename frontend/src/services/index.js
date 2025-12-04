@@ -1,7 +1,7 @@
 /**
- * Service Switcher - Toggles between Mock Data and Real Backend API
+ * Service Index - Unified Services for Mock Data and Real Backend API
  * 
- * This file automatically exports either mock services or real API services
+ * All services now internally handle switching between mock data and real API
  * based on the REACT_APP_USE_MOCK_DATA environment variable.
  * 
  * Usage:
@@ -12,58 +12,44 @@
  * 2. Restart the development server
  */
 
-// Check environment variable to determine which service to use
+// Check environment variable to determine which service mode to use
 const USE_MOCK_DATA = process.env.REACT_APP_USE_MOCK_DATA === 'true';
 
 console.log(`🔄 Service Mode: ${USE_MOCK_DATA ? 'MOCK DATA' : 'BACKEND API'}`);
 
-// Import mock services
-import { mockAuthService as mockAuth } from './mockAuth';
-import mockJobService from './mockJobService';
-import mockEventService from './mockEventService';
-import mockMentorshipService from './mockMentorshipService';
-import mockForumService from './mockForumService';
-import mockProfileService from './mockProfileService';
-import mockDirectoryService from './mockDirectoryService';
-import mockNotificationService from './mockNotificationService';
-import mockLeaderboardService from './mockLeaderboardService';
-import mockAlumniCardService from './mockAlumniCardService';
-import mockCareerPathService from './mockCareerPathService';
-import mockHeatmapService from './mockHeatmapService';
-import mockSkillGraphService from './mockSkillGraphService';
-import mockKnowledgeService from './mockKnowledgeService';
+// Import unified services
+import authService from './authService';
+import jobService from './jobService';
+import eventService from './eventService';
+import mentorshipService from './mentorshipService';
+import forumService from './forumService';
+import profileService from './profileService';
+import directoryService from './directoryService';
+import notificationService from './notificationService';
+import leaderboardService from './leaderboardService';
+import alumniCardService from './alumniCardService';
+import careerPathService from './careerPathService';
+import heatmapService from './heatmapService';
+import skillGraphService from './skillGraphService';
+import knowledgeService from './knowledgeService';
 
-// Import real API services
-import { apiAuth } from './apiAuth';
-import apiJobService from './apiJobService';
-import apiEventService from './apiEventService';
-import apiMentorshipService from './apiMentorshipService';
-import apiForumService from './apiForumService';
-import apiProfileService from './apiProfileService';
-import apiDirectoryService from './apiDirectoryService';
-import apiNotificationService from './apiNotificationService';
-import apiLeaderboardService from './apiLeaderboardService';
-import apiAlumniCardService from './apiAlumniCardService';
-import apiCareerPathService from './apiCareerPathService';
-import apiHeatmapService from './apiHeatmapService';
-import apiSkillGraphService from './apiSkillGraphService';
-import apiKnowledgeService from './apiKnowledgeService';
-
-// Export the appropriate service based on environment variable
-export const authService = USE_MOCK_DATA ? mockAuth : apiAuth;
-export const jobService = USE_MOCK_DATA ? mockJobService : apiJobService;
-export const eventService = USE_MOCK_DATA ? mockEventService : apiEventService;
-export const mentorshipService = USE_MOCK_DATA ? mockMentorshipService : apiMentorshipService;
-export const forumService = USE_MOCK_DATA ? mockForumService : apiForumService;
-export const profileService = USE_MOCK_DATA ? mockProfileService : apiProfileService;
-export const directoryService = USE_MOCK_DATA ? mockDirectoryService : apiDirectoryService;
-export const notificationService = USE_MOCK_DATA ? mockNotificationService : apiNotificationService;
-export const leaderboardService = USE_MOCK_DATA ? mockLeaderboardService : apiLeaderboardService;
-export const alumniCardService = USE_MOCK_DATA ? mockAlumniCardService : apiAlumniCardService;
-export const careerPathService = USE_MOCK_DATA ? mockCareerPathService : apiCareerPathService;
-export const heatmapService = USE_MOCK_DATA ? mockHeatmapService : apiHeatmapService;
-export const skillGraphService = USE_MOCK_DATA ? mockSkillGraphService : apiSkillGraphService;
-export const knowledgeService = USE_MOCK_DATA ? mockKnowledgeService : apiKnowledgeService;
+// Export all services
+export {
+  authService,
+  jobService,
+  eventService,
+  mentorshipService,
+  forumService,
+  profileService,
+  directoryService,
+  notificationService,
+  leaderboardService,
+  alumniCardService,
+  careerPathService,
+  heatmapService,
+  skillGraphService,
+  knowledgeService,
+};
 
 // Export service mode for debugging
 export const isUsingMockData = USE_MOCK_DATA;
