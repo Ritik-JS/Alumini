@@ -254,7 +254,7 @@ Month 1:        Month 2:        Month 3:
 
 ### Backend
 - **Framework**: FastAPI (Python)
-- **Database**: MongoDB with Motor (async)
+- **Database**: MySQL/MariaDB with aiomysql (async)
 - **Authentication**: JWT with bcrypt
 - **File Storage**: AWS S3 or local storage
 - **Email**: SMTP/SendGrid
@@ -274,7 +274,7 @@ Month 1:        Month 2:        Month 3:
 
 ### DevOps
 - **Deployment**: Vercel (frontend), Render/Railway (backend)
-- **Database**: MongoDB Atlas
+- **Database**: MySQL 8.0+ or MariaDB 10.5+ (local or cloud)
 - **Version Control**: Git/GitHub
 - **CI/CD**: GitHub Actions (optional)
 

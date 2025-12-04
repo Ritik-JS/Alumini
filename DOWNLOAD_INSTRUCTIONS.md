@@ -57,10 +57,17 @@ pip install -r requirements.txt
 
 # Create .env file
 cat > .env << EOF
-MONGO_URL=mongodb://localhost:27017
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=alumni_user
+DB_PASSWORD=your-password-here
 DB_NAME=alumni_portal
+MYSQL_URL=mysql://alumni_user:your-password-here@localhost:3306/alumni_portal
 CORS_ORIGINS=http://localhost:3000
 JWT_SECRET=your-secret-key-here
+JWT_ALGORITHM=HS256
+JWT_EXPIRATION_HOURS=24
+DEBUG=True
 EOF
 
 # Run backend (or use supervisor in production)
@@ -166,7 +173,7 @@ Detailed 10-phase frontend development plan:
 
 ### Backend
 - FastAPI (Python)
-- MongoDB with Motor (async)
+- MySQL/MariaDB with aiomysql (async)
 - JWT Authentication
 - AWS S3 (file storage)
 - SendGrid/SMTP (email)
@@ -219,9 +226,10 @@ Good luck with your development! 🚀
 
 1. **Environment Variables**: Create your own .env files (not included for security)
 2. **Dependencies**: Run `pip install -r requirements.txt` and `yarn install`
-3. **Database**: Set up MongoDB locally or use MongoDB Atlas
-4. **API Keys**: You'll need keys for email service, file storage, etc.
-5. **Testing**: Follow testing checkpoints after each phase
+3. **Database**: Set up MySQL 8.0+ or MariaDB 10.5+ locally (see DATABASE_README.md)
+4. **Database Schema**: Import the schema with `mysql -u root -p alumni_portal < database_schema.sql`
+5. **API Keys**: You'll need keys for email service, file storage, etc.
+6. **Testing**: Follow testing checkpoints after each phase
 
 ---
 
