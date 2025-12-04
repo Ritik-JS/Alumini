@@ -26,6 +26,8 @@ from database.connection import get_db_pool, close_db_pool
 
 # Import routes
 from routes.auth import router as auth_router
+from routes.profiles import router as profiles_router
+from routes.admin import router as admin_router
 
 # Import middleware
 from middleware.rate_limit import rate_limiter
@@ -77,6 +79,12 @@ async def health_check():
 
 # Include authentication routes
 api_router.include_router(auth_router)
+
+# Include profile routes (Phase 2)
+app.include_router(profiles_router)
+
+# Include admin routes (Phase 2)
+app.include_router(admin_router)
 
 # Include API router in main app
 app.include_router(api_router)
