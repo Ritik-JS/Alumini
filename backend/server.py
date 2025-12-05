@@ -28,6 +28,9 @@ from database.connection import get_db_pool, close_db_pool
 from routes.auth import router as auth_router
 from routes.profiles import router as profiles_router
 from routes.admin import router as admin_router
+from routes.jobs import router as jobs_router
+from routes.applications import router as applications_router
+from routes.recruiter import router as recruiter_router
 
 # Import middleware
 from middleware.rate_limit import rate_limiter
@@ -85,6 +88,15 @@ app.include_router(profiles_router)
 
 # Include admin routes (Phase 2)
 app.include_router(admin_router)
+
+# Include job routes (Phase 3)
+app.include_router(jobs_router)
+
+# Include application routes (Phase 3)
+app.include_router(applications_router)
+
+# Include recruiter dashboard routes (Phase 3)
+app.include_router(recruiter_router)
 
 # Include API router in main app
 app.include_router(api_router)

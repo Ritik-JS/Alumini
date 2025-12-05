@@ -241,3 +241,146 @@ class RejectProfileRequest(BaseModel):
     """Admin reject profile request"""
     user_id: str
     rejection_reason: str = Field(..., min_length=10)
+
+
+# ============================================================================
+# PHASE 3: JOBS & CAREER MANAGEMENT MODELS
+# ============================================================================
+
+class JobType(str, Enum):
+    """Job type enum"""
+    FULL_TIME = "full-time"
+    PART_TIME = "part-time"
+    INTERNSHIP = "internship"
+    CONTRACT = "contract"
+    REMOTE = "remote"
+
+
+class JobStatus(str, Enum):
+    """Job status enum"""
+    ACTIVE = "active"
+    CLOSED = "closed"
+    DRAFT = "draft"
+
+
+class ApplicationStatus(str, Enum):
+    """Application status enum"""
+    PENDING = "pending"
+    REVIEWED = "reviewed"
+    SHORTLISTED = "shortlisted"
+    REJECTED = "rejected"
+    ACCEPTED = "accepted"
+
+
+class JobCreate(BaseModel):
+    """Create job posting request"""
+    title: str = Field(..., min_length=5, max_length=255)
+    description: str = Field(..., min_length=50)
+    company: str = Field(..., min_length=2, max_length=255)
+    location: Optional[str] = Field(None, max_length=255)
+    job_type: JobType
+    experience_required: Optional[str] = Field(None, max_length=100)
+    skills_required: Optional[list[str]] = None
+    salary_range: Optional[str] = Field(None, max_length=100)
+    apply_link: Optional[str] = Field(None, max_length=500)
+    application_deadline: Optional[datetime] = None
+    status: JobStatus = JobStatus.ACTIVE
+
+
+class JobUpdate(BaseModel):
+    """Update job posting request"""
+    title: Optional[str] = Field(None, min_length=5, max_length=255)
+    description: Optional[str] = Field(None, min_length=50)
+    company: Optional[str] = Field(None, min_length=2, max_length=255)
+    location: Optional[str] = Field(None, max_length=255)
+    job_type: Optional[JobType] = None
+    experience_required: Optional[str] = Field(None, max_length=100)
+    skills_required: Optional[list[str]] = None
+    salary_range: Optional[str] = Field(None, max_length=100)
+    apply_link: Optional[str] = Field(None, max_length=500)
+    application_deadline: Optional[datetime] = None
+    status: Optional[JobStatus] = None
+
+
+class JobResponse(BaseModel):
+    """Job response model"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    title: str
+    description: str
+    company: str
+    location: Optional[str] = None
+    job_type: str
+    experience_required: Optional[str] = None
+    skills_required: Optional[list] = None
+    salary_range: Optional[str] = None
+    apply_link: Optional[str] = None
+    posted_by: str
+    application_deadline: Optional[datetime] = None
+    status: str
+    views_count: int = 0
+    applications_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+
+class JobSearchParams(BaseModel):
+    """Job search parameters"""
+    status: Optional[JobStatus] = None
+    company: Optional[str] = None
+    location: Optional[str] = None
+    job_type: Optional[JobType] = None
+    skills: Optional[list[str]] = None
+    search: Optional[str] = None
+    page: int = Field(1, ge=1)
+    limit: int = Field(20, ge=1, le=100)
+
+
+class JobApplicationCreate(BaseModel):
+    """Create job application request"""
+    cv_url: Optional[str] = Field(None, max_length=500)
+    cover_letter: Optional[str] = None
+
+
+class JobApplicationUpdate(BaseModel):
+    """Update job application request (for recruiters)"""
+    status: ApplicationStatus
+    response_message: Optional[str] = None
+
+
+class JobApplicationResponse(BaseModel):
+    """Job application response model"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    job_id: str
+    applicant_id: str
+    cv_url: Optional[str] = None
+    cover_letter: Optional[str] = None
+    status: str
+    viewed_at: Optional[datetime] = None
+    response_message: Optional[str] = None
+    applied_at: datetime
+    updated_at: datetime
+
+
+class RecruiterAnalytics(BaseModel):
+    """Recruiter analytics model"""
+    total_jobs_posted: int
+    active_jobs: int
+    closed_jobs: int
+    total_applications: int
+    pending_applications: int
+    shortlisted_applications: int
+    recent_applications: list[JobApplicationResponse]
+
+
+class ApplicationsSummary(BaseModel):
+    """Applications summary for recruiter"""
+    pending: int
+    reviewed: int
+    shortlisted: int
+    rejected: int
+    accepted: int
+    total: int
