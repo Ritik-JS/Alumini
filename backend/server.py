@@ -31,6 +31,7 @@ from routes.admin import router as admin_router
 from routes.jobs import router as jobs_router
 from routes.applications import router as applications_router
 from routes.recruiter import router as recruiter_router
+from routes.mentorship import router as mentorship_router
 
 # Import middleware
 from middleware.rate_limit import rate_limiter
@@ -97,6 +98,9 @@ app.include_router(applications_router)
 
 # Include recruiter dashboard routes (Phase 3)
 app.include_router(recruiter_router)
+
+# Include mentorship routes (Phase 4)
+app.include_router(mentorship_router)
 
 # Include API router in main app
 app.include_router(api_router)
