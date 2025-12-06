@@ -605,3 +605,251 @@ class MentorStatistics(BaseModel):
     current_mentees: int
     max_mentees: int
     is_available: bool
+
+
+
+# ============================================================================
+# PHASE 5: EVENTS & COMMUNITY ENGAGEMENT MODELS
+# ============================================================================
+
+class EventType(str, Enum):
+    """Event type enum"""
+    WORKSHOP = "workshop"
+    WEBINAR = "webinar"
+    MEETUP = "meetup"
+    CONFERENCE = "conference"
+    NETWORKING = "networking"
+    OTHER = "other"
+
+
+class EventStatus(str, Enum):
+    """Event status enum"""
+    DRAFT = "draft"
+    PUBLISHED = "published"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
+
+
+class RSVPStatus(str, Enum):
+    """RSVP status enum"""
+    ATTENDING = "attending"
+    MAYBE = "maybe"
+    NOT_ATTENDING = "not_attending"
+
+
+class EventCreate(BaseModel):
+    """Event creation model"""
+    title: str = Field(..., min_length=1, max_length=255)
+    description: Optional[str] = None
+    event_type: EventType
+    location: Optional[str] = Field(None, max_length=255)
+    is_virtual: bool = False
+    meeting_link: Optional[str] = Field(None, max_length=500)
+    start_date: datetime
+    end_date: datetime
+    registration_deadline: Optional[datetime] = None
+    max_attendees: Optional[int] = Field(None, gt=0)
+    banner_image: Optional[str] = Field(None, max_length=500)
+    status: EventStatus = EventStatus.PUBLISHED
+
+
+class EventUpdate(BaseModel):
+    """Event update model"""
+    title: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    event_type: Optional[EventType] = None
+    location: Optional[str] = Field(None, max_length=255)
+    is_virtual: Optional[bool] = None
+    meeting_link: Optional[str] = Field(None, max_length=500)
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    registration_deadline: Optional[datetime] = None
+    max_attendees: Optional[int] = Field(None, gt=0)
+    banner_image: Optional[str] = Field(None, max_length=500)
+    status: Optional[EventStatus] = None
+
+
+class EventResponse(BaseModel):
+    """Event response model"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    title: str
+    description: Optional[str] = None
+    event_type: str
+    location: Optional[str] = None
+    is_virtual: bool
+    meeting_link: Optional[str] = None
+    start_date: datetime
+    end_date: datetime
+    registration_deadline: Optional[datetime] = None
+    max_attendees: Optional[int] = None
+    current_attendees_count: int
+    banner_image: Optional[str] = None
+    created_by: str
+    status: str
+    views_count: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class EventRSVPCreate(BaseModel):
+    """Event RSVP creation model"""
+    status: RSVPStatus = RSVPStatus.ATTENDING
+
+
+class EventRSVPUpdate(BaseModel):
+    """Event RSVP update model"""
+    status: RSVPStatus
+
+
+class EventRSVPResponse(BaseModel):
+    """Event RSVP response model"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    event_id: str
+    user_id: str
+    status: str
+    rsvp_date: datetime
+    updated_at: datetime
+
+
+class EventWithRSVP(BaseModel):
+    """Event with user RSVP status"""
+    event: EventResponse
+    user_rsvp: Optional[EventRSVPResponse] = None
+
+
+class EventAttendee(BaseModel):
+    """Event attendee details"""
+    id: str
+    event_id: str
+    user_id: str
+    status: str
+    rsvp_date: datetime
+    user_name: str
+    user_email: str
+    user_photo_url: Optional[str] = None
+
+
+# Forum Models
+
+class ForumPostCreate(BaseModel):
+    """Forum post creation model"""
+    title: Optional[str] = Field(None, max_length=255)
+    content: str = Field(..., min_length=1)
+    tags: Optional[list[str]] = None
+
+
+class ForumPostUpdate(BaseModel):
+    """Forum post update model"""
+    title: Optional[str] = Field(None, max_length=255)
+    content: Optional[str] = Field(None, min_length=1)
+    tags: Optional[list[str]] = None
+    is_pinned: Optional[bool] = None
+
+
+class ForumPostResponse(BaseModel):
+    """Forum post response model"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    title: Optional[str] = None
+    content: str
+    author_id: str
+    tags: Optional[list] = None
+    likes_count: int
+    comments_count: int
+    views_count: int
+    is_pinned: bool
+    is_deleted: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class ForumPostWithAuthor(BaseModel):
+    """Forum post with author details"""
+    id: str
+    title: Optional[str] = None
+    content: str
+    author_id: str
+    author_name: str
+    author_email: str
+    author_photo_url: Optional[str] = None
+    tags: Optional[list] = None
+    likes_count: int
+    comments_count: int
+    views_count: int
+    is_pinned: bool
+    is_deleted: bool
+    created_at: datetime
+    updated_at: datetime
+    user_has_liked: bool = False
+
+
+class ForumCommentCreate(BaseModel):
+    """Forum comment creation model"""
+    content: str = Field(..., min_length=1)
+    parent_comment_id: Optional[str] = None
+
+
+class ForumCommentUpdate(BaseModel):
+    """Forum comment update model"""
+    content: str = Field(..., min_length=1)
+
+
+class ForumCommentResponse(BaseModel):
+    """Forum comment response model"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    post_id: str
+    author_id: str
+    parent_comment_id: Optional[str] = None
+    content: str
+    likes_count: int
+    is_deleted: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class ForumCommentWithAuthor(BaseModel):
+    """Forum comment with author details"""
+    id: str
+    post_id: str
+    author_id: str
+    author_name: str
+    author_email: str
+    author_photo_url: Optional[str] = None
+    parent_comment_id: Optional[str] = None
+    content: str
+    likes_count: int
+    is_deleted: bool
+    created_at: datetime
+    updated_at: datetime
+    user_has_liked: bool = False
+    replies: list["ForumCommentWithAuthor"] = []
+
+
+class PostLikeResponse(BaseModel):
+    """Post like response"""
+    id: str
+    post_id: str
+    user_id: str
+    created_at: datetime
+
+
+class CommentLikeResponse(BaseModel):
+    """Comment like response"""
+    id: str
+    comment_id: str
+    user_id: str
+    created_at: datetime
+
+
+class LikeToggleResponse(BaseModel):
+    """Like toggle response"""
+    liked: bool
+    likes_count: int
+
