@@ -853,3 +853,206 @@ class LikeToggleResponse(BaseModel):
     liked: bool
     likes_count: int
 
+
+# ============================================================================
+# PHASE 6: NOTIFICATIONS & REAL-TIME UPDATES MODELS
+# ============================================================================
+
+class NotificationType(str, Enum):
+    """Notification types"""
+    PROFILE = "profile"
+    MENTORSHIP = "mentorship"
+    JOB = "job"
+    EVENT = "event"
+    FORUM = "forum"
+    SYSTEM = "system"
+    VERIFICATION = "verification"
+
+
+class NotificationPriority(str, Enum):
+    """Notification priority levels"""
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
+class NotificationFrequency(str, Enum):
+    """Notification frequency settings"""
+    INSTANT = "instant"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+
+
+class NotificationBase(BaseModel):
+    """Base notification model"""
+    user_id: str
+    type: NotificationType
+    title: str = Field(..., max_length=255)
+    message: str
+    link: Optional[str] = Field(None, max_length=500)
+    priority: NotificationPriority = NotificationPriority.MEDIUM
+    metadata: Optional[dict] = None
+
+
+class NotificationCreate(NotificationBase):
+    """Create notification request"""
+    pass
+
+
+class NotificationInDB(NotificationBase):
+    """Notification in database"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    is_read: bool = False
+    read_at: Optional[datetime] = None
+    created_at: datetime
+
+
+class NotificationResponse(NotificationInDB):
+    """Notification response"""
+    pass
+
+
+class NotificationListResponse(BaseModel):
+    """Paginated notification list response"""
+    notifications: list[NotificationResponse]
+    total: int
+    page: int
+    limit: int
+    unread_count: int
+
+
+class UnreadCountResponse(BaseModel):
+    """Unread notification count response"""
+    unread_count: int
+
+
+class MarkReadResponse(BaseModel):
+    """Mark notification as read response"""
+    success: bool
+    message: str
+
+
+# Notification Preferences Models
+
+class ProfileVisibility(str, Enum):
+    """Profile visibility settings"""
+    PUBLIC = "public"
+    ALUMNI = "alumni"
+    CONNECTIONS = "connections"
+    PRIVATE = "private"
+
+
+class NotificationPreferencesBase(BaseModel):
+    """Base notification preferences"""
+    email_notifications: bool = True
+    push_notifications: bool = True
+    notification_types: dict = Field(
+        default_factory=lambda: {
+            "profile": True,
+            "mentorship": True,
+            "job": True,
+            "event": True,
+            "forum": True,
+            "system": True,
+            "verification": True
+        }
+    )
+    notification_frequency: NotificationFrequency = NotificationFrequency.INSTANT
+    quiet_hours_start: Optional[str] = None  # Time in HH:MM format
+    quiet_hours_end: Optional[str] = None    # Time in HH:MM format
+
+
+class NotificationPreferencesUpdate(NotificationPreferencesBase):
+    """Update notification preferences request"""
+    pass
+
+
+class NotificationPreferencesInDB(NotificationPreferencesBase):
+    """Notification preferences in database"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    user_id: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class NotificationPreferencesResponse(NotificationPreferencesInDB):
+    """Notification preferences response"""
+    pass
+
+
+# Privacy Settings Models
+
+class PrivacySettingsBase(BaseModel):
+    """Base privacy settings"""
+    profile_visibility: ProfileVisibility = ProfileVisibility.PUBLIC
+    show_email: bool = False
+    show_phone: bool = False
+    allow_messages: bool = True
+    allow_mentorship_requests: bool = True
+    show_in_directory: bool = True
+    show_activity: bool = True
+
+
+class PrivacySettingsUpdate(PrivacySettingsBase):
+    """Update privacy settings request"""
+    pass
+
+
+class PrivacySettingsInDB(PrivacySettingsBase):
+    """Privacy settings in database"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    user_id: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class PrivacySettingsResponse(PrivacySettingsInDB):
+    """Privacy settings response"""
+    pass
+
+
+# Email Queue Models
+
+class EmailStatus(str, Enum):
+    """Email queue status"""
+    PENDING = "pending"
+    SENT = "sent"
+    FAILED = "failed"
+
+
+class EmailQueueBase(BaseModel):
+    """Base email queue model"""
+    recipient_email: EmailStr
+    subject: str = Field(..., max_length=255)
+    body: str
+    template_name: Optional[str] = Field(None, max_length=100)
+
+
+class EmailQueueCreate(EmailQueueBase):
+    """Create email queue entry"""
+    pass
+
+
+class EmailQueueInDB(EmailQueueBase):
+    """Email queue in database"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    status: EmailStatus = EmailStatus.PENDING
+    retry_count: int = 0
+    error_message: Optional[str] = None
+    scheduled_at: datetime
+    sent_at: Optional[datetime] = None
+    created_at: datetime
+
+
+class EmailQueueResponse(EmailQueueInDB):
+    """Email queue response"""
+    pass
+
