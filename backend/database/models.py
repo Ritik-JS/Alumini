@@ -1056,3 +1056,325 @@ class EmailQueueResponse(EmailQueueInDB):
     """Email queue response"""
     pass
 
+
+# ============================================================================
+# PHASE 7: ADMIN DASHBOARD & ANALYTICS MODELS
+# ============================================================================
+
+# Admin Action Models
+
+class AdminActionType(str, Enum):
+    """Admin action types"""
+    USER_MANAGEMENT = "user_management"
+    CONTENT_MODERATION = "content_moderation"
+    VERIFICATION = "verification"
+    SYSTEM_CONFIG = "system_config"
+    OTHER = "other"
+
+
+class AdminActionCreate(BaseModel):
+    """Create admin action"""
+    admin_id: str
+    action_type: AdminActionType
+    target_type: Optional[str] = None
+    target_id: Optional[str] = None
+    description: str
+    metadata: Optional[dict] = None
+    ip_address: Optional[str] = None
+
+
+class AdminActionResponse(BaseModel):
+    """Admin action response"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    admin_id: str
+    action_type: str
+    target_type: Optional[str] = None
+    target_id: Optional[str] = None
+    description: str
+    metadata: Optional[dict] = None
+    ip_address: Optional[str] = None
+    timestamp: datetime
+
+
+# Dashboard Metrics Models
+
+class DashboardMetrics(BaseModel):
+    """Admin dashboard key metrics"""
+    total_users: int
+    users_by_role: dict  # {student: 10, alumni: 20, recruiter: 5, admin: 2}
+    verified_alumni: int
+    pending_verifications: int
+    total_jobs_posted: int
+    active_jobs: int
+    total_applications: int
+    total_events: int
+    upcoming_events: int
+    total_rsvps: int
+    total_mentorship_requests: int
+    active_mentorships: int
+    forum_posts_count: int
+    forum_comments_count: int
+
+
+class UserGrowthData(BaseModel):
+    """User growth chart data"""
+    date: str
+    total_users: int
+    new_users: int
+
+
+class JobTrendData(BaseModel):
+    """Job posting trend data"""
+    date: str
+    jobs_posted: int
+    applications: int
+
+
+class EventParticipationData(BaseModel):
+    """Event participation trend data"""
+    date: str
+    events: int
+    attendees: int
+
+
+class MentorshipActivityData(BaseModel):
+    """Mentorship activity data"""
+    date: str
+    requests: int
+    sessions: int
+
+
+class DashboardCharts(BaseModel):
+    """Dashboard chart data"""
+    user_growth: list[UserGrowthData]
+    job_trends: list[JobTrendData]
+    event_participation: list[EventParticipationData]
+    mentorship_activity: list[MentorshipActivityData]
+
+
+# Analytics Models
+
+class SkillDistribution(BaseModel):
+    """Skill distribution analytics"""
+    skill: str
+    count: int
+    percentage: float
+
+
+class LocationDistribution(BaseModel):
+    """Location distribution with coordinates"""
+    location: str
+    country: Optional[str] = None
+    city: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    alumni_count: int
+    jobs_count: int
+
+
+class CompanyDistribution(BaseModel):
+    """Company distribution analytics"""
+    company: str
+    alumni_count: int
+    percentage: float
+
+
+class BatchDistribution(BaseModel):
+    """Batch year distribution"""
+    batch_year: int
+    count: int
+
+
+class JobTrendsByCategory(BaseModel):
+    """Job trends by job type"""
+    job_type: str
+    count: int
+    percentage: float
+
+
+class MentorshipStats(BaseModel):
+    """Mentorship program statistics"""
+    total_mentors: int
+    active_mentors: int
+    total_mentees: int
+    total_requests: int
+    accepted_requests: int
+    rejected_requests: int
+    pending_requests: int
+    total_sessions: int
+    completed_sessions: int
+    average_rating: float
+
+
+class EventParticipationStats(BaseModel):
+    """Event participation statistics"""
+    total_events: int
+    upcoming_events: int
+    past_events: int
+    total_rsvps: int
+    average_attendance_rate: float
+    events_by_type: dict  # {workshop: 10, webinar: 5, ...}
+
+
+class EngagementMetrics(BaseModel):
+    """User engagement metrics"""
+    total_active_users: int
+    average_engagement_score: float
+    top_contributors: list[dict]  # [{user_id, name, score}, ...]
+    engagement_by_level: dict  # {beginner: 50, active: 30, veteran: 15, legend: 5}
+
+
+# User Management Models
+
+class UserListParams(BaseModel):
+    """User list query parameters"""
+    role: Optional[UserRole] = None
+    is_verified: Optional[bool] = None
+    is_active: Optional[bool] = None
+    search: Optional[str] = None
+    page: int = Field(1, ge=1)
+    limit: int = Field(20, ge=1, le=100)
+
+
+class UserDetailResponse(BaseModel):
+    """Detailed user information for admin"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    email: str
+    role: str
+    is_verified: bool
+    is_active: bool
+    last_login: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+    profile: Optional[dict] = None  # Alumni profile if exists
+
+
+class UserUpdateRequest(BaseModel):
+    """Admin update user request"""
+    role: Optional[UserRole] = None
+    is_active: Optional[bool] = None
+    is_verified: Optional[bool] = None
+
+
+class UserSuspendRequest(BaseModel):
+    """Suspend user request"""
+    reason: str = Field(..., min_length=10, max_length=500)
+
+
+# Content Moderation Models
+
+class ContentType(str, Enum):
+    """Content types for moderation"""
+    POST = "post"
+    COMMENT = "comment"
+    JOB = "job"
+    EVENT = "event"
+    PROFILE = "profile"
+
+
+class ContentFlagStatus(str, Enum):
+    """Content flag status"""
+    PENDING = "pending"
+    APPROVED = "approved"
+    REMOVED = "removed"
+
+
+class ContentFlagCreate(BaseModel):
+    """Create content flag"""
+    content_type: ContentType
+    content_id: str
+    reason: str = Field(..., min_length=10, max_length=1000)
+
+
+class ContentFlagResponse(BaseModel):
+    """Content flag response"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    content_type: str
+    content_id: str
+    flagged_by: str
+    reason: str
+    status: str
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
+    created_at: datetime
+
+
+class ContentModerateRequest(BaseModel):
+    """Content moderation decision"""
+    flag_id: str
+    action: Literal["approve", "remove"]
+    admin_notes: Optional[str] = None
+
+
+class FlaggedContentListParams(BaseModel):
+    """Flagged content list parameters"""
+    content_type: Optional[ContentType] = None
+    status: Optional[ContentFlagStatus] = None
+    page: int = Field(1, ge=1)
+    limit: int = Field(20, ge=1, le=100)
+
+
+# System Configuration Models
+
+class SystemConfigType(str, Enum):
+    """System configuration types"""
+    STRING = "string"
+    NUMBER = "number"
+    BOOLEAN = "boolean"
+    JSON = "json"
+
+
+class SystemConfigUpdate(BaseModel):
+    """Update system configuration"""
+    config_key: str
+    config_value: str
+    description: Optional[str] = None
+
+
+class SystemConfigResponse(BaseModel):
+    """System configuration response"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    config_key: str
+    config_value: str
+    config_type: str
+    description: Optional[str] = None
+    is_public: bool
+    updated_by: Optional[str] = None
+    updated_at: datetime
+
+
+class SystemConfigListResponse(BaseModel):
+    """List of system configurations"""
+    configs: list[SystemConfigResponse]
+    total: int
+
+
+# System Metrics Models
+
+class SystemMetricCreate(BaseModel):
+    """Create system metric"""
+    metric_name: str
+    metric_value: float
+    metric_unit: Optional[str] = None
+    category: Optional[str] = None
+
+
+class SystemMetricResponse(BaseModel):
+    """System metric response"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    metric_name: str
+    metric_value: float
+    metric_unit: Optional[str] = None
+    category: Optional[str] = None
+    recorded_at: datetime
+
