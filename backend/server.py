@@ -36,6 +36,13 @@ from routes.events import router as events_router
 from routes.forum import router as forum_router
 from routes.notifications import router as notifications_router
 
+# Import Phase 7 routes - Admin Dashboard & Analytics
+from routes.admin_dashboard import router as admin_dashboard_router
+from routes.analytics import router as analytics_router
+from routes.admin_users import router as admin_users_router
+from routes.admin_content import router as admin_content_router
+from routes.admin_settings import router as admin_settings_router
+
 # Import middleware
 from middleware.rate_limit import rate_limiter
 
@@ -113,6 +120,13 @@ app.include_router(forum_router)
 
 # Include notification routes (Phase 6)
 app.include_router(notifications_router)
+
+# Include Phase 7 routes - Admin Dashboard & Analytics
+app.include_router(admin_dashboard_router)
+app.include_router(analytics_router)
+app.include_router(admin_users_router)
+app.include_router(admin_content_router)
+app.include_router(admin_settings_router)
 
 # Include API router in main app
 app.include_router(api_router)
