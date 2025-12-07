@@ -43,6 +43,11 @@ from routes.admin_users import router as admin_users_router
 from routes.admin_content import router as admin_content_router
 from routes.admin_settings import router as admin_settings_router
 
+# Import Phase 8 routes - Smart Algorithms & Matching
+from routes.matching import router as matching_router
+from routes.recommendations import router as recommendations_router
+from routes.engagement import router as engagement_router
+
 # Import middleware
 from middleware.rate_limit import rate_limiter
 
