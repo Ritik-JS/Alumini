@@ -1378,3 +1378,251 @@ class SystemMetricResponse(BaseModel):
     category: Optional[str] = None
     recorded_at: datetime
 
+
+# ============================================================================
+# PHASE 8: SMART ALGORITHMS & MATCHING MODELS
+# ============================================================================
+
+# User Interests Models
+
+class UserInterestsBase(BaseModel):
+    """Base user interests model"""
+    interest_tags: Optional[list[str]] = None
+    interaction_history: Optional[dict] = None  # {jobs: [...], events: [...], posts: [...]}
+    preferred_industries: Optional[list[str]] = None
+    preferred_locations: Optional[list[str]] = None
+
+
+class UserInterestsUpdate(UserInterestsBase):
+    """Update user interests"""
+    pass
+
+
+class UserInterestsResponse(UserInterestsBase):
+    """User interests response"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    user_id: str
+    last_updated: datetime
+
+
+# Engagement Score Models
+
+class ContributionType(str, Enum):
+    """Contribution types"""
+    PROFILE_UPDATE = "profile_update"
+    MENTORSHIP = "mentorship"
+    JOB_POST = "job_post"
+    EVENT_ATTEND = "event_attend"
+    FORUM_POST = "forum_post"
+    FORUM_COMMENT = "forum_comment"
+    HELP_OTHERS = "help_others"
+
+
+class ContributionHistoryCreate(BaseModel):
+    """Create contribution history entry"""
+    user_id: str
+    contribution_type: ContributionType
+    points_earned: int
+    description: Optional[str] = None
+
+
+class ContributionHistoryResponse(BaseModel):
+    """Contribution history response"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    user_id: str
+    contribution_type: str
+    points_earned: int
+    description: Optional[str] = None
+    created_at: datetime
+
+
+class EngagementScoreResponse(BaseModel):
+    """Engagement score response"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    user_id: str
+    total_score: int
+    contributions: Optional[dict] = None  # Breakdown by type
+    rank_position: Optional[int] = None
+    level: Optional[str] = None
+    last_calculated: datetime
+
+
+class LeaderboardEntry(BaseModel):
+    """Leaderboard entry"""
+    user_id: str
+    name: str
+    photo_url: Optional[str] = None
+    role: str
+    total_score: int
+    rank_position: int
+    level: str
+    contributions: Optional[dict] = None
+
+
+class LeaderboardResponse(BaseModel):
+    """Leaderboard response"""
+    entries: list[LeaderboardEntry]
+    total_users: int
+    user_rank: Optional[int] = None
+
+
+# Badge Models
+
+class BadgeRarity(str, Enum):
+    """Badge rarity levels"""
+    COMMON = "common"
+    RARE = "rare"
+    EPIC = "epic"
+    LEGENDARY = "legendary"
+
+
+class BadgeResponse(BaseModel):
+    """Badge response"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    name: str
+    description: Optional[str] = None
+    icon_url: Optional[str] = None
+    requirements: Optional[dict] = None
+    rarity: str
+    points: int
+    created_at: datetime
+
+
+class UserBadgeResponse(BaseModel):
+    """User badge response"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    user_id: str
+    badge_id: str
+    earned_at: datetime
+    badge: Optional[BadgeResponse] = None
+
+
+# Matching Models
+
+class MentorSuggestionRequest(BaseModel):
+    """Request for mentor suggestions"""
+    user_skills: Optional[list[str]] = None
+    interest_areas: Optional[list[str]] = None
+    preferred_industries: Optional[list[str]] = None
+    min_rating: Optional[float] = Field(None, ge=0, le=5)
+    limit: int = Field(10, ge=1, le=50)
+
+
+class MentorSuggestion(BaseModel):
+    """Mentor suggestion with match score"""
+    mentor_id: str
+    user_id: str
+    name: str
+    email: str
+    photo_url: Optional[str] = None
+    current_company: Optional[str] = None
+    current_role: Optional[str] = None
+    expertise_areas: list
+    rating: float
+    total_sessions: int
+    match_score: float  # 0.0 to 1.0
+    matching_skills: list[str]
+    matching_reasons: list[str]
+
+
+class JobRecommendationRequest(BaseModel):
+    """Request for job recommendations"""
+    user_id: Optional[str] = None
+    user_skills: Optional[list[str]] = None
+    preferred_locations: Optional[list[str]] = None
+    preferred_job_types: Optional[list[str]] = None
+    min_experience: Optional[int] = None
+    limit: int = Field(10, ge=1, le=50)
+
+
+class JobRecommendation(BaseModel):
+    """Job recommendation with match score"""
+    job_id: str
+    title: str
+    company: str
+    location: Optional[str] = None
+    job_type: str
+    skills_required: list
+    experience_required: Optional[str] = None
+    salary_range: Optional[str] = None
+    match_score: float  # 0.0 to 1.0
+    matching_skills: list[str]
+    missing_skills: list[str]
+    matching_reasons: list[str]
+
+
+class AlumniConnectionRequest(BaseModel):
+    """Request for alumni connection suggestions"""
+    user_id: str
+    limit: int = Field(10, ge=1, le=50)
+
+
+class AlumniConnectionSuggestion(BaseModel):
+    """Alumni connection suggestion with similarity score"""
+    user_id: str
+    name: str
+    email: str
+    photo_url: Optional[str] = None
+    current_company: Optional[str] = None
+    current_role: Optional[str] = None
+    location: Optional[str] = None
+    batch_year: Optional[int] = None
+    skills: list
+    similarity_score: float  # 0.0 to 1.0
+    common_skills: list[str]
+    common_interests: list[str]
+    matching_reasons: list[str]
+
+
+# Recommendation Models
+
+class EventRecommendation(BaseModel):
+    """Event recommendation"""
+    event_id: str
+    title: str
+    description: Optional[str] = None
+    event_type: str
+    start_date: datetime
+    location: Optional[str] = None
+    is_virtual: bool
+    relevance_score: float  # 0.0 to 1.0
+    recommendation_reason: str
+
+
+class PostRecommendation(BaseModel):
+    """Forum post recommendation"""
+    post_id: str
+    title: Optional[str] = None
+    content: str
+    author_name: str
+    tags: list
+    likes_count: int
+    comments_count: int
+    relevance_score: float  # 0.0 to 1.0
+    recommendation_reason: str
+    created_at: datetime
+
+
+class AlumniRecommendation(BaseModel):
+    """Alumni profile recommendation"""
+    user_id: str
+    name: str
+    photo_url: Optional[str] = None
+    headline: Optional[str] = None
+    current_company: Optional[str] = None
+    current_role: Optional[str] = None
+    location: Optional[str] = None
+    skills: list
+    relevance_score: float  # 0.0 to 1.0
+    recommendation_reason: str
+
