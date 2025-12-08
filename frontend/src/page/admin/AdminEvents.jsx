@@ -24,7 +24,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Search, MoreVertical, Eye, Trash2, Calendar, Users, MapPin } from 'lucide-react';
-import mockData from '@/mockdata.json';
+import { eventService } from '@/services';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
 
 const AdminEvents = () => {
@@ -36,24 +38,30 @@ const AdminEvents = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
   const [showAttendeesModal, setShowAttendeesModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await eventService.getEvents();
+      
+      if (result.success) {
+        setEvents(result.data || []);
+        setFilteredEvents(result.data || []);
+      } else {
+        setError(result.error || 'Failed to load events');
+      }
+    } catch (error) {
+      console.error('Error loading events:', error);
+      setError('Unable to connect to server. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadEvents = () => {
-      try {
-        const allEvents = mockData.events || [];
-        const enrichedEvents = allEvents.map(event => {
-          const creator = mockData.users?.find(u => u.id === event.created_by);
-          const rsvps = mockData.event_rsvps?.filter(r => r.event_id === event.id) || [];
-          return { ...event, creator, rsvps };
-        });
-        setEvents(enrichedEvents);
-        setFilteredEvents(enrichedEvents);
-      } catch (error) {
-        console.error('Error loading events:', error);
-        toast.error('Failed to load events');
-      }
-    };
-
     loadEvents();
   }, []);
 
@@ -87,15 +95,35 @@ const AdminEvents = () => {
     setShowAttendeesModal(true);
   };
 
-  const handleChangeStatus = (eventId, newStatus) => {
-    setEvents(events.map(e => e.id === eventId ? { ...e, status: newStatus } : e));
-    toast.success(`Event status updated to ${newStatus}`);
+  const handleChangeStatus = async (eventId, newStatus) => {
+    try {
+      const result = await eventService.updateEvent(eventId, { status: newStatus });
+      if (result.success) {
+        setEvents(events.map(e => e.id === eventId ? { ...e, status: newStatus } : e));
+        toast.success(`Event status updated to ${newStatus}`);
+      } else {
+        toast.error(result.error || 'Failed to update event status');
+      }
+    } catch (error) {
+      console.error('Error updating event status:', error);
+      toast.error('Unable to update event status. Please try again.');
+    }
   };
 
-  const handleDeleteEvent = (eventId) => {
+  const handleDeleteEvent = async (eventId) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
-      setEvents(events.filter((e) => e.id !== eventId));
-      toast.success('Event deleted successfully');
+      try {
+        const result = await eventService.deleteEvent(eventId);
+        if (result.success) {
+          setEvents(events.filter((e) => e.id !== eventId));
+          toast.success('Event deleted successfully');
+        } else {
+          toast.error(result.error || 'Failed to delete event');
+        }
+      } catch (error) {
+        console.error('Error deleting event:', error);
+        toast.error('Unable to delete event. Please try again.');
+      }
     }
   };
 
@@ -118,8 +146,38 @@ const AdminEvents = () => {
     { label: 'Total Events', value: events.length, color: 'text-blue-600', icon: Calendar },
     { label: 'Published', value: events.filter((e) => e.status === 'published').length, color: 'text-green-600', icon: Calendar },
     { label: 'Completed', value: events.filter((e) => e.status === 'completed').length, color: 'text-purple-600', icon: Calendar },
-    { label: 'Total Attendees', value: mockData.event_rsvps?.filter(r => r.status === 'attending').length || 0, color: 'text-orange-600', icon: Users },
+    { label: 'Total Attendees', value: events.reduce((sum, e) => sum + (e.current_attendees_count || 0), 0), color: 'text-orange-600', icon: Users },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <LoadingSpinner message="Loading events..." />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <ErrorMessage message={error} onRetry={loadEvents} />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -232,7 +290,7 @@ const AdminEvents = () => {
                             </Badge>
                           </td>
                           <td className="py-4 text-sm">
-                            {event.rsvps?.filter(r => r.status === 'attending').length || 0} / {event.max_attendees || '∞'}
+                            {event.attendees?.length || 0} / {event.max_attendees || '∞'}
                           </td>
                           <td className="py-4">
                             <DropdownMenu>
@@ -370,30 +428,27 @@ const AdminEvents = () => {
           <DialogHeader>
             <DialogTitle>Event Attendees</DialogTitle>
             <DialogDescription>
-              {selectedEvent?.rsvps?.filter(r => r.status === 'attending').length || 0} attending
+              {selectedEvent?.attendees?.length || 0} attending
             </DialogDescription>
           </DialogHeader>
           {selectedEvent && (
             <div className="space-y-3">
-              {selectedEvent.rsvps?.filter(r => r.status === 'attending').map(rsvp => {
-                const attendee = mockData.users?.find(u => u.id === rsvp.user_id);
-                const profile = mockData.alumni_profiles?.find(p => p.user_id === rsvp.user_id);
-                return (
-                  <div key={rsvp.id} className="flex items-center gap-3 p-3 border rounded-lg">
+              {selectedEvent.attendees && selectedEvent.attendees.length > 0 ? (
+                selectedEvent.attendees.map(attendee => (
+                  <div key={attendee.id || attendee.user_id} className="flex items-center gap-3 p-3 border rounded-lg">
                     <img
-                      src={profile?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${attendee?.email}`}
-                      alt={profile?.name || attendee?.email}
+                      src={attendee.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${attendee.email}`}
+                      alt={attendee.name || attendee.email}
                       className="w-10 h-10 rounded-full"
                     />
                     <div className="flex-1">
-                      <p className="font-medium text-sm">{profile?.name || attendee?.email}</p>
-                      <p className="text-xs text-gray-500">{attendee?.email}</p>
+                      <p className="font-medium text-sm">{attendee.name || attendee.email}</p>
+                      <p className="text-xs text-gray-500">{attendee.email}</p>
                     </div>
-                    <Badge variant="outline" className="capitalize">{attendee?.role}</Badge>
+                    <Badge variant="outline" className="capitalize">{attendee.role || 'User'}</Badge>
                   </div>
-                );
-              })}
-              {(!selectedEvent.rsvps || selectedEvent.rsvps.filter(r => r.status === 'attending').length === 0) && (
+                ))
+              ) : (
                 <div className="text-center py-8 text-gray-500">
                   <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>No attendees yet</p>

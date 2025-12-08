@@ -25,7 +25,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Search, MoreVertical, UserCheck, UserX, Mail, Shield, Trash2, Download, Eye } from 'lucide-react';
-import mockData from '@/mockdata.json';
+import { profileService } from '@/services';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
 
 const AdminUsers = () => {
@@ -35,25 +37,32 @@ const AdminUsers = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedUserDetails, setSelectedUserDetails] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
 
-  useEffect(() => {
-    // Load users from mock data
-    const loadUsers = () => {
-      try {
-        const allUsers = mockData.users || [];
-        setUsers(allUsers);
-        setFilteredUsers(allUsers);
-      } catch (error) {
-        console.error('Error loading users:', error);
-        toast.error('Failed to load users');
-      } finally {
-        setLoading(false);
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await profileService.getAllUsers();
+      
+      if (result.success) {
+        setUsers(result.data || []);
+        setFilteredUsers(result.data || []);
+      } else {
+        setError(result.error || 'Failed to load users');
       }
-    };
+    } catch (error) {
+      console.error('Error loading users:', error);
+      setError('Unable to connect to server. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadUsers();
   }, []);
 
@@ -76,20 +85,50 @@ const AdminUsers = () => {
     setFilteredUsers(filtered);
   }, [searchQuery, roleFilter, users]);
 
-  const handleBanUser = (userId) => {
-    toast.success(`User ${userId} has been banned`);
-    // In real app, this would call an API
-  };
-
-  const handleDeleteUser = (userId) => {
-    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      setUsers(users.filter((u) => u.id !== userId));
-      toast.success('User deleted successfully');
+  const handleBanUser = async (userId) => {
+    try {
+      const result = await profileService.banUser(userId);
+      if (result.success) {
+        toast.success('User has been banned');
+        loadUsers();
+      } else {
+        toast.error(result.error || 'Failed to ban user');
+      }
+    } catch (error) {
+      console.error('Error banning user:', error);
+      toast.error('Unable to ban user. Please try again.');
     }
   };
 
-  const handleResetPassword = (userId) => {
-    toast.success('Password reset email sent');
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      try {
+        const result = await profileService.deleteUser(userId);
+        if (result.success) {
+          setUsers(users.filter((u) => u.id !== userId));
+          toast.success('User deleted successfully');
+        } else {
+          toast.error(result.error || 'Failed to delete user');
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        toast.error('Unable to delete user. Please try again.');
+      }
+    }
+  };
+
+  const handleResetPassword = async (userId) => {
+    try {
+      const result = await profileService.resetPassword(userId);
+      if (result.success) {
+        toast.success('Password reset email sent');
+      } else {
+        toast.error(result.error || 'Failed to send password reset email');
+      }
+    } catch (error) {
+      console.error('Error sending password reset:', error);
+      toast.error('Unable to send password reset email. Please try again.');
+    }
   };
 
   const handleSelectAll = () => {
@@ -141,11 +180,19 @@ const AdminUsers = () => {
     toast.success('Users exported successfully');
   };
 
-  const handleViewUserDetails = (userId) => {
-    const user = users.find((u) => u.id === userId);
-    const profile = mockData.alumni_profiles?.find((p) => p.user_id === userId);
-    setSelectedUserDetails({ ...user, profile });
-    setShowUserModal(true);
+  const handleViewUserDetails = async (userId) => {
+    try {
+      const result = await profileService.getUserWithProfile(userId);
+      if (result.success) {
+        setSelectedUserDetails(result.data);
+        setShowUserModal(true);
+      } else {
+        toast.error(result.error || 'Failed to load user details');
+      }
+    } catch (error) {
+      console.error('Error loading user details:', error);
+      toast.error('Unable to load user details. Please try again.');
+    }
   };
 
   const getRoleBadgeColor = (role) => {
@@ -169,6 +216,36 @@ const AdminUsers = () => {
     { label: 'Alumni', value: users.filter((u) => u.role === 'alumni').length, color: 'text-purple-600' },
     { label: 'Recruiters', value: users.filter((u) => u.role === 'recruiter').length, color: 'text-orange-600' },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <LoadingSpinner message="Loading users..." />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <ErrorMessage message={error} onRetry={loadUsers} />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">

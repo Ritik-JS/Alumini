@@ -25,7 +25,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Award, Plus, Edit, Trash2, Star } from 'lucide-react';
-import mockData from '@/mockdata.json';
+import { badgeService } from '@/services';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
 
 const AdminBadges = () => {
@@ -33,6 +35,8 @@ const AdminBadges = () => {
   const [badges, setBadges] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingBadge, setEditingBadge] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -41,37 +45,56 @@ const AdminBadges = () => {
     requirements: '{}',
   });
 
-  useEffect(() => {
-    const loadBadges = () => {
-      const allBadges = mockData.badges || [];
-      const enrichedBadges = allBadges.map(badge => {
-        const earnedCount = mockData.user_badges?.filter(ub => ub.badge_id === badge.id).length || 0;
-        return { ...badge, earnedCount };
-      });
-      setBadges(enrichedBadges);
-    };
+  const loadBadges = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await badgeService.getAllBadges();
+      
+      if (result.success) {
+        setBadges(result.data || []);
+      } else {
+        setError(result.error || 'Failed to load badges');
+      }
+    } catch (error) {
+      console.error('Error loading badges:', error);
+      setError('Unable to connect to server. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadBadges();
   }, []);
 
-  const handleCreateBadge = () => {
+  const handleCreateBadge = async () => {
     if (!formData.name || !formData.description) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    const newBadge = {
-      id: `badge-${Date.now()}`,
-      ...formData,
-      points: parseInt(formData.points),
-      requirements: JSON.parse(formData.requirements || '{}'),
-      earnedCount: 0,
-    };
+    try {
+      const badgeData = {
+        ...formData,
+        points: parseInt(formData.points),
+        requirements: JSON.parse(formData.requirements || '{}'),
+      };
 
-    setBadges([...badges, newBadge]);
-    toast.success('Badge created successfully');
-    setShowCreateModal(false);
-    resetForm();
+      const result = await badgeService.createBadge(badgeData);
+      
+      if (result.success) {
+        toast.success('Badge created successfully');
+        setShowCreateModal(false);
+        resetForm();
+        loadBadges();
+      } else {
+        toast.error(result.error || 'Failed to create badge');
+      }
+    } catch (error) {
+      console.error('Error creating badge:', error);
+      toast.error('Unable to create badge. Please try again.');
+    }
   };
 
   const handleEditBadge = (badge) => {
@@ -86,34 +109,51 @@ const AdminBadges = () => {
     setShowCreateModal(true);
   };
 
-  const handleUpdateBadge = () => {
+  const handleUpdateBadge = async () => {
     if (!formData.name || !formData.description) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    setBadges(
-      badges.map((b) =>
-        b.id === editingBadge.id
-          ? {
-              ...b,
-              ...formData,
-              points: parseInt(formData.points),
-              requirements: JSON.parse(formData.requirements || '{}'),
-            }
-          : b
-      )
-    );
-    toast.success('Badge updated successfully');
-    setShowCreateModal(false);
-    setEditingBadge(null);
-    resetForm();
+    try {
+      const badgeData = {
+        ...formData,
+        points: parseInt(formData.points),
+        requirements: JSON.parse(formData.requirements || '{}'),
+      };
+
+      const result = await badgeService.updateBadge(editingBadge.id, badgeData);
+      
+      if (result.success) {
+        toast.success('Badge updated successfully');
+        setShowCreateModal(false);
+        setEditingBadge(null);
+        resetForm();
+        loadBadges();
+      } else {
+        toast.error(result.error || 'Failed to update badge');
+      }
+    } catch (error) {
+      console.error('Error updating badge:', error);
+      toast.error('Unable to update badge. Please try again.');
+    }
   };
 
-  const handleDeleteBadge = (badgeId) => {
+  const handleDeleteBadge = async (badgeId) => {
     if (window.confirm('Are you sure you want to delete this badge?')) {
-      setBadges(badges.filter((b) => b.id !== badgeId));
-      toast.success('Badge deleted successfully');
+      try {
+        const result = await badgeService.deleteBadge(badgeId);
+        
+        if (result.success) {
+          setBadges(badges.filter((b) => b.id !== badgeId));
+          toast.success('Badge deleted successfully');
+        } else {
+          toast.error(result.error || 'Failed to delete badge');
+        }
+      } catch (error) {
+        console.error('Error deleting badge:', error);
+        toast.error('Unable to delete badge. Please try again.');
+      }
     }
   };
 
@@ -149,6 +189,36 @@ const AdminBadges = () => {
     { label: 'Rare', value: badges.filter((b) => b.rarity === 'rare').length, color: 'text-blue-600', icon: Star },
     { label: 'Epic+', value: badges.filter((b) => ['epic', 'legendary'].includes(b.rarity)).length, color: 'text-purple-600', icon: Star },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <LoadingSpinner message="Loading badges..." />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <ErrorMessage message={error} onRetry={loadBadges} />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">

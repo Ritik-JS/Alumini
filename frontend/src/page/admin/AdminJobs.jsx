@@ -25,7 +25,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Search, MoreVertical, Eye, Edit, Trash2, CheckCircle, XCircle, Briefcase, TrendingUp } from 'lucide-react';
-import mockData from '@/mockdata.json';
+import { jobService } from '@/services';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
 
 const AdminJobs = () => {
@@ -37,27 +39,29 @@ const AdminJobs = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [showJobModal, setShowJobModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadJobs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await jobService.getAllJobs();
+      
+      if (result.success) {
+        setJobs(result.data || []);
+        setFilteredJobs(result.data || []);
+      } else {
+        setError(result.error || 'Failed to load jobs');
+      }
+    } catch (error) {
+      console.error('Error loading jobs:', error);
+      setError('Unable to connect to server. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Load jobs from mock data
-    const loadJobs = () => {
-      try {
-        const allJobs = mockData.jobs || [];
-        // Enrich with poster info
-        const enrichedJobs = allJobs.map(job => {
-          const poster = mockData.users?.find(u => u.id === job.posted_by);
-          return { ...job, poster };
-        });
-        setJobs(enrichedJobs);
-        setFilteredJobs(enrichedJobs);
-      } catch (error) {
-        console.error('Error loading jobs:', error);
-        toast.error('Failed to load jobs');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadJobs();
   }, []);
 
@@ -80,22 +84,52 @@ const AdminJobs = () => {
     setFilteredJobs(filtered);
   }, [searchQuery, statusFilter, jobs]);
 
-  const handleViewJob = (jobId) => {
-    const job = jobs.find((j) => j.id === jobId);
-    const applications = mockData.job_applications?.filter(app => app.job_id === jobId) || [];
-    setSelectedJob({ ...job, applications });
-    setShowJobModal(true);
+  const handleViewJob = async (jobId) => {
+    try {
+      const result = await jobService.getJobById(jobId);
+      if (result.success) {
+        setSelectedJob(result.data);
+        setShowJobModal(true);
+      } else {
+        toast.error(result.error || 'Failed to load job details');
+      }
+    } catch (error) {
+      console.error('Error loading job:', error);
+      toast.error('Unable to load job details. Please try again.');
+    }
   };
 
-  const handleChangeStatus = (jobId, newStatus) => {
-    setJobs(jobs.map(j => j.id === jobId ? { ...j, status: newStatus } : j));
-    toast.success(`Job status updated to ${newStatus}`);
+  const handleChangeStatus = async (jobId, newStatus) => {
+    try {
+      const result = await jobService.updateJob(jobId, { status: newStatus });
+      
+      if (result.success) {
+        setJobs(jobs.map(j => j.id === jobId ? { ...j, status: newStatus } : j));
+        toast.success(`Job status updated to ${newStatus}`);
+      } else {
+        toast.error(result.error || 'Failed to update job status');
+      }
+    } catch (error) {
+      console.error('Error updating job status:', error);
+      toast.error('Unable to update job status. Please try again.');
+    }
   };
 
-  const handleDeleteJob = (jobId) => {
+  const handleDeleteJob = async (jobId) => {
     if (window.confirm('Are you sure you want to delete this job posting?')) {
-      setJobs(jobs.filter((j) => j.id !== jobId));
-      toast.success('Job deleted successfully');
+      try {
+        const result = await jobService.deleteJob(jobId);
+        
+        if (result.success) {
+          setJobs(jobs.filter((j) => j.id !== jobId));
+          toast.success('Job deleted successfully');
+        } else {
+          toast.error(result.error || 'Failed to delete job');
+        }
+      } catch (error) {
+        console.error('Error deleting job:', error);
+        toast.error('Unable to delete job. Please try again.');
+      }
     }
   };
 
@@ -116,8 +150,38 @@ const AdminJobs = () => {
     { label: 'Total Jobs', value: jobs.length, color: 'text-blue-600', icon: Briefcase },
     { label: 'Active', value: jobs.filter((j) => j.status === 'active').length, color: 'text-green-600', icon: CheckCircle },
     { label: 'Closed', value: jobs.filter((j) => j.status === 'closed').length, color: 'text-red-600', icon: XCircle },
-    { label: 'Total Applications', value: mockData.job_applications?.length || 0, color: 'text-purple-600', icon: TrendingUp },
+    { label: 'Total Applications', value: jobs.reduce((sum, j) => sum + (j.applications_count || 0), 0), color: 'text-purple-600', icon: TrendingUp },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <LoadingSpinner message="Loading jobs..." />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <ErrorMessage message={error} onRetry={loadJobs} />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -356,11 +420,11 @@ const AdminJobs = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-600">Applications</p>
-                  <p className="text-lg font-bold">{selectedJob.applications?.length || 0}</p>
+                  <p className="text-lg font-bold">{selectedJob.applications_count || 0}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-600">Posted By</p>
-                  <p className="text-sm">{selectedJob.poster?.email || 'Unknown'}</p>
+                  <p className="text-sm">{selectedJob.posted_by_email || 'Unknown'}</p>
                 </div>
               </div>
 

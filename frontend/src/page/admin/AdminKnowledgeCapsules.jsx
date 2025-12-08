@@ -25,7 +25,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Search, MoreVertical, Eye, Trash2, BookOpen, TrendingUp, Heart, Bookmark, Star } from 'lucide-react';
-import mockData from '@/mockdata.json';
+import { knowledgeService } from '@/services';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
 
 const AdminKnowledgeCapsules = () => {
@@ -36,24 +38,30 @@ const AdminKnowledgeCapsules = () => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [selectedCapsule, setSelectedCapsule] = useState(null);
   const [showCapsuleModal, setShowCapsuleModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadCapsules = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await knowledgeService.getCapsules();
+      
+      if (result.success) {
+        setCapsules(result.data || []);
+        setFilteredCapsules(result.data || []);
+      } else {
+        setError(result.error || 'Failed to load knowledge capsules');
+      }
+    } catch (error) {
+      console.error('Error loading capsules:', error);
+      setError('Unable to connect to server. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadCapsules = () => {
-      try {
-        const allCapsules = mockData.knowledge_capsules || [];
-        const enrichedCapsules = allCapsules.map(capsule => {
-          const author = mockData.users?.find(u => u.id === capsule.author_id);
-          const authorProfile = mockData.alumni_profiles?.find(p => p.user_id === capsule.author_id);
-          return { ...capsule, author, authorProfile };
-        });
-        setCapsules(enrichedCapsules);
-        setFilteredCapsules(enrichedCapsules);
-      } catch (error) {
-        console.error('Error loading capsules:', error);
-        toast.error('Failed to load knowledge capsules');
-      }
-    };
-
     loadCapsules();
   }, []);
 
@@ -81,19 +89,42 @@ const AdminKnowledgeCapsules = () => {
     setShowCapsuleModal(true);
   };
 
-  const handleToggleFeatured = (capsuleId) => {
-    setCapsules(
-      capsules.map((c) =>
-        c.id === capsuleId ? { ...c, is_featured: !c.is_featured } : c
-      )
-    );
-    toast.success('Featured status updated');
+  const handleToggleFeatured = async (capsuleId) => {
+    try {
+      const capsule = capsules.find(c => c.id === capsuleId);
+      const result = await knowledgeService.updateCapsule(capsuleId, { is_featured: !capsule.is_featured });
+      
+      if (result.success) {
+        setCapsules(
+          capsules.map((c) =>
+            c.id === capsuleId ? { ...c, is_featured: !c.is_featured } : c
+          )
+        );
+        toast.success('Featured status updated');
+      } else {
+        toast.error(result.error || 'Failed to update featured status');
+      }
+    } catch (error) {
+      console.error('Error updating featured status:', error);
+      toast.error('Unable to update featured status. Please try again.');
+    }
   };
 
-  const handleDeleteCapsule = (capsuleId) => {
+  const handleDeleteCapsule = async (capsuleId) => {
     if (window.confirm('Are you sure you want to delete this knowledge capsule?')) {
-      setCapsules(capsules.filter((c) => c.id !== capsuleId));
-      toast.success('Capsule deleted successfully');
+      try {
+        const result = await knowledgeService.deleteCapsule(capsuleId);
+        
+        if (result.success) {
+          setCapsules(capsules.filter((c) => c.id !== capsuleId));
+          toast.success('Capsule deleted successfully');
+        } else {
+          toast.error(result.error || 'Failed to delete capsule');
+        }
+      } catch (error) {
+        console.error('Error deleting capsule:', error);
+        toast.error('Unable to delete capsule. Please try again.');
+      }
     }
   };
 
@@ -122,6 +153,36 @@ const AdminKnowledgeCapsules = () => {
   ];
 
   const categories = ['all', 'technical', 'career', 'entrepreneurship', 'life_lessons', 'industry_insights', 'other'];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <LoadingSpinner message="Loading knowledge capsules..." />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <ErrorMessage message={error} onRetry={loadCapsules} />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -217,7 +278,7 @@ const AdminKnowledgeCapsules = () => {
                               {capsule.category.replace('_', ' ')}
                             </Badge>
                             <span className="text-sm text-gray-500">
-                              by {capsule.authorProfile?.name || capsule.author?.email}
+                              by {capsule.author_name || 'Unknown'}
                             </span>
                             <span className="text-sm text-gray-500">• {capsule.duration_minutes} min read</span>
                           </div>
@@ -292,7 +353,7 @@ const AdminKnowledgeCapsules = () => {
                 <Badge className={selectedCapsule ? getCategoryColor(selectedCapsule.category) : ''}>
                   {selectedCapsule?.category.replace('_', ' ')}
                 </Badge>
-                <span>By {selectedCapsule?.authorProfile?.name || selectedCapsule?.author?.email}</span>
+                <span>By {selectedCapsule?.author_name || 'Unknown'}</span>
                 <span>• {selectedCapsule?.duration_minutes} min read</span>
               </div>
             </DialogDescription>
