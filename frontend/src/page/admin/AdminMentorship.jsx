@@ -16,43 +16,59 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Search, Users, Calendar, Star, TrendingUp } from 'lucide-react';
-import mockData from '@/mockdata.json';
+import { mentorshipService } from '@/services';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
 
 const AdminMentorship = () => {
   const { user } = useAuth();
   const [mentorships, setMentorships] = useState([]);
   const [sessions, setSessions] = useState([]);
+  const [mentors, setMentors] = useState([]);
   const [filteredMentorships, setFilteredMentorships] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedMentorship, setSelectedMentorship] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Load all mentorship data
+      const [requestsResult, sessionsResult, mentorsResult] = await Promise.all([
+        mentorshipService.getAllMentorshipRequests(),
+        mentorshipService.getAllSessions(),
+        mentorshipService.getMentors()
+      ]);
+      
+      if (requestsResult.success) {
+        setMentorships(requestsResult.data || []);
+        setFilteredMentorships(requestsResult.data || []);
+      } else {
+        setError(requestsResult.error || 'Failed to load mentorship requests');
+      }
+      
+      if (sessionsResult.success) {
+        setSessions(sessionsResult.data || []);
+      }
+      
+      if (mentorsResult.success) {
+        setMentors(mentorsResult.data || []);
+      }
+    } catch (error) {
+      console.error('Error loading mentorship data:', error);
+      setError('Unable to connect to server. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadData = () => {
-      try {
-        const requests = mockData.mentorship_requests || [];
-        const allSessions = mockData.mentorship_sessions || [];
-        
-        const enrichedRequests = requests.map(req => {
-          const student = mockData.users?.find(u => u.id === req.student_id);
-          const mentor = mockData.users?.find(u => u.id === req.mentor_id);
-          const studentProfile = mockData.alumni_profiles?.find(p => p.user_id === req.student_id);
-          const mentorProfile = mockData.alumni_profiles?.find(p => p.user_id === req.mentor_id);
-          const requestSessions = allSessions.filter(s => s.mentorship_request_id === req.id);
-          return { ...req, student, mentor, studentProfile, mentorProfile, sessions: requestSessions };
-        });
-        
-        setMentorships(enrichedRequests);
-        setFilteredMentorships(enrichedRequests);
-        setSessions(allSessions);
-      } catch (error) {
-        console.error('Error loading mentorship data:', error);
-        toast.error('Failed to load mentorship data');
-      }
-    };
-
     loadData();
   }, []);
 
@@ -121,7 +137,7 @@ const AdminMentorship = () => {
     },
     {
       label: 'Active Mentors',
-      value: mockData.mentor_profiles?.filter(m => m.is_available).length || 0,
+      value: mentors.filter(m => m.is_available).length,
       color: 'text-green-600',
       icon: Users,
     },
@@ -133,11 +149,41 @@ const AdminMentorship = () => {
     },
     {
       label: 'Avg Rating',
-      value: '4.8',
+      value: sessions.length > 0 ? (sessions.filter(s => s.rating).reduce((sum, s) => sum + s.rating, 0) / sessions.filter(s => s.rating).length).toFixed(1) : '0.0',
       color: 'text-yellow-600',
       icon: Star,
     },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <LoadingSpinner message="Loading mentorship data..." />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <ErrorMessage message={error} onRetry={loadData} />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -366,60 +412,70 @@ const AdminMentorship = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {mockData.mentor_profiles?.map((mentorProfile) => {
-                        const mentorUser = mockData.users?.find(u => u.id === mentorProfile.user_id);
-                        const alumniProfile = mockData.alumni_profiles?.find(p => p.user_id === mentorProfile.user_id);
-                        return (
-                          <div
-                            key={mentorProfile.id}
-                            className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
-                                <img
-                                  src={
-                                    alumniProfile?.photo_url ||
-                                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${mentorUser?.email}`
-                                  }
-                                  alt={alumniProfile?.name}
-                                  className="w-14 h-14 rounded-full"
-                                />
-                                <div>
-                                  <h3 className="font-semibold">{alumniProfile?.name || mentorUser?.email}</h3>
-                                  <p className="text-sm text-gray-600">{alumniProfile?.current_role}</p>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <Badge variant="outline">
-                                      {mentorProfile.is_available ? 'Available' : 'Unavailable'}
-                                    </Badge>
+                      {mentors.map((mentor) => (
+                        <div
+                          key={mentor.id}
+                          className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <img
+                                src={
+                                  mentor.photo_url ||
+                                  `https://api.dicebear.com/7.x/avataaars/svg?seed=${mentor.email}`
+                                }
+                                alt={mentor.name}
+                                className="w-14 h-14 rounded-full"
+                              />
+                              <div>
+                                <h3 className="font-semibold">{mentor.name || mentor.email}</h3>
+                                <p className="text-sm text-gray-600">{mentor.current_role || 'Mentor'}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge variant="outline">
+                                    {mentor.is_available ? 'Available' : 'Unavailable'}
+                                  </Badge>
+                                  {mentor.rating && (
                                     <div className="flex items-center gap-1 text-sm">
                                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                      <span className="font-medium">{mentorProfile.rating.toFixed(1)}</span>
-                                      <span className="text-gray-500">({mentorProfile.total_reviews})</span>
+                                      <span className="font-medium">{mentor.rating.toFixed(1)}</span>
+                                      {mentor.total_reviews && (
+                                        <span className="text-gray-500">({mentor.total_reviews})</span>
+                                      )}
                                     </div>
-                                  </div>
+                                  )}
                                 </div>
                               </div>
-                              <div className="text-right">
-                                <p className="text-sm font-medium">
-                                  {mentorProfile.current_mentees_count} / {mentorProfile.max_mentees} mentees
-                                </p>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  {mentorProfile.total_sessions} sessions completed
-                                </p>
-                              </div>
                             </div>
-                            {mentorProfile.expertise_areas && mentorProfile.expertise_areas.length > 0 && (
-                              <div className="mt-3 flex flex-wrap gap-2">
-                                {mentorProfile.expertise_areas.map((area, idx) => (
-                                  <Badge key={idx} variant="outline" className="text-xs">
-                                    {area}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
+                            <div className="text-right">
+                              {mentor.current_mentees_count !== undefined && mentor.max_mentees && (
+                                <p className="text-sm font-medium">
+                                  {mentor.current_mentees_count} / {mentor.max_mentees} mentees
+                                </p>
+                              )}
+                              {mentor.total_sessions !== undefined && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {mentor.total_sessions} sessions completed
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        );
-                      })}
+                          {mentor.expertise_areas && mentor.expertise_areas.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {mentor.expertise_areas.map((area, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs">
+                                  {area}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {mentors.length === 0 && (
+                        <div className="text-center py-12 text-gray-500">
+                          <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                          <p>No mentors found</p>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

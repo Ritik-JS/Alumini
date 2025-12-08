@@ -18,7 +18,9 @@ import {
   Award,
   Heart,
 } from 'lucide-react';
-import mockData from '@/mockdata.json';
+import { analyticsService } from '@/services';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const AdminAnalytics = () => {
@@ -30,28 +32,44 @@ const AdminAnalytics = () => {
     totalEvents: 0,
     totalPosts: 0,
     verifiedAlumni: 0,
+    jobsData: {},
+    eventsData: {},
+    mentorshipData: {},
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadAnalytics = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await analyticsService.getDashboardStats();
+      
+      if (result.success) {
+        setAnalyticsData(result.data || {
+          totalUsers: 0,
+          activeUsers: 0,
+          totalJobs: 0,
+          totalEvents: 0,
+          totalPosts: 0,
+          verifiedAlumni: 0,
+          jobsData: {},
+          eventsData: {},
+          mentorshipData: {},
+        });
+      } else {
+        setError(result.error || 'Failed to load analytics');
+      }
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+      setError('Unable to connect to server. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Calculate analytics from mock data
-    const calculateAnalytics = () => {
-      const users = mockData.users || [];
-      const jobs = mockData.jobs || [];
-      const events = mockData.events || [];
-      const posts = mockData.forum_posts || [];
-      const profiles = mockData.alumni_profiles || [];
-
-      setAnalyticsData({
-        totalUsers: users.length,
-        activeUsers: Math.floor(users.length * 0.7), // Mock: 70% active
-        totalJobs: jobs.length,
-        totalEvents: events.length,
-        totalPosts: posts.length,
-        verifiedAlumni: profiles.filter((p) => p.is_verified).length,
-      });
-    };
-
-    calculateAnalytics();
+    loadAnalytics();
   }, []);
 
   const engagementMetrics = [
@@ -130,6 +148,36 @@ const AdminAnalytics = () => {
     { activity: 'Mentorship requests', count: 67, trend: '+15%' },
     { activity: 'Profile views', count: 1243, trend: '+10%' },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <LoadingSpinner message="Loading analytics..." />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <ErrorMessage message={error} onRetry={loadAnalytics} />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -390,27 +438,27 @@ const AdminAnalytics = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-blue-600">{mockData.jobs?.length || 0}</div>
+                      <div className="text-2xl font-bold text-blue-600">{analyticsData.totalJobs}</div>
                       <p className="text-sm text-gray-600 mt-1">Total Jobs Posted</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-green-600">{mockData.job_applications?.length || 0}</div>
+                      <div className="text-2xl font-bold text-green-600">{analyticsData.jobsData?.totalApplications || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Applications</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
                       <div className="text-2xl font-bold text-purple-600">
-                        {mockData.jobs?.length > 0 ? ((mockData.job_applications?.length || 0) / mockData.jobs.length).toFixed(1) : 0}
+                        {analyticsData.totalJobs > 0 ? ((analyticsData.jobsData?.totalApplications || 0) / analyticsData.totalJobs).toFixed(1) : 0}
                       </div>
                       <p className="text-sm text-gray-600 mt-1">Avg Applications/Job</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-orange-600">3.2</div>
+                      <div className="text-2xl font-bold text-orange-600">{analyticsData.jobsData?.avgDaysToHire || 3.2}</div>
                       <p className="text-sm text-gray-600 mt-1">Days to Hire (Avg)</p>
                     </CardContent>
                   </Card>
@@ -538,25 +586,25 @@ const AdminAnalytics = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-purple-600">{mockData.mentorship_requests?.length || 0}</div>
+                      <div className="text-2xl font-bold text-purple-600">{analyticsData.mentorshipData?.totalRequests || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Total Mentorships</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-blue-600">{mockData.mentor_profiles?.length || 0}</div>
+                      <div className="text-2xl font-bold text-blue-600">{analyticsData.mentorshipData?.activeMentors || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Active Mentors</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-green-600">{mockData.mentorship_sessions?.length || 0}</div>
+                      <div className="text-2xl font-bold text-green-600">{analyticsData.mentorshipData?.totalSessions || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Sessions Completed</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-yellow-600">4.8</div>
+                      <div className="text-2xl font-bold text-yellow-600">{analyticsData.mentorshipData?.avgRating || 4.8}</div>
                       <p className="text-sm text-gray-600 mt-1">Average Rating</p>
                     </CardContent>
                   </Card>
@@ -683,26 +731,26 @@ const AdminAnalytics = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-pink-600">{mockData.events?.length || 0}</div>
+                      <div className="text-2xl font-bold text-pink-600">{analyticsData.totalEvents}</div>
                       <p className="text-sm text-gray-600 mt-1">Total Events</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-purple-600">{mockData.event_registrations?.length || 0}</div>
+                      <div className="text-2xl font-bold text-purple-600">{analyticsData.eventsData?.totalRegistrations || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Total Registrations</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-green-600">78%</div>
+                      <div className="text-2xl font-bold text-green-600">{analyticsData.eventsData?.attendanceRate || 78}%</div>
                       <p className="text-sm text-gray-600 mt-1">Attendance Rate</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
                       <div className="text-2xl font-bold text-blue-600">
-                        {mockData.events?.length > 0 ? Math.round((mockData.event_registrations?.length || 0) / mockData.events.length) : 0}
+                        {analyticsData.totalEvents > 0 ? Math.round((analyticsData.eventsData?.totalRegistrations || 0) / analyticsData.totalEvents) : 0}
                       </div>
                       <p className="text-sm text-gray-600 mt-1">Avg Attendance/Event</p>
                     </CardContent>
