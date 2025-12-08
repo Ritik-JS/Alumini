@@ -133,6 +133,11 @@ app.include_router(admin_users_router)
 app.include_router(admin_content_router)
 app.include_router(admin_settings_router)
 
+# Include Phase 8 routes - Smart Algorithms & Recommendations
+app.include_router(matching_router)
+app.include_router(recommendations_router)
+app.include_router(engagement_router)
+
 # Include API router in main app
 app.include_router(api_router)
 
