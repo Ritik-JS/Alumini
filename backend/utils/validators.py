@@ -1,216 +1,227 @@
 """
-Skill Graph Routes
-Provides endpoints for skill network visualization and analysis
+Validation utilities for input validation
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
-import logging
-
-from middleware.auth_middleware import get_current_user, require_role
-from database.connection import get_db_pool
-from services.skill_graph_service import SkillGraphService
-
-logger = logging.getLogger(__name__)
-
-router = APIRouter(prefix="/api/skill-graph", tags=["Skill Graph"])
-
-skill_graph_service = SkillGraphService()
+import re
+from fastapi import HTTPException
+from typing import Any, Optional
 
 
-@router.get("/network")
-async def get_skill_network(
-    min_popularity: float = Query(0.0, ge=0.0, le=100.0),
-    limit: int = Query(100, ge=1, le=500),
-    current_user: dict = Depends(get_current_user)
-):
+def validate_uuid(value: str, field_name: str = "ID") -> str:
     """
-    Get skill network data for visualization
-    Returns nodes and edges representing skill relationships
+    Validate UUID format
+    
+    Args:
+        value: String to validate as UUID
+        field_name: Name of the field for error messages
+        
+    Returns:
+        The validated UUID string
+        
+    Raises:
+        HTTPException: If UUID format is invalid
+    """
+    if not value:
+        raise HTTPException(status_code=400, detail=f"{field_name} is required")
+    
+    # UUID v4 format: 8-4-4-4-12 hex characters
+    uuid_pattern = re.compile(
+        r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+        re.IGNORECASE
+    )
+    
+    if not uuid_pattern.match(value):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid {field_name} format. Must be a valid UUID."
+        )
+    
+    return value
+
+
+def validate_email(email: str) -> str:
+    """
+    Validate email format
+    
+    Args:
+        email: Email address to validate
+        
+    Returns:
+        The validated email string
+        
+    Raises:
+        HTTPException: If email format is invalid
+    """
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+    
+    email_pattern = re.compile(
+        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    )
+    
+    if not email_pattern.match(email):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid email format"
+        )
+    
+    return email.lower()
+
+
+def validate_password(password: str) -> str:
+    """
+    Validate password strength
+    
+    Args:
+        password: Password to validate
+        
+    Returns:
+        The validated password string
+        
+    Raises:
+        HTTPException: If password doesn't meet requirements
+    """
+    if not password:
+        raise HTTPException(status_code=400, detail="Password is required")
+    
+    if len(password) < 8:
+        raise HTTPException(
+            status_code=400,
+            detail="Password must be at least 8 characters long"
+        )
+    
+    # Check for at least one uppercase, one lowercase, and one digit
+    if not re.search(r'[A-Z]', password):
+        raise HTTPException(
+            status_code=400,
+            detail="Password must contain at least one uppercase letter"
+        )
+    
+    if not re.search(r'[a-z]', password):
+        raise HTTPException(
+            status_code=400,
+            detail="Password must contain at least one lowercase letter"
+        )
+    
+    if not re.search(r'\d', password):
+        raise HTTPException(
+            status_code=400,
+            detail="Password must contain at least one digit"
+        )
+    
+    return password
+
+
+def validate_role(role: str) -> str:
+    """
+    Validate user role
+    
+    Args:
+        role: Role to validate
+        
+    Returns:
+        The validated role string
+        
+    Raises:
+        HTTPException: If role is invalid
+    """
+    valid_roles = ['student', 'alumni', 'recruiter', 'admin']
+    
+    if role not in valid_roles:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid role. Must be one of: {', '.join(valid_roles)}"
+        )
+    
+    return role
+
+
+def validate_positive_int(value: Any, field_name: str = "Value") -> int:
+    """
+    Validate positive integer
+    
+    Args:
+        value: Value to validate
+        field_name: Name of the field for error messages
+        
+    Returns:
+        The validated integer
+        
+    Raises:
+        HTTPException: If value is not a positive integer
     """
     try:
-        pool = await get_db_pool()
-        async with pool.acquire() as conn:
-            network = await skill_graph_service.get_skill_network(
-                conn,
-                min_popularity=min_popularity,
-                limit=limit
-            )
-            
-            return {
-                "success": True,
-                "data": network
-            }
-    
-    except Exception as e:
-        logger.error(f"Error getting skill network: {str(e)}")
+        int_value = int(value)
+        if int_value <= 0:
+            raise ValueError()
+        return int_value
+    except (ValueError, TypeError):
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch skill network: {str(e)}"
+            status_code=400,
+            detail=f"{field_name} must be a positive integer"
         )
 
 
-@router.get("/skill/{skill_name}")
-async def get_skill_details(
-    skill_name: str,
-    current_user: dict = Depends(get_current_user)
-):
+def validate_url(url: str, field_name: str = "URL") -> str:
     """
-    Get detailed information about a specific skill
-    Includes related skills, alumni count, job demand
-    """
-    try:
-        pool = await get_db_pool()
-        async with pool.acquire() as conn:
-            skill_details = await skill_graph_service.get_skill_details(
-                conn,
-                skill_name
-            )
-            
-            if not skill_details:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Skill '{skill_name}' not found in graph"
-                )
-            
-            return {
-                "success": True,
-                "data": skill_details
-            }
+    Validate URL format
     
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting skill details: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch skill details: {str(e)}"
-        )
-
-
-@router.get("/paths")
-async def find_career_paths_by_skill(
-    skill: str = Query(..., description="Skill name to find career paths"),
-    limit: int = Query(10, ge=1, le=50),
-    current_user: dict = Depends(get_current_user)
-):
+    Args:
+        url: URL to validate
+        field_name: Name of the field for error messages
+        
+    Returns:
+        The validated URL string
+        
+    Raises:
+        HTTPException: If URL format is invalid
     """
-    Find common career paths for alumni with a specific skill
-    Shows role distribution, companies, and experience levels
-    """
-    try:
-        pool = await get_db_pool()
-        async with pool.acquire() as conn:
-            paths = await skill_graph_service.find_career_paths_by_skill(
-                conn,
-                skill,
-                limit=limit
-            )
-            
-            return {
-                "success": True,
-                "data": {
-                    "skill": skill,
-                    "career_paths": paths,
-                    "total_paths": len(paths)
-                }
-            }
+    if not url:
+        return url  # Allow empty URLs
     
-    except Exception as e:
-        logger.error(f"Error finding career paths: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to find career paths: {str(e)}"
-        )
-
-
-@router.get("/clusters")
-async def get_skill_clusters(
-    min_popularity: float = Query(0.0, ge=0.0, le=100.0),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Get skill clusters - groups of related skills
-    Useful for identifying technology ecosystems
-    """
-    try:
-        pool = await get_db_pool()
-        async with pool.acquire() as conn:
-            network = await skill_graph_service.get_skill_network(
-                conn,
-                min_popularity=min_popularity,
-                limit=200  # Need more data for clustering
-            )
-            
-            return {
-                "success": True,
-                "data": {
-                    "clusters": network['clusters'],
-                    "total_clusters": len(network['clusters'])
-                }
-            }
+    url_pattern = re.compile(
+        r'^https?://'  # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain...
+        r'localhost|'  # localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+        r'(?::\d+)?'  # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE
+    )
     
-    except Exception as e:
-        logger.error(f"Error getting skill clusters: {str(e)}")
+    if not url_pattern.match(url):
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch skill clusters: {str(e)}"
+            status_code=400,
+            detail=f"Invalid {field_name} format"
         )
-
-
-@router.get("/trending")
-async def get_trending_skills(
-    limit: int = Query(20, ge=1, le=50),
-    current_user: dict = Depends(get_current_user)
-):
-    """
-    Get trending skills based on job demand and alumni expertise
-    """
-    try:
-        pool = await get_db_pool()
-        async with pool.acquire() as conn:
-            trending = await skill_graph_service.get_trending_skills(
-                conn,
-                limit=limit
-            )
-            
-            return {
-                "success": True,
-                "data": {
-                    "trending_skills": trending,
-                    "total": len(trending)
-                }
-            }
     
-    except Exception as e:
-        logger.error(f"Error getting trending skills: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch trending skills: {str(e)}"
-        )
+    return url
 
 
-@router.post("/rebuild")
-async def rebuild_skill_graph(
-    current_user: dict = Depends(require_role(['admin']))
-):
+def validate_phone(phone: str) -> str:
     """
-    Rebuild skill graph from current data
-    Admin only - Updates all skill relationships
-    """
-    try:
-        pool = await get_db_pool()
-        async with pool.acquire() as conn:
-            result = await skill_graph_service.build_skill_graph(conn)
-            
-            return {
-                "success": True,
-                "data": result,
-                "message": "Skill graph rebuilt successfully"
-            }
+    Validate phone number format
     
-    except Exception as e:
-        logger.error(f"Error rebuilding skill graph: {str(e)}")
+    Args:
+        phone: Phone number to validate
+        
+    Returns:
+        The validated phone string
+        
+    Raises:
+        HTTPException: If phone format is invalid
+    """
+    if not phone:
+        return phone  # Allow empty phone
+    
+    # Remove common separators
+    clean_phone = re.sub(r'[\s\-\(\)\.]', '', phone)
+    
+    # Check if it's a valid phone number (10-15 digits, optionally starting with +)
+    phone_pattern = re.compile(r'^\+?[1-9]\d{9,14}$')
+    
+    if not phone_pattern.match(clean_phone):
         raise HTTPException(
-            status_code=500,
-            detail=f"Failed to rebuild skill graph: {str(e)}"
+            status_code=400,
+            detail="Invalid phone number format"
         )
+    
+    return phone

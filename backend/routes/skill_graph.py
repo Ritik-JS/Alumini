@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 import logging
 
-from ..middleware.auth_middleware import get_current_user, require_role
-from ..database.connection import get_db_pool
-from ..services.skill_graph_service import SkillGraphService
+from middleware.auth_middleware import get_current_user, require_role
+from database.connection import get_db_pool
+from services.skill_graph_service import SkillGraphService
 
 logger = logging.getLogger(__name__)
 
