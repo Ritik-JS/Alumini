@@ -24,6 +24,7 @@ router = APIRouter(prefix="/api/jobs", tags=["Jobs"])
 
 
 @router.post("/create", response_model=dict, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_job(
     job_data: JobCreate,
     current_user: dict = Depends(require_role(["alumni", "recruiter", "admin"]))
@@ -31,6 +32,7 @@ async def create_job(
     """
     Create a new job posting
     - **Alumni, Recruiters, and Admins** can post jobs
+    - Available at both POST /api/jobs and POST /api/jobs/create
     """
     try:
         job = await JobService.create_job(current_user['id'], job_data)
@@ -260,6 +262,7 @@ async def get_job_applications(
 
 
 @router.get("/user/{user_id}/jobs", response_model=dict)
+@router.get("/user/{user_id}", response_model=dict)
 async def get_user_jobs(
     user_id: str,
     current_user: dict = Depends(get_current_user)
@@ -267,6 +270,7 @@ async def get_user_jobs(
     """
     Get all jobs posted by a user
     - **Any authenticated user** can view
+    - Available at both GET /api/jobs/user/:userId and GET /api/jobs/user/:userId/jobs
     """
     try:
         validate_uuid(user_id)

@@ -17,6 +17,136 @@ router = APIRouter(prefix="/api/heatmap", tags=["Heatmap"])
 heatmap_service = HeatmapService()
 
 
+@router.get("/geographic")
+async def get_geographic_data(
+    min_alumni_count: int = Query(1, ge=1),
+    min_jobs_count: int = Query(1, ge=1),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get combined geographic data (wrapper for /combined endpoint)
+    Shows both alumni distribution and job availability
+    """
+    try:
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            talent_data = await heatmap_service.get_talent_distribution(
+                conn,
+                min_alumni_count=min_alumni_count
+            )
+            
+            opportunity_data = await heatmap_service.get_opportunity_heatmap(
+                conn,
+                min_jobs_count=min_jobs_count
+            )
+            
+            # Combine data
+            all_locations = {}
+            
+            for loc in talent_data:
+                location_name = loc['location']
+                all_locations[location_name] = {
+                    **loc,
+                    'type': 'talent'
+                }
+            
+            for loc in opportunity_data:
+                location_name = loc['location']
+                if location_name in all_locations:
+                    # Merge data
+                    all_locations[location_name].update({
+                        'jobs_available': loc['jobs_available'],
+                        'competition_ratio': loc['competition_ratio'],
+                        'opportunity_score': loc['opportunity_score'],
+                        'type': 'both'
+                    })
+                else:
+                    all_locations[location_name] = {
+                        **loc,
+                        'type': 'opportunity'
+                    }
+            
+            combined_data = list(all_locations.values())
+            
+            return {
+                "success": True,
+                "data": combined_data,
+                "total_locations": len(combined_data)
+            }
+    
+    except Exception as e:
+        logger.error(f"Error getting geographic data: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch geographic data: {str(e)}"
+        )
+
+
+@router.get("/alumni-distribution")
+async def get_alumni_distribution(
+    min_alumni_count: int = Query(1, ge=1),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get alumni distribution by location (wrapper for /talent endpoint)
+    """
+    try:
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            talent_data = await heatmap_service.get_talent_distribution(
+                conn,
+                min_alumni_count=min_alumni_count
+            )
+            
+            return {
+                "success": True,
+                "data": talent_data,
+                "total_locations": len(talent_data),
+                "total_alumni": sum(loc['alumni_count'] for loc in talent_data)
+            }
+    
+    except Exception as e:
+        logger.error(f"Error getting alumni distribution: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch alumni distribution: {str(e)}"
+        )
+
+
+@router.get("/job-distribution")
+async def get_job_distribution(
+    min_jobs_count: int = Query(1, ge=1),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get job distribution by location (wrapper for /opportunities endpoint)
+    """
+    try:
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            opportunity_data = await heatmap_service.get_opportunity_heatmap(
+                conn,
+                min_jobs_count=min_jobs_count
+            )
+            
+            return {
+                "success": True,
+                "data": opportunity_data,
+                "total_locations": len(opportunity_data),
+                "total_jobs": sum(loc['jobs_available'] for loc in opportunity_data)
+            }
+    
+    except Exception as e:
+        logger.error(f"Error getting job distribution: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch job distribution: {str(e)}"
+        )
+
+
 @router.get("/talent")
 async def get_talent_heatmap(
     min_alumni_count: int = Query(1, ge=1, description="Minimum alumni count to include location"),
@@ -244,34 +374,40 @@ async def refresh_geographic_data(
         )
 
 
-@router.get("/location/{location_name}")
+@router.get("/location/{location_identifier}")
 async def get_location_details(
-    location_name: str,
+    location_identifier: str,
     current_user: dict = Depends(get_current_user)
 ):
     """
     Get detailed information about a specific location
     Shows full breakdown of talent, jobs, skills, companies, and industries
+    Accepts both location name and location ID
     """
     try:
         pool = await get_db_pool()
         
         async with pool.acquire() as conn:
             async with conn.cursor() as cursor:
+                # Try to find by location_name or by matching partial identifier
                 await cursor.execute("""
                     SELECT 
                         location_name, country, city, latitude, longitude,
                         alumni_count, jobs_count, top_skills, top_companies,
                         top_industries, last_updated
                     FROM geographic_data
-                    WHERE location_name = %s
-                """, (location_name,))
+                    WHERE location_name = %s 
+                       OR LOWER(location_name) LIKE LOWER(%s)
+                       OR LOWER(city) = LOWER(%s)
+                       OR LOWER(country) = LOWER(%s)
+                    LIMIT 1
+                """, (location_identifier, f"%{location_identifier}%", location_identifier, location_identifier))
                 location = await cursor.fetchone()
             
             if not location:
                 raise HTTPException(
                     status_code=404,
-                    detail=f"Location '{location_name}' not found in heatmap data"
+                    detail=f"Location '{location_identifier}' not found in heatmap data"
                 )
             
             import json

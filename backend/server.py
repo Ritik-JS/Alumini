@@ -60,6 +60,10 @@ from routes.career_paths import router as career_paths_router
 from routes.alumni_card import router as alumni_card_router
 from routes.heatmap import router as heatmap_router
 
+# Import wrapper routes for frontend compatibility
+from routes.knowledge_routes import router as knowledge_router
+from routes.skills_routes import router as skills_router
+
 # Import Phase 10.2 routes - Admin Dataset Upload
 from routes.datasets import router as datasets_router
 
@@ -160,6 +164,10 @@ app.include_router(skill_graph_router)
 app.include_router(career_paths_router)
 app.include_router(alumni_card_router)
 app.include_router(heatmap_router)
+
+# Include wrapper routes for frontend compatibility
+app.include_router(knowledge_router)
+app.include_router(skills_router)
 
 # Include Phase 10.2 routes - Admin Dataset Upload
 app.include_router(datasets_router)
