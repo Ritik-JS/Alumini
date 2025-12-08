@@ -60,6 +60,9 @@ from routes.career_paths import router as career_paths_router
 from routes.alumni_card import router as alumni_card_router
 from routes.heatmap import router as heatmap_router
 
+# Import Phase 10.2 routes - Admin Dataset Upload
+from routes.datasets import router as datasets_router
+
 # Import middleware
 from middleware.rate_limit import rate_limiter
 
@@ -157,6 +160,9 @@ app.include_router(skill_graph_router)
 app.include_router(career_paths_router)
 app.include_router(alumni_card_router)
 app.include_router(heatmap_router)
+
+# Include Phase 10.2 routes - Admin Dataset Upload
+app.include_router(datasets_router)
 
 # Include API router in main app
 app.include_router(api_router)
