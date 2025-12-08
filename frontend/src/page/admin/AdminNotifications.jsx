@@ -33,7 +33,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Bell, Plus, Edit, Trash2, MoreVertical, Eye, Send, CheckCircle, AlertCircle } from 'lucide-react';
-import mockData from '@/mockdata.json';
+import { notificationService } from '@/services';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
 
 const AdminNotifications = () => {
@@ -42,6 +44,8 @@ const AdminNotifications = () => {
   const [filteredNotifications, setFilteredNotifications] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingNotification, setEditingNotification] = useState(null);
   const [selectedNotification, setSelectedNotification] = useState(null);
@@ -55,17 +59,27 @@ const AdminNotifications = () => {
     targetUsers: 'all',
   });
 
-  useEffect(() => {
-    const loadNotifications = () => {
-      const allNotifications = mockData.notifications || [];
-      const enrichedNotifications = allNotifications.map(notif => {
-        const notifUser = mockData.users?.find(u => u.id === notif.user_id);
-        return { ...notif, user: notifUser };
-      });
-      setNotifications(enrichedNotifications);
-      setFilteredNotifications(enrichedNotifications);
-    };
+  const loadNotifications = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await notificationService.getAllNotifications();
+      
+      if (result.success) {
+        setNotifications(result.data || []);
+        setFilteredNotifications(result.data || []);
+      } else {
+        setError(result.error || 'Failed to load notifications');
+      }
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+      setError('Unable to connect to server. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadNotifications();
   }, []);
 
@@ -87,28 +101,36 @@ const AdminNotifications = () => {
     setFilteredNotifications(filtered);
   }, [searchQuery, typeFilter, notifications]);
 
-  const handleCreateNotification = () => {
+  const handleCreateNotification = async () => {
     if (!formData.title || !formData.message) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    const newNotification = {
-      id: `notif-${Date.now()}`,
-      user_id: formData.targetUsers === 'all' ? 'broadcast' : formData.targetUsers,
-      type: formData.type,
-      title: formData.title,
-      message: formData.message,
-      link: formData.link,
-      priority: formData.priority,
-      is_read: false,
-      created_at: new Date().toISOString(),
-    };
+    try {
+      const notificationData = {
+        user_id: formData.targetUsers === 'all' ? 'broadcast' : formData.targetUsers,
+        type: formData.type,
+        title: formData.title,
+        message: formData.message,
+        link: formData.link,
+        priority: formData.priority,
+      };
 
-    setNotifications([newNotification, ...notifications]);
-    toast.success('Notification created and sent successfully');
-    setShowCreateModal(false);
-    resetForm();
+      const result = await notificationService.createNotification(notificationData);
+      
+      if (result.success) {
+        toast.success('Notification created and sent successfully');
+        setShowCreateModal(false);
+        resetForm();
+        loadNotifications(); // Reload to get fresh data
+      } else {
+        toast.error(result.error || 'Failed to create notification');
+      }
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      toast.error('Unable to create notification. Please try again.');
+    }
   };
 
   const handleEditNotification = (notification) => {
@@ -124,36 +146,53 @@ const AdminNotifications = () => {
     setShowCreateModal(true);
   };
 
-  const handleUpdateNotification = () => {
+  const handleUpdateNotification = async () => {
     if (!formData.title || !formData.message) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    setNotifications(
-      notifications.map((n) =>
-        n.id === editingNotification.id
-          ? {
-              ...n,
-              type: formData.type,
-              title: formData.title,
-              message: formData.message,
-              link: formData.link,
-              priority: formData.priority,
-            }
-          : n
-      )
-    );
-    toast.success('Notification updated successfully');
-    setShowCreateModal(false);
-    setEditingNotification(null);
-    resetForm();
+    try {
+      const updateData = {
+        type: formData.type,
+        title: formData.title,
+        message: formData.message,
+        link: formData.link,
+        priority: formData.priority,
+      };
+
+      const result = await notificationService.updateNotification(editingNotification.id, updateData);
+      
+      if (result.success) {
+        toast.success('Notification updated successfully');
+        setShowCreateModal(false);
+        setEditingNotification(null);
+        resetForm();
+        loadNotifications();
+      } else {
+        toast.error(result.error || 'Failed to update notification');
+      }
+    } catch (error) {
+      console.error('Error updating notification:', error);
+      toast.error('Unable to update notification. Please try again.');
+    }
   };
 
-  const handleDeleteNotification = (notificationId) => {
+  const handleDeleteNotification = async (notificationId) => {
     if (window.confirm('Are you sure you want to delete this notification?')) {
-      setNotifications(notifications.filter((n) => n.id !== notificationId));
-      toast.success('Notification deleted successfully');
+      try {
+        const result = await notificationService.deleteNotification(notificationId);
+        
+        if (result.success) {
+          toast.success('Notification deleted successfully');
+          loadNotifications();
+        } else {
+          toast.error(result.error || 'Failed to delete notification');
+        }
+      } catch (error) {
+        console.error('Error deleting notification:', error);
+        toast.error('Unable to delete notification. Please try again.');
+      }
     }
   };
 
@@ -162,8 +201,19 @@ const AdminNotifications = () => {
     setShowDetailsModal(true);
   };
 
-  const handleResendNotification = (notificationId) => {
-    toast.success('Notification resent successfully');
+  const handleResendNotification = async (notificationId) => {
+    try {
+      const result = await notificationService.resendNotification(notificationId);
+      
+      if (result.success) {
+        toast.success('Notification resent successfully');
+      } else {
+        toast.error(result.error || 'Failed to resend notification');
+      }
+    } catch (error) {
+      console.error('Error resending notification:', error);
+      toast.error('Unable to resend notification. Please try again.');
+    }
   };
 
   const resetForm = () => {
@@ -218,6 +268,36 @@ const AdminNotifications = () => {
     { label: 'High Priority', value: notifications.filter((n) => n.priority === 'high').length, color: 'text-red-600', icon: AlertCircle },
     { label: 'Read', value: notifications.filter((n) => n.is_read).length, color: 'text-green-600', icon: CheckCircle },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <LoadingSpinner message="Loading notifications..." />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <ErrorMessage message={error} onRetry={loadNotifications} />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockProfileService } from '@/services/mockProfileService';
+import { profileService } from '@/services';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
@@ -8,51 +8,100 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, Clock, ExternalLink } from 'lucide-react';
-import mockData from '@/mockdata.json';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
 
 const AdminVerifications = () => {
   const { user } = useAuth();
   const [pendingVerifications, setPendingVerifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadVerifications = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await profileService.getPendingVerifications();
+      
+      if (result.success) {
+        setPendingVerifications(result.data || []);
+      } else {
+        setError(result.error || 'Failed to load verifications');
+      }
+    } catch (error) {
+      console.error('Error loading verifications:', error);
+      setError('Unable to connect to server. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadVerifications = async () => {
-      try {
-        const verifications = await mockProfileService.getPendingVerifications();
-        setPendingVerifications(verifications);
-      } catch (error) {
-        console.error('Error loading verifications:', error);
-        toast.error('Failed to load verifications');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadVerifications();
   }, []);
 
   const handleApprove = async (profileId) => {
     try {
-      // In real app, this would call the API
-      setPendingVerifications(pendingVerifications.filter((p) => p.id !== profileId));
-      toast.success('Profile verified successfully');
+      const result = await profileService.approveVerification(profileId);
+      
+      if (result.success) {
+        setPendingVerifications(pendingVerifications.filter((p) => p.id !== profileId));
+        toast.success('Profile verified successfully');
+      } else {
+        toast.error(result.error || 'Failed to approve profile');
+      }
     } catch (error) {
       console.error('Error approving profile:', error);
-      toast.error('Failed to approve profile');
+      toast.error('Unable to approve profile. Please try again.');
     }
   };
 
   const handleReject = async (profileId) => {
     try {
-      // In real app, this would call the API
-      setPendingVerifications(pendingVerifications.filter((p) => p.id !== profileId));
-      toast.success('Profile rejected');
+      const result = await profileService.rejectVerification(profileId);
+      
+      if (result.success) {
+        setPendingVerifications(pendingVerifications.filter((p) => p.id !== profileId));
+        toast.success('Profile rejected');
+      } else {
+        toast.error(result.error || 'Failed to reject profile');
+      }
     } catch (error) {
       console.error('Error rejecting profile:', error);
-      toast.error('Failed to reject profile');
+      toast.error('Unable to reject profile. Please try again.');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <LoadingSpinner message="Loading verifications..." />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <ErrorMessage message={error} onRetry={loadVerifications} />
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -117,71 +166,68 @@ const AdminVerifications = () => {
               <CardContent>
                 {pendingVerifications.length > 0 ? (
                   <div className="space-y-4">
-                    {pendingVerifications.map((profile) => {
-                      const profileUser = mockData.users?.find((u) => u.id === profile.user_id);
-                      return (
-                        <div
-                          key={profile.id}
-                          className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                          data-testid={`verification-item-${profile.id}`}
-                        >
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="flex items-start gap-4">
-                              <img
-                                src={
-                                  profile.photo_url ||
-                                  `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileUser?.email}`
-                                }
-                                alt={profile.name}
-                                className="w-16 h-16 rounded-full object-cover"
-                              />
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-lg">{profile.name}</h3>
-                                <p className="text-sm text-gray-600">{profileUser?.email}</p>
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                  {profile.graduation_year && (
-                                    <Badge variant="outline">Class of {profile.graduation_year}</Badge>
-                                  )}
-                                  {profile.department && (
-                                    <Badge variant="outline">{profile.department}</Badge>
-                                  )}
-                                  {profile.current_company && (
-                                    <Badge variant="outline" className="bg-blue-50">
-                                      {profile.current_company}
-                                    </Badge>
-                                  )}
-                                </div>
-                                {profile.bio && (
-                                  <p className="text-sm text-gray-700 mt-2 line-clamp-2">{profile.bio}</p>
+                    {pendingVerifications.map((profile) => (
+                      <div
+                        key={profile.id}
+                        className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                        data-testid={`verification-item-${profile.id}`}
+                      >
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex items-start gap-4">
+                            <img
+                              src={
+                                profile.photo_url ||
+                                `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.user?.email || profile.name}`
+                              }
+                              alt={profile.name}
+                              className="w-16 h-16 rounded-full object-cover"
+                            />
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-lg">{profile.name}</h3>
+                              <p className="text-sm text-gray-600">{profile.user?.email || 'N/A'}</p>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {profile.graduation_year && (
+                                  <Badge variant="outline">Class of {profile.graduation_year}</Badge>
+                                )}
+                                {profile.department && (
+                                  <Badge variant="outline">{profile.department}</Badge>
+                                )}
+                                {profile.current_company && (
+                                  <Badge variant="outline" className="bg-blue-50">
+                                    {profile.current_company}
+                                  </Badge>
                                 )}
                               </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-green-600 border-green-600 hover:bg-green-50"
-                                onClick={() => handleApprove(profile.id)}
-                                data-testid={`approve-btn-${profile.id}`}
-                              >
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-red-600 border-red-600 hover:bg-red-50"
-                                onClick={() => handleReject(profile.id)}
-                                data-testid={`reject-btn-${profile.id}`}
-                              >
-                                <XCircle className="w-4 h-4 mr-1" />
-                                Reject
-                              </Button>
+                              {profile.bio && (
+                                <p className="text-sm text-gray-700 mt-2 line-clamp-2">{profile.bio}</p>
+                              )}
                             </div>
                           </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-green-600 border-green-600 hover:bg-green-50"
+                              onClick={() => handleApprove(profile.id)}
+                              data-testid={`approve-btn-${profile.id}`}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-red-600 border-red-600 hover:bg-red-50"
+                              onClick={() => handleReject(profile.id)}
+                              data-testid={`reject-btn-${profile.id}`}
+                            >
+                              <XCircle className="w-4 h-4 mr-1" />
+                              Reject
+                            </Button>
+                          </div>
                         </div>
-                      );
-                    })}
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="text-center py-12 text-gray-500">
