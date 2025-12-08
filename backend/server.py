@@ -24,6 +24,10 @@ logger = logging.getLogger(__name__)
 # Import database connection
 from database.connection import get_db_pool, close_db_pool
 
+# Import Phase 10.1 infrastructure
+from redis_client import get_redis_client, close_redis_client
+from storage import file_storage
+
 # Import routes
 from routes.auth import router as auth_router
 from routes.profiles import router as profiles_router
@@ -175,11 +179,22 @@ async def startup():
         await get_db_pool()
         logger.info("✅ Database connection pool initialized")
         
+        # Initialize Redis (Phase 10.1)
+        try:
+            await get_redis_client()
+            logger.info("✅ Redis connection established")
+        except Exception as e:
+            logger.warning(f"⚠️ Redis connection failed: {str(e)} - Continuing without Redis")
+        
+        # Initialize file storage (Phase 10.1)
+        logger.info(f"✅ File storage initialized ({file_storage.storage_type})")
+        
         # Start background cleanup task for rate limiter
         asyncio.create_task(periodic_cleanup())
         logger.info("✅ Rate limiter cleanup task started")
         
         logger.info("🚀 AlumUnity API started successfully")
+        logger.info("📋 Phase 10.1: Infrastructure Setup - Active")
     except Exception as e:
         logger.error(f"❌ Startup failed: {str(e)}")
         raise
@@ -191,6 +206,14 @@ async def shutdown():
     try:
         await close_db_pool()
         logger.info("✅ Database connection pool closed")
+        
+        # Close Redis connection (Phase 10.1)
+        try:
+            await close_redis_client()
+            logger.info("✅ Redis connection closed")
+        except Exception as e:
+            logger.warning(f"⚠️ Redis close warning: {str(e)}")
+        
         logger.info("👋 AlumUnity API shutdown complete")
     except Exception as e:
         logger.error(f"❌ Shutdown error: {str(e)}")
