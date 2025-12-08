@@ -38,6 +38,7 @@ import { mockCareerPredictionService } from './mockCareerPredictionService';
 import { mockEngagementAIService } from './mockEngagementAIService';
 import mockSkillRecommendationService from './mockSkillRecommendationService';
 import mockBadgeService from './mockBadgeService';
+import mockAnalyticsService from './mockAnalyticsService';
 
 // Import real API services
 import { apiAuth } from './apiAuth';
@@ -60,6 +61,7 @@ import apiCareerPredictionService from './apiCareerPredictionService';
 import apiEngagementAIService from './apiEngagementAIService';
 import apiSkillRecommendationService from './apiSkillRecommendationService';
 import apiBadgeService from './apiBadgeService';
+import apiAnalyticsService from './apiAnalyticsService';
 
 // Export the appropriate service based on environment variable
 export const authService = USE_MOCK_DATA ? mockAuth : apiAuth;
@@ -82,6 +84,7 @@ export const careerPredictionService = USE_MOCK_DATA ? mockCareerPredictionServi
 export const engagementAIService = USE_MOCK_DATA ? mockEngagementAIService : apiEngagementAIService;
 export const skillRecommendationService = USE_MOCK_DATA ? mockSkillRecommendationService : apiSkillRecommendationService;
 export const badgeService = USE_MOCK_DATA ? mockBadgeService : apiBadgeService;
+export const analyticsService = USE_MOCK_DATA ? mockAnalyticsService : apiAnalyticsService;
 
 // Export service mode for debugging
 export const isUsingMockData = USE_MOCK_DATA;
@@ -108,5 +111,6 @@ export default {
   engagementAIService,
   skillRecommendationService,
   badgeService,
+  analyticsService,
   isUsingMockData,
 };
