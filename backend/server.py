@@ -48,6 +48,9 @@ from routes.matching import router as matching_router
 from routes.recommendations import router as recommendations_router
 from routes.engagement import router as engagement_router
 
+# Import Phase 9 routes - Innovative Features
+from routes.capsules import router as capsules_router
+
 # Import middleware
 from middleware.rate_limit import rate_limiter
 
@@ -137,6 +140,9 @@ app.include_router(admin_settings_router)
 app.include_router(matching_router)
 app.include_router(recommendations_router)
 app.include_router(engagement_router)
+
+# Include Phase 9 routes - Innovative Features
+app.include_router(capsules_router)
 
 # Include API router in main app
 app.include_router(api_router)

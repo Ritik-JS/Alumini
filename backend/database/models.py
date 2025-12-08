@@ -1626,3 +1626,85 @@ class AlumniRecommendation(BaseModel):
     relevance_score: float  # 0.0 to 1.0
     recommendation_reason: str
 
+
+# ============================================================================
+# PHASE 9: INNOVATIVE FEATURES - KNOWLEDGE CAPSULES SYSTEM
+# ============================================================================
+
+class CapsuleCategory(str, Enum):
+    """Knowledge capsule categories"""
+    TECHNICAL = "technical"
+    CAREER = "career"
+    ENTREPRENEURSHIP = "entrepreneurship"
+    LIFE_LESSONS = "life_lessons"
+    INDUSTRY_INSIGHTS = "industry_insights"
+    OTHER = "other"
+
+
+class KnowledgeCapsuleCreate(BaseModel):
+    """Request model for creating a knowledge capsule"""
+    title: str = Field(..., min_length=5, max_length=255)
+    content: str = Field(..., min_length=50)
+    category: CapsuleCategory
+    tags: list[str] = Field(default_factory=list, max_length=10)
+    duration_minutes: Optional[int] = Field(None, ge=1, le=120)
+    featured_image: Optional[str] = None
+
+
+class KnowledgeCapsuleUpdate(BaseModel):
+    """Request model for updating a knowledge capsule"""
+    title: Optional[str] = Field(None, min_length=5, max_length=255)
+    content: Optional[str] = Field(None, min_length=50)
+    category: Optional[CapsuleCategory] = None
+    tags: Optional[list[str]] = Field(None, max_length=10)
+    duration_minutes: Optional[int] = Field(None, ge=1, le=120)
+    featured_image: Optional[str] = None
+    is_featured: Optional[bool] = None
+
+
+class KnowledgeCapsuleResponse(BaseModel):
+    """Response model for knowledge capsule"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    title: str
+    content: str
+    author_id: str
+    author_name: Optional[str] = None
+    author_photo: Optional[str] = None
+    category: str
+    tags: list[str]
+    duration_minutes: Optional[int] = None
+    featured_image: Optional[str] = None
+    likes_count: int = 0
+    views_count: int = 0
+    bookmarks_count: int = 0
+    is_featured: bool = False
+    is_liked_by_user: Optional[bool] = None
+    is_bookmarked_by_user: Optional[bool] = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class KnowledgeCapsuleListResponse(BaseModel):
+    """Response model for list of knowledge capsules"""
+    data: list[KnowledgeCapsuleResponse]
+    total: int
+    page: int
+    limit: int
+    has_more: bool
+
+
+class CapsuleBookmarkResponse(BaseModel):
+    """Response for bookmark action"""
+    capsule_id: str
+    is_bookmarked: bool
+    bookmarks_count: int
+
+
+class CapsuleLikeResponse(BaseModel):
+    """Response for like action"""
+    capsule_id: str
+    is_liked: bool
+    likes_count: int
+
