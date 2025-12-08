@@ -1305,13 +1305,19 @@ curl -X POST http://localhost:8001/api/engagement/check-badges \
      - GET `/api/career/transitions` - Popular career transitions
    - **Note**: Predictions based on historical career path data from alumni
 
-3. **Alumni Engagement Score (AES)**
+3. **Alumni Engagement Score (AES)** ✅ COMPLETED
    - **Tables**: `engagement_scores`, `contribution_history`, `badges`, `user_badges` (already defined)
    - Use existing engagement system with stored procedure `update_engagement_score(user_id)`
    - Endpoints:
-     - GET `/api/aes/rankings` - Get AES leaderboard (can use `engagement_leaderboard` view)
-     - GET `/api/aes/user/{user_id}` - Get user AES details
-     - GET `/api/aes/badges` - Get achievement badges
+     - GET `/api/aes/rankings` - Get AES leaderboard (can use `engagement_leaderboard` view) ✅
+     - GET `/api/aes/user/{user_id}` - Get user AES details ✅
+     - GET `/api/aes/badges` - Get achievement badges ✅
+     - GET `/api/aes/my-score` - Get current user's score (bonus endpoint) ✅
+     - POST `/api/aes/calculate` - Recalculate engagement score (bonus endpoint) ✅
+   - **Implementation**:
+     - Service: `/app/backend/services/engagement_service.py` (already existed from Phase 8) ✅
+     - Routes: `/app/backend/routes/aes.py` ✅
+     - Registered in server.py ✅
    - **Note**: Engagement scores auto-calculate from profile, mentorship, jobs, events, and forum activity
 
 4. **Digital Alumni ID Card**

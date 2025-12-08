@@ -50,6 +50,8 @@ from routes.engagement import router as engagement_router
 
 # Import Phase 9 routes - Innovative Features
 from routes.capsules import router as capsules_router
+from routes.aes import router as aes_router
+from routes.skill_graph import router as skill_graph_router
 
 # Import middleware
 from middleware.rate_limit import rate_limiter
@@ -143,6 +145,8 @@ app.include_router(engagement_router)
 
 # Include Phase 9 routes - Innovative Features
 app.include_router(capsules_router)
+app.include_router(aes_router)
+app.include_router(skill_graph_router)
 
 # Include API router in main app
 app.include_router(api_router)
