@@ -20,7 +20,7 @@ from services.capsule_service import CapsuleService
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/capsules", tags=["Knowledge Capsules"])
+router = APIRouter(prefix="/api/capsules", tags=["Knowledge Capsules"])
 
 
 @router.post("/create", response_model=KnowledgeCapsuleResponse)

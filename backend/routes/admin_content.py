@@ -1,102 +1,172 @@
-"""Admin content moderation routes"""
-from fastapi import APIRouter, Depends, Query, HTTPException, Path
-from typing import Optional
+"""Analytics routes for reporting and insights"""
+from fastapi import APIRouter, Depends, Query, HTTPException
+from typing import List
 
 from database.models import (
-    UserResponse, ContentFlagResponse, ContentModerateRequest,
-    FlaggedContentListParams
+    SkillDistribution, LocationDistribution, CompanyDistribution,
+    BatchDistribution, JobTrendsByCategory, MentorshipStats,
+    EventParticipationStats, EngagementMetrics, UserResponse
 )
-from services.admin_service import AdminService
+from services.analytics_service import AnalyticsService
 from middleware.auth_middleware import require_admin
 
-router = APIRouter(prefix="/admin/content", tags=["Admin - Content Moderation"])
+router = APIRouter(prefix="/api/analytics", tags=["Analytics"])
 
 
-@router.get("/flagged")
-async def get_flagged_content(
-    content_type: Optional[str] = Query(None, description="Filter by content type"),
-    status: Optional[str] = Query(None, description="Filter by status"),
-    page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+@router.get("/skills", response_model=List[SkillDistribution])
+async def get_skills_distribution(
+    limit: int = Query(20, ge=1, le=100, description="Number of top skills to return"),
     current_user: UserResponse = Depends(require_admin)
 ):
     """
-    Get all flagged content for moderation
+    Get top skills distribution across alumni
     
     **Admin only**
     
-    Returns flagged posts, comments, jobs, events, and profiles
+    Returns top skills with count and percentage
     """
     try:
-        result = await AdminService.get_flagged_content(
-            content_type=content_type,
-            status=status,
-            page=page,
-            limit=limit
-        )
-        return result
+        skills = await AnalyticsService.get_skills_distribution(limit=limit)
+        return skills
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/moderate")
-async def moderate_content(
-    request: ContentModerateRequest,
+@router.get("/locations", response_model=List[LocationDistribution])
+async def get_locations_distribution(
     current_user: UserResponse = Depends(require_admin)
 ):
     """
-    Moderate flagged content (approve or remove)
+    Get alumni distribution by location with coordinates
     
     **Admin only**
     
-    Actions:
-    - approve: Approve the content and dismiss flag
-    - remove: Remove/delete the content
+    Returns locations with alumni count, job count, and geo coordinates for heatmap
     """
     try:
-        if request.action not in ['approve', 'remove']:
-            raise HTTPException(status_code=400, detail="Action must be 'approve' or 'remove'")
-        
-        result = await AdminService.moderate_content(
-            flag_id=request.flag_id,
-            admin_id=current_user.id,
-            action=request.action,
-            admin_notes=request.admin_notes
-        )
-        return result
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        locations = await AnalyticsService.get_locations_distribution()
+        return locations
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{content_type}/{content_id}")
-async def remove_content_directly(
-    content_type: str = Path(..., description="Type of content (post, comment, job, event)"),
-    content_id: str = Path(..., description="ID of the content to remove"),
-    reason: str = Query(..., description="Reason for removal"),
+@router.get("/companies", response_model=List[CompanyDistribution])
+async def get_companies_distribution(
+    limit: int = Query(20, ge=1, le=100, description="Number of top companies to return"),
     current_user: UserResponse = Depends(require_admin)
 ):
     """
-    Remove content directly without flag
+    Get top companies where alumni work
     
     **Admin only**
     
-    Supported content types:
-    - post
-    - comment
-    - job
-    - event
+    Returns top companies with alumni count and percentage
     """
     try:
-        result = await AdminService.remove_content(
-            content_type=content_type,
-            content_id=content_id,
-            admin_id=current_user.id,
-            reason=reason
-        )
-        return result
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        companies = await AnalyticsService.get_companies_distribution(limit=limit)
+        return companies
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/batches", response_model=List[BatchDistribution])
+async def get_batches_distribution(
+    current_user: UserResponse = Depends(require_admin)
+):
+    """
+    Get alumni distribution by batch/graduation year
+    
+    **Admin only**
+    
+    Returns count of alumni per batch year
+    """
+    try:
+        batches = await AnalyticsService.get_batches_distribution()
+        return batches
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/job-trends", response_model=List[JobTrendsByCategory])
+async def get_job_trends(
+    current_user: UserResponse = Depends(require_admin)
+):
+    """
+    Get job posting trends by job type/category
+    
+    **Admin only**
+    
+    Returns job distribution by type with percentages
+    """
+    try:
+        trends = await AnalyticsService.get_job_trends()
+        return trends
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/mentorship-stats", response_model=MentorshipStats)
+async def get_mentorship_stats(
+    current_user: UserResponse = Depends(require_admin)
+):
+    """
+    Get comprehensive mentorship program statistics
+    
+    **Admin only**
+    
+    Returns:
+    - Total mentors and active mentors
+    - Total mentees
+    - Request statistics (total, accepted, rejected, pending)
+    - Session statistics
+    - Average mentor rating
+    """
+    try:
+        stats = await AnalyticsService.get_mentorship_stats()
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/event-participation", response_model=EventParticipationStats)
+async def get_event_participation(
+    current_user: UserResponse = Depends(require_admin)
+):
+    """
+    Get event participation statistics
+    
+    **Admin only**
+    
+    Returns:
+    - Total events (upcoming, past)
+    - Total RSVPs
+    - Average attendance rate
+    - Events breakdown by type
+    """
+    try:
+        stats = await AnalyticsService.get_event_participation_stats()
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/engagement", response_model=EngagementMetrics)
+async def get_engagement_metrics(
+    current_user: UserResponse = Depends(require_admin)
+):
+    """
+    Get user engagement metrics
+    
+    **Admin only**
+    
+    Returns:
+    - Total active users
+    - Average engagement score
+    - Top contributors
+    - Engagement distribution by level
+    """
+    try:
+        metrics = await AnalyticsService.get_engagement_metrics()
+        return metrics
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

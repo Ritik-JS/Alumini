@@ -14,7 +14,7 @@ from middleware.rate_limit import strict_rate_limit, moderate_rate_limit
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 
 @router.post("/register", response_model=Dict, status_code=status.HTTP_201_CREATED)

@@ -11,7 +11,7 @@ from database.models import (
     UserResponse
 )
 from services.profile_service import ProfileService
-from middleware.auth_middleware import get_current_user, require_role
+from middleware.auth_middleware import get_current_user, require_roles
 import logging
 
 logger = logging.getLogger(__name__)
@@ -153,7 +153,7 @@ async def update_profile(
 @router.delete("/{user_id}", response_model=dict)
 async def delete_profile(
     user_id: str,
-    current_user: UserResponse = Depends(require_role(["admin"]))
+    current_user: UserResponse = Depends(require_roles(["admin"]))
 ):
     """Delete profile (admin only)"""
     try:
