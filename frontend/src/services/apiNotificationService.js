@@ -73,6 +73,55 @@ class ApiNotificationService {
       return { success: false, message: error.message };
     }
   }
+
+  // ========== ADMIN METHODS ==========
+
+  // Get all notifications (admin)
+  async getAllNotifications(filters = {}) {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/admin/notifications`, { 
+        params: filters 
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  }
+
+  // Create notification (admin)
+  async createNotification(notificationData) {
+    try {
+      const response = await axios.post(`${BACKEND_URL}/api/admin/notifications`, notificationData);
+      return response.data;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Update notification (admin)
+  async updateNotification(notificationId, notificationData) {
+    try {
+      const response = await axios.put(
+        `${BACKEND_URL}/api/admin/notifications/${notificationId}`, 
+        notificationData
+      );
+      return response.data;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Resend notification (admin)
+  async resendNotification(notificationId) {
+    try {
+      const response = await axios.post(
+        `${BACKEND_URL}/api/admin/notifications/${notificationId}/resend`
+      );
+      return response.data;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 export default new ApiNotificationService();

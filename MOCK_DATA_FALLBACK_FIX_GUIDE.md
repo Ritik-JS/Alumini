@@ -989,7 +989,7 @@ GET  /api/badges                   - List badges
 
 ### Database Schema Check
 
-Verify MongoDB collections match mockdata.json structure:
+Verify MySQL schema match mockdata.json structure:
 - users
 - alumni_profiles
 - jobs

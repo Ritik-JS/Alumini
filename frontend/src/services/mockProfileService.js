@@ -209,6 +209,228 @@ export const mockProfileService = {
   getSystemStats,
   getPendingVerifications,
   getUserById,
+  
+  // ========== ADMIN VERIFICATION METHODS ==========
+  
+  approveVerification: async (profileId) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
+        const profile = profiles.find(p => p.id === profileId || p.user_id === profileId);
+        
+        if (profile) {
+          profile.is_verified = true;
+          profile.verified_at = new Date().toISOString();
+          saveData(PROFILES_KEY, profiles);
+          
+          resolve({
+            success: true,
+            data: profile,
+            message: 'Profile verified successfully'
+          });
+        } else {
+          resolve({
+            success: false,
+            error: 'Profile not found'
+          });
+        }
+      }, 300);
+    });
+  },
+  
+  rejectVerification: async (profileId, reason = '') => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
+        const profile = profiles.find(p => p.id === profileId || p.user_id === profileId);
+        
+        if (profile) {
+          profile.is_verified = false;
+          profile.verification_rejected = true;
+          profile.rejection_reason = reason;
+          profile.rejected_at = new Date().toISOString();
+          saveData(PROFILES_KEY, profiles);
+          
+          resolve({
+            success: true,
+            data: profile,
+            message: 'Profile verification rejected'
+          });
+        } else {
+          resolve({
+            success: false,
+            error: 'Profile not found'
+          });
+        }
+      }, 300);
+    });
+  },
+
+  // ========== ADMIN USER MANAGEMENT METHODS ==========
+
+  getAllUsers: async (filters = {}) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const users = getStoredData(USERS_KEY, mockData.users || []);
+        const profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
+        
+        // Enrich users with profile data
+        const enrichedUsers = users.map(user => {
+          const profile = profiles.find(p => p.user_id === user.id);
+          return {
+            ...user,
+            profile: profile || null,
+            is_verified: profile?.is_verified || false
+          };
+        });
+        
+        // Apply filters
+        let filtered = enrichedUsers;
+        if (filters.role) {
+          filtered = filtered.filter(u => u.role === filters.role);
+        }
+        if (filters.verified !== undefined) {
+          filtered = filtered.filter(u => u.is_verified === filters.verified);
+        }
+        
+        resolve({
+          success: true,
+          data: filtered,
+          total: filtered.length
+        });
+      }, 300);
+    });
+  },
+
+  getUserWithProfile: async (userId) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const users = getStoredData(USERS_KEY, mockData.users || []);
+        const profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
+        
+        const user = users.find(u => u.id === userId);
+        if (user) {
+          const profile = profiles.find(p => p.user_id === userId);
+          resolve({
+            success: true,
+            data: {
+              ...user,
+              profile: profile || null
+            }
+          });
+        } else {
+          resolve({
+            success: false,
+            error: 'User not found'
+          });
+        }
+      }, 200);
+    });
+  },
+
+  banUser: async (userId, reason = '') => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const users = getStoredData(USERS_KEY, mockData.users || []);
+        const user = users.find(u => u.id === userId);
+        
+        if (user) {
+          user.is_banned = true;
+          user.ban_reason = reason;
+          user.banned_at = new Date().toISOString();
+          saveData(USERS_KEY, users);
+          
+          resolve({
+            success: true,
+            message: 'User banned successfully'
+          });
+        } else {
+          resolve({
+            success: false,
+            error: 'User not found'
+          });
+        }
+      }, 300);
+    });
+  },
+
+  deleteUser: async (userId) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        let users = getStoredData(USERS_KEY, mockData.users || []);
+        let profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
+        
+        const initialLength = users.length;
+        users = users.filter(u => u.id !== userId);
+        profiles = profiles.filter(p => p.user_id !== userId);
+        
+        if (users.length < initialLength) {
+          saveData(USERS_KEY, users);
+          saveData(PROFILES_KEY, profiles);
+          
+          resolve({
+            success: true,
+            message: 'User deleted successfully'
+          });
+        } else {
+          resolve({
+            success: false,
+            error: 'User not found'
+          });
+        }
+      }, 300);
+    });
+  },
+
+  resetPassword: async (userId) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const users = getStoredData(USERS_KEY, mockData.users || []);
+        const user = users.find(u => u.id === userId);
+        
+        if (user) {
+          // In mock, just mark that reset was requested
+          resolve({
+            success: true,
+            message: `Password reset email sent to ${user.email}`
+          });
+        } else {
+          resolve({
+            success: false,
+            error: 'User not found'
+          });
+        }
+      }, 300);
+    });
+  },
+
+  exportUsers: async (format = 'csv') => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const users = getStoredData(USERS_KEY, mockData.users || []);
+        const profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
+        
+        // Create CSV-like data
+        const csvData = users.map(user => {
+          const profile = profiles.find(p => p.user_id === user.id);
+          return {
+            id: user.id,
+            name: `${user.first_name} ${user.last_name}`,
+            email: user.email,
+            role: user.role,
+            verified: profile?.is_verified || false,
+            created: user.created_at
+          };
+        });
+        
+        resolve({
+          success: true,
+          data: csvData,
+          format: format
+        });
+      }, 500);
+    });
+  }
 };
 
 // Default export

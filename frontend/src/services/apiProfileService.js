@@ -147,6 +147,125 @@ class ApiProfileService {
       return [];
     }
   }
+
+  // ========== ADMIN VERIFICATION METHODS ==========
+
+  // Approve verification (Admin only)
+  async approveVerification(profileId) {
+    try {
+      const response = await axios.post(
+        `${BACKEND_URL}/api/admin/profiles/verify/${profileId}`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+      return { success: true, ...response.data };
+    } catch (error) {
+      console.error('Error approving verification:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Reject verification (Admin only)
+  async rejectVerification(profileId, reason = '') {
+    try {
+      const response = await axios.post(
+        `${BACKEND_URL}/api/admin/profiles/reject/${profileId}`,
+        { reason },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+      return { success: true, ...response.data };
+    } catch (error) {
+      console.error('Error rejecting verification:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // ========== ADMIN USER MANAGEMENT METHODS ==========
+
+  // Get all users (Admin only)
+  async getAllUsers(filters = {}) {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/admin/users`, {
+        params: filters,
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+      return { success: false, error: error.message, data: [] };
+    }
+  }
+
+  // Get user with profile (Admin only)
+  async getUserWithProfile(userId) {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/admin/users/${userId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Ban user (Admin only)
+  async banUser(userId, reason = '') {
+    try {
+      const response = await axios.put(
+        `${BACKEND_URL}/api/admin/users/${userId}/ban`,
+        { reason },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error banning user:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Delete user (Admin only)
+  async deleteUser(userId) {
+    try {
+      const response = await axios.delete(`${BACKEND_URL}/api/admin/users/${userId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Send password reset (Admin only)
+  async resetPassword(userId) {
+    try {
+      const response = await axios.post(
+        `${BACKEND_URL}/api/admin/users/${userId}/reset-password`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Export users (Admin only)
+  async exportUsers(format = 'csv') {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/admin/users/export`, {
+        params: { format },
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        responseType: 'blob'
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('Error exporting users:', error);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 export default new ApiProfileService();

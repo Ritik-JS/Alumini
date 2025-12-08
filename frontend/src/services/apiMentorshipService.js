@@ -131,6 +131,47 @@ class ApiMentorshipService {
       return { success: false, message: error.message };
     }
   }
+
+  // ========== ADMIN METHODS ==========
+
+  // Get all mentorship requests (Admin only)
+  async getAllMentorshipRequests(filters = {}) {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/admin/mentorship/requests`, {
+        params: filters,
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  }
+
+  // Get all sessions (Admin only)
+  async getAllSessions(filters = {}) {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/admin/mentorship/sessions`, {
+        params: filters,
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  }
+
+  // Get all mentor profiles (Admin only)
+  async getAllMentorProfiles(filters = {}) {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/admin/mentors`, {
+        params: filters,
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  }
 }
 
 export default new ApiMentorshipService();

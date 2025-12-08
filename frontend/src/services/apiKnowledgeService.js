@@ -90,6 +90,35 @@ class ApiKnowledgeService {
       return { success: false, message: error.message, data: [] };
     }
   }
+
+  // ========== ADMIN METHODS ==========
+
+  // Toggle featured status (Admin only)
+  async toggleFeatured(capsuleId) {
+    try {
+      const response = await axios.put(
+        `${BACKEND_URL}/api/admin/knowledge/capsules/${capsuleId}/toggle-featured`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+      return response.data;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Get all capsules with admin data (Admin only)
+  async getAllCapsulesAdmin(filters = {}) {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/admin/knowledge/capsules`, {
+        params: filters,
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  }
 }
 
 export default new ApiKnowledgeService();

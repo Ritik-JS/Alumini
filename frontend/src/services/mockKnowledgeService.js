@@ -405,5 +405,73 @@ export const mockKnowledgeService = {
       success: true,
       data: progress
     };
+  },
+
+  // ========== ADMIN METHODS ==========
+
+  // Toggle featured status (Admin only)
+  toggleFeatured: async (capsuleId) => {
+    await delay(300);
+    
+    const capsules = getStoredData(CAPSULES_KEY, mockData.knowledge_capsules || []);
+    const capsule = capsules.find(c => c.id === capsuleId);
+    
+    if (capsule) {
+      capsule.is_featured = !capsule.is_featured;
+      saveData(CAPSULES_KEY, capsules);
+      
+      return {
+        success: true,
+        data: capsule,
+        message: capsule.is_featured ? 'Capsule marked as featured' : 'Capsule unmarked as featured'
+      };
+    } else {
+      return {
+        success: false,
+        error: 'Capsule not found'
+      };
+    }
+  },
+
+  // Get all capsules with admin data (Admin only)
+  getAllCapsulesAdmin: async (filters = {}) => {
+    await delay(300);
+    
+    const capsules = getStoredData(CAPSULES_KEY, mockData.knowledge_capsules || []);
+    const users = getStoredData(USERS_KEY, mockData.users || []);
+    const profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
+    
+    // Enrich with author data
+    const enrichedCapsules = capsules.map(capsule => {
+      const author = users.find(u => u.id === capsule.author_id);
+      const authorProfile = profiles.find(p => p.user_id === capsule.author_id);
+      
+      return {
+        ...capsule,
+        author_name: author ? `${author.first_name} ${author.last_name}` : 'Unknown',
+        author_email: author?.email,
+        author_photo: authorProfile?.photo_url,
+        views_count: capsule.views || 0,
+        likes_count: capsule.likes || 0
+      };
+    });
+    
+    // Apply filters
+    let filtered = enrichedCapsules;
+    if (filters.category) {
+      filtered = filtered.filter(c => c.category === filters.category);
+    }
+    if (filters.is_featured !== undefined) {
+      filtered = filtered.filter(c => c.is_featured === filters.is_featured);
+    }
+    if (filters.status) {
+      filtered = filtered.filter(c => c.status === filters.status);
+    }
+    
+    return {
+      success: true,
+      data: filtered,
+      total: filtered.length
+    };
   }
 };

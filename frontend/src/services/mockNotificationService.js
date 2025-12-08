@@ -234,5 +234,129 @@ export const notificationService = {
         });
       }, 200);
     });
+  },
+
+  // ========== ADMIN METHODS ==========
+
+  // Get all notifications (admin)
+  getAllNotifications: async (filters = {}) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        let notifications = getStoredNotifications();
+        const users = JSON.parse(localStorage.getItem('users_data') || '[]');
+        
+        // Enrich notifications with user data
+        const enrichedNotifications = notifications.map(notif => {
+          const user = users.find(u => u.id === notif.user_id);
+          return {
+            ...notif,
+            user_name: user ? `${user.first_name} ${user.last_name}` : 'Unknown',
+            user_email: user?.email || ''
+          };
+        });
+        
+        // Apply filters
+        let filtered = enrichedNotifications;
+        if (filters.type && filters.type !== 'all') {
+          filtered = filtered.filter(n => n.type === filters.type);
+        }
+        if (filters.status === 'read') {
+          filtered = filtered.filter(n => n.is_read);
+        } else if (filters.status === 'unread') {
+          filtered = filtered.filter(n => !n.is_read);
+        }
+        
+        resolve({
+          success: true,
+          data: filtered,
+          total: filtered.length
+        });
+      }, 300);
+    });
+  },
+
+  // Create notification (admin)
+  createNotification: async (notificationData) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const notifications = getStoredNotifications();
+        
+        const newNotification = {
+          id: `notif-${Date.now()}`,
+          ...notificationData,
+          is_read: false,
+          read_at: null,
+          created_at: new Date().toISOString()
+        };
+        
+        notifications.push(newNotification);
+        saveNotifications(notifications);
+        
+        resolve({
+          success: true,
+          data: newNotification,
+          message: 'Notification created successfully'
+        });
+      }, 300);
+    });
+  },
+
+  // Update notification (admin)
+  updateNotification: async (notificationId, notificationData) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const notifications = getStoredNotifications();
+        const index = notifications.findIndex(n => n.id === notificationId);
+        
+        if (index !== -1) {
+          notifications[index] = {
+            ...notifications[index],
+            ...notificationData,
+            updated_at: new Date().toISOString()
+          };
+          saveNotifications(notifications);
+          
+          resolve({
+            success: true,
+            data: notifications[index],
+            message: 'Notification updated successfully'
+          });
+        } else {
+          resolve({
+            success: false,
+            error: 'Notification not found'
+          });
+        }
+      }, 300);
+    });
+  },
+
+  // Resend notification (admin)
+  resendNotification: async (notificationId) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const notifications = getStoredNotifications();
+        const notification = notifications.find(n => n.id === notificationId);
+        
+        if (notification) {
+          // Mark as unread and update timestamp
+          notification.is_read = false;
+          notification.read_at = null;
+          notification.created_at = new Date().toISOString();
+          saveNotifications(notifications);
+          
+          resolve({
+            success: true,
+            data: notification,
+            message: 'Notification resent successfully'
+          });
+        } else {
+          resolve({
+            success: false,
+            error: 'Notification not found'
+          });
+        }
+      }, 300);
+    });
   }
 };
