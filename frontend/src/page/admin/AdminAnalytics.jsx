@@ -32,33 +32,101 @@ const AdminAnalytics = () => {
     totalEvents: 0,
     totalPosts: 0,
     verifiedAlumni: 0,
-    jobsData: {},
-    eventsData: {},
-    mentorshipData: {},
   });
+  const [userGrowthData, setUserGrowthData] = useState([]);
+  const [topContributors, setTopContributors] = useState([]);
+  const [platformActivity, setPlatformActivity] = useState([]);
+  const [alumniData, setAlumniData] = useState(null);
+  const [jobsData, setJobsData] = useState(null);
+  const [mentorshipData, setMentorshipData] = useState(null);
+  const [eventsData, setEventsData] = useState(null);
+  const [engagementData, setEngagementData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadAnalytics = async () => {
+  const loadAllAnalytics = async () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await analyticsService.getDashboardStats();
       
-      if (result.success) {
-        setAnalyticsData(result.data || {
+      // Load all analytics in parallel
+      const [
+        dashboardResult,
+        userGrowthResult,
+        contributorsResult,
+        activityResult,
+        alumniResult,
+        jobsResult,
+        mentorshipResult,
+        eventsResult,
+        engagementResult
+      ] = await Promise.all([
+        analyticsService.getDashboardStats(),
+        analyticsService.getUserGrowth('monthly'),
+        analyticsService.getTopContributors(5),
+        analyticsService.getPlatformActivity(30),
+        analyticsService.getAlumniAnalytics(),
+        analyticsService.getJobAnalytics(),
+        analyticsService.getMentorshipAnalytics(),
+        analyticsService.getEventAnalytics(),
+        analyticsService.getEngagementMetrics()
+      ]);
+
+      // Set dashboard stats
+      if (dashboardResult.success) {
+        setAnalyticsData(dashboardResult.data || {
           totalUsers: 0,
           activeUsers: 0,
           totalJobs: 0,
           totalEvents: 0,
           totalPosts: 0,
           verifiedAlumni: 0,
-          jobsData: {},
-          eventsData: {},
-          mentorshipData: {},
         });
-      } else {
-        setError(result.error || 'Failed to load analytics');
+      }
+
+      // Set user growth data
+      if (userGrowthResult.success) {
+        setUserGrowthData(userGrowthResult.data || []);
+      }
+
+      // Set top contributors
+      if (contributorsResult.success) {
+        setTopContributors(contributorsResult.data || []);
+      }
+
+      // Set platform activity
+      if (activityResult.success) {
+        setPlatformActivity(activityResult.data || []);
+      }
+
+      // Set alumni analytics
+      if (alumniResult.success) {
+        setAlumniData(alumniResult.data);
+      }
+
+      // Set jobs analytics
+      if (jobsResult.success) {
+        setJobsData(jobsResult.data);
+      }
+
+      // Set mentorship analytics
+      if (mentorshipResult.success) {
+        setMentorshipData(mentorshipResult.data);
+      }
+
+      // Set events analytics
+      if (eventsResult.success) {
+        setEventsData(eventsResult.data);
+      }
+
+      // Set engagement metrics
+      if (engagementResult.success) {
+        setEngagementData(engagementResult.data);
+      }
+
+      // If any critical service failed, show error
+      if (!dashboardResult.success) {
+        setError(dashboardResult.error || 'Failed to load analytics');
       }
     } catch (error) {
       console.error('Error loading analytics:', error);
@@ -69,13 +137,13 @@ const AdminAnalytics = () => {
   };
 
   useEffect(() => {
-    loadAnalytics();
+    loadAllAnalytics();
   }, []);
 
   const engagementMetrics = [
     {
       title: 'Total Users',
-      value: analyticsData.totalUsers,
+      value: analyticsData.totalUsers || 0,
       change: '+12%',
       icon: Users,
       color: 'text-blue-600',
@@ -83,7 +151,7 @@ const AdminAnalytics = () => {
     },
     {
       title: 'Active Users',
-      value: analyticsData.activeUsers,
+      value: analyticsData.activeUsers || 0,
       change: '+8%',
       icon: Activity,
       color: 'text-green-600',
@@ -91,7 +159,7 @@ const AdminAnalytics = () => {
     },
     {
       title: 'Verified Alumni',
-      value: analyticsData.verifiedAlumni,
+      value: analyticsData.verifiedAlumni || 0,
       change: '+15%',
       icon: UserCheck,
       color: 'text-purple-600',
@@ -99,7 +167,7 @@ const AdminAnalytics = () => {
     },
     {
       title: 'Total Jobs',
-      value: analyticsData.totalJobs,
+      value: analyticsData.totalJobs || 0,
       change: '+20%',
       icon: Briefcase,
       color: 'text-orange-600',
@@ -107,7 +175,7 @@ const AdminAnalytics = () => {
     },
     {
       title: 'Total Events',
-      value: analyticsData.totalEvents,
+      value: analyticsData.totalEvents || 0,
       change: '+5%',
       icon: Calendar,
       color: 'text-pink-600',
@@ -115,38 +183,12 @@ const AdminAnalytics = () => {
     },
     {
       title: 'Forum Posts',
-      value: analyticsData.totalPosts,
+      value: analyticsData.forumPosts || analyticsData.totalPosts || 0,
       change: '+25%',
       icon: MessageSquare,
       color: 'text-indigo-600',
       bgColor: 'bg-indigo-100',
     },
-  ];
-
-  const userGrowthData = [
-    { month: 'Jan', users: 45 },
-    { month: 'Feb', users: 52 },
-    { month: 'Mar', users: 61 },
-    { month: 'Apr', users: 70 },
-    { month: 'May', users: 85 },
-    { month: 'Jun', users: 98 },
-  ];
-
-  const topContributors = [
-    { name: 'John Doe', email: 'john.doe@alumni.edu', contributions: 45, type: 'Posts' },
-    { name: 'Jane Smith', email: 'jane.smith@alumni.edu', contributions: 38, type: 'Events' },
-    { name: 'Mike Johnson', email: 'mike.j@alumni.edu', contributions: 32, type: 'Mentorship' },
-    { name: 'Sarah Williams', email: 'sarah.w@alumni.edu', contributions: 28, type: 'Jobs' },
-    { name: 'David Brown', email: 'david.b@alumni.edu', contributions: 25, type: 'Posts' },
-  ];
-
-  const platformActivity = [
-    { activity: 'New user registration', count: 156, trend: '+12%' },
-    { activity: 'Job applications', count: 234, trend: '+18%' },
-    { activity: 'Event RSVPs', count: 189, trend: '+8%' },
-    { activity: 'Forum posts created', count: 92, trend: '+25%' },
-    { activity: 'Mentorship requests', count: 67, trend: '+15%' },
-    { activity: 'Profile views', count: 1243, trend: '+10%' },
   ];
 
   if (loading) {
@@ -171,7 +213,7 @@ const AdminAnalytics = () => {
         <div className="flex flex-1">
           <Sidebar />
           <main className="flex-1 p-6">
-            <ErrorMessage message={error} onRetry={loadAnalytics} />
+            <ErrorMessage message={error} onRetry={loadAllAnalytics} />
           </main>
         </div>
         <Footer />
@@ -248,7 +290,7 @@ const AdminAnalytics = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="h-64 flex items-end justify-between gap-4">
-                      {userGrowthData.map((data, index) => (
+                      {(userGrowthData && userGrowthData.length > 0) ? userGrowthData.map((data, index) => (
                         <div key={index} className="flex-1 flex flex-col items-center">
                           <div
                             className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-lg transition-all hover:opacity-80"
@@ -257,7 +299,11 @@ const AdminAnalytics = () => {
                           <div className="text-sm font-medium mt-2">{data.month}</div>
                           <div className="text-xs text-gray-600">{data.users}</div>
                         </div>
-                      ))}
+                      )) : (
+                        <div className="flex items-center justify-center w-full h-full text-gray-500">
+                          No growth data available
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -271,7 +317,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {platformActivity.map((item, index) => (
+                        {(platformActivity && platformActivity.length > 0) ? platformActivity.map((item, index) => (
                           <div key={index} className="flex items-center justify-between">
                             <div>
                               <p className="text-sm font-medium">{item.activity}</p>
@@ -282,7 +328,9 @@ const AdminAnalytics = () => {
                               <p className="text-xs text-green-600">{item.trend}</p>
                             </div>
                           </div>
-                        ))}
+                        )) : (
+                          <div className="text-center text-gray-500">No activity data available</div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -295,7 +343,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {topContributors.map((contributor, index) => (
+                        {(topContributors && topContributors.length > 0) ? topContributors.map((contributor, index) => (
                           <div key={index} className="flex items-center gap-3">
                             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white font-bold text-sm">
                               {index + 1}
@@ -314,7 +362,9 @@ const AdminAnalytics = () => {
                               <p className="text-xs text-gray-500">actions</p>
                             </div>
                           </div>
-                        ))}
+                        )) : (
+                          <div className="text-center text-gray-500">No contributor data available</div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -332,13 +382,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={[
-                          { location: 'San Francisco', count: 3 },
-                          { location: 'Seattle', count: 1 },
-                          { location: 'Los Angeles', count: 1 },
-                          { location: 'Boston', count: 0 },
-                          { location: 'New York', count: 0 },
-                        ]} layout="vertical">
+                        <BarChart data={alumniData?.locationDistribution || []} layout="vertical">
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" />
                           <YAxis dataKey="location" type="category" width={100} />
@@ -357,13 +401,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={[
-                          { company: 'Google', count: 1 },
-                          { company: 'Amazon', count: 1 },
-                          { company: 'Airbnb', count: 1 },
-                          { company: 'Netflix', count: 1 },
-                          { company: 'Other', count: 1 },
-                        ]} layout="vertical">
+                        <BarChart data={alumniData?.topCompanies || []} layout="vertical">
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" />
                           <YAxis dataKey="company" type="category" width={80} />
@@ -382,26 +420,25 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {[
-                          { skill: 'JavaScript', count: 3, color: 'bg-yellow-500' },
-                          { skill: 'Python', count: 4, color: 'bg-blue-500' },
-                          { skill: 'React', count: 2, color: 'bg-cyan-500' },
-                          { skill: 'Machine Learning', count: 2, color: 'bg-purple-500' },
-                          { skill: 'UX Design', count: 2, color: 'bg-pink-500' },
-                          { skill: 'AWS', count: 2, color: 'bg-orange-500' },
-                        ].map((item, index) => (
-                          <div key={index} className="flex items-center gap-3">
-                            <div className="flex-1">
-                              <div className="flex justify-between mb-1">
-                                <span className="text-sm font-medium">{item.skill}</span>
-                                <span className="text-sm text-gray-600">{item.count} alumni</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className={`${item.color} h-2 rounded-full`} style={{ width: `${(item.count / 4) * 100}%` }}></div>
+                        {(alumniData?.topSkills && alumniData.topSkills.length > 0) ? alumniData.topSkills.map((item, index) => {
+                          const colors = ['bg-yellow-500', 'bg-blue-500', 'bg-cyan-500', 'bg-purple-500', 'bg-pink-500', 'bg-orange-500'];
+                          const maxCount = Math.max(...alumniData.topSkills.map(s => s.count));
+                          return (
+                            <div key={index} className="flex items-center gap-3">
+                              <div className="flex-1">
+                                <div className="flex justify-between mb-1">
+                                  <span className="text-sm font-medium">{item.skill}</span>
+                                  <span className="text-sm text-gray-600">{item.count} alumni</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div className={`${colors[index % colors.length]} h-2 rounded-full`} style={{ width: `${(item.count / maxCount) * 100}%` }}></div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        }) : (
+                          <div className="text-center text-gray-500">No skill data available</div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -414,13 +451,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={[
-                          { year: '2018', count: 2 },
-                          { year: '2019', count: 2 },
-                          { year: '2020', count: 0 },
-                          { year: '2021', count: 0 },
-                          { year: '2022', count: 0 },
-                        ]}>
+                        <BarChart data={alumniData?.batchDistribution || []}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="year" />
                           <YAxis />
@@ -438,27 +469,27 @@ const AdminAnalytics = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-blue-600">{analyticsData.totalJobs}</div>
+                      <div className="text-2xl font-bold text-blue-600">{jobsData?.totalJobs || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Total Jobs Posted</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-green-600">{analyticsData.jobsData?.totalApplications || 0}</div>
+                      <div className="text-2xl font-bold text-green-600">{jobsData?.totalApplications || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Applications</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
                       <div className="text-2xl font-bold text-purple-600">
-                        {analyticsData.totalJobs > 0 ? ((analyticsData.jobsData?.totalApplications || 0) / analyticsData.totalJobs).toFixed(1) : 0}
+                        {jobsData?.averageApplicationsPerJob || 0}
                       </div>
                       <p className="text-sm text-gray-600 mt-1">Avg Applications/Job</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-orange-600">{analyticsData.jobsData?.avgDaysToHire || 3.2}</div>
+                      <div className="text-2xl font-bold text-orange-600">{jobsData?.averageDaysToHire || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Days to Hire (Avg)</p>
                     </CardContent>
                   </Card>
@@ -475,12 +506,7 @@ const AdminAnalytics = () => {
                       <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                           <Pie
-                            data={[
-                              { name: 'Full-time', value: 4, color: '#3b82f6' },
-                              { name: 'Internship', value: 1, color: '#10b981' },
-                              { name: 'Part-time', value: 0, color: '#f59e0b' },
-                              { name: 'Contract', value: 0, color: '#8b5cf6' },
-                            ]}
+                            data={jobsData?.jobsByType || []}
                             cx="50%"
                             cy="50%"
                             labelLine={false}
@@ -489,12 +515,7 @@ const AdminAnalytics = () => {
                             fill="#8884d8"
                             dataKey="value"
                           >
-                            {[
-                              { name: 'Full-time', value: 4, color: '#3b82f6' },
-                              { name: 'Internship', value: 1, color: '#10b981' },
-                              { name: 'Part-time', value: 0, color: '#f59e0b' },
-                              { name: 'Contract', value: 0, color: '#8b5cf6' },
-                            ].map((entry, index) => (
+                            {(jobsData?.jobsByType || []).map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>
@@ -512,13 +533,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={[
-                          { location: 'San Francisco', jobs: 1 },
-                          { location: 'Remote', jobs: 1 },
-                          { location: 'Boston', jobs: 1 },
-                          { location: 'Austin', jobs: 1 },
-                          { location: 'New York', jobs: 1 },
-                        ]} layout="vertical">
+                        <BarChart data={jobsData?.jobsByLocation || []} layout="vertical">
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" />
                           <YAxis dataKey="location" type="category" width={100} />
@@ -537,12 +552,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={[
-                          { week: 'Week 1', applications: 3 },
-                          { week: 'Week 2', applications: 8 },
-                          { week: 'Week 3', applications: 12 },
-                          { week: 'Week 4', applications: 18 },
-                        ]}>
+                        <LineChart data={jobsData?.applicationTrends || []}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="week" />
                           <YAxis />
@@ -562,13 +572,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={[
-                          { skill: 'JavaScript', count: 3 },
-                          { skill: 'Python', count: 4 },
-                          { skill: 'React', count: 3 },
-                          { skill: 'AWS', count: 3 },
-                          { skill: 'Docker', count: 2 },
-                        ]}>
+                        <BarChart data={jobsData?.topSkillsRequired || []}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="skill" />
                           <YAxis />
@@ -586,25 +590,25 @@ const AdminAnalytics = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-purple-600">{analyticsData.mentorshipData?.totalRequests || 0}</div>
+                      <div className="text-2xl font-bold text-purple-600">{mentorshipData?.totalRequests || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Total Mentorships</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-blue-600">{analyticsData.mentorshipData?.activeMentors || 0}</div>
+                      <div className="text-2xl font-bold text-blue-600">{mentorshipData?.activeMentors || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Active Mentors</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-green-600">{analyticsData.mentorshipData?.totalSessions || 0}</div>
+                      <div className="text-2xl font-bold text-green-600">{mentorshipData?.completedSessions || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Sessions Completed</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-yellow-600">{analyticsData.mentorshipData?.avgRating || 4.8}</div>
+                      <div className="text-2xl font-bold text-yellow-600">{mentorshipData?.averageRating || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Average Rating</p>
                     </CardContent>
                   </Card>
@@ -621,11 +625,7 @@ const AdminAnalytics = () => {
                       <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                           <Pie
-                            data={[
-                              { name: 'Accepted', value: 8, color: '#10b981' },
-                              { name: 'Pending', value: 3, color: '#f59e0b' },
-                              { name: 'Rejected', value: 1, color: '#ef4444' },
-                            ]}
+                            data={mentorshipData?.requestsByStatus || []}
                             cx="50%"
                             cy="50%"
                             labelLine={false}
@@ -634,11 +634,7 @@ const AdminAnalytics = () => {
                             fill="#8884d8"
                             dataKey="value"
                           >
-                            {[
-                              { name: 'Accepted', value: 8, color: '#10b981' },
-                              { name: 'Pending', value: 3, color: '#f59e0b' },
-                              { name: 'Rejected', value: 1, color: '#ef4444' },
-                            ].map((entry, index) => (
+                            {(mentorshipData?.requestsByStatus || []).map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>
@@ -656,14 +652,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <AreaChart data={[
-                          { month: 'Jul', sessions: 5 },
-                          { month: 'Aug', sessions: 8 },
-                          { month: 'Sep', sessions: 12 },
-                          { month: 'Oct', sessions: 15 },
-                          { month: 'Nov', sessions: 20 },
-                          { month: 'Dec', sessions: 25 },
-                        ]}>
+                        <AreaChart data={mentorshipData?.sessionsOverTime || []}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="month" />
                           <YAxis />
@@ -682,13 +671,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={[
-                          { area: 'Career', count: 12 },
-                          { area: 'Technical', count: 10 },
-                          { area: 'Leadership', count: 6 },
-                          { area: 'Networking', count: 5 },
-                          { area: 'Interview', count: 8 },
-                        ]}>
+                        <BarChart data={mentorshipData?.topExpertiseAreas || []}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="area" />
                           <YAxis />
@@ -707,13 +690,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={[
-                          { stars: '5 stars', count: 18 },
-                          { stars: '4 stars', count: 5 },
-                          { stars: '3 stars', count: 2 },
-                          { stars: '2 stars', count: 0 },
-                          { stars: '1 star', count: 0 },
-                        ]} layout="vertical">
+                        <BarChart data={mentorshipData?.ratingDistribution || []} layout="vertical">
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" />
                           <YAxis dataKey="stars" type="category" width={80} />
@@ -731,26 +708,26 @@ const AdminAnalytics = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-pink-600">{analyticsData.totalEvents}</div>
+                      <div className="text-2xl font-bold text-pink-600">{eventsData?.totalEvents || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Total Events</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-purple-600">{analyticsData.eventsData?.totalRegistrations || 0}</div>
+                      <div className="text-2xl font-bold text-purple-600">{eventsData?.totalRegistrations || 0}</div>
                       <p className="text-sm text-gray-600 mt-1">Total Registrations</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="text-2xl font-bold text-green-600">{analyticsData.eventsData?.attendanceRate || 78}%</div>
+                      <div className="text-2xl font-bold text-green-600">{eventsData?.attendanceRate || 0}%</div>
                       <p className="text-sm text-gray-600 mt-1">Attendance Rate</p>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-6">
                       <div className="text-2xl font-bold text-blue-600">
-                        {analyticsData.totalEvents > 0 ? Math.round((analyticsData.eventsData?.totalRegistrations || 0) / analyticsData.totalEvents) : 0}
+                        {eventsData?.averageAttendance || 0}
                       </div>
                       <p className="text-sm text-gray-600 mt-1">Avg Attendance/Event</p>
                     </CardContent>
@@ -768,12 +745,7 @@ const AdminAnalytics = () => {
                       <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                           <Pie
-                            data={[
-                              { name: 'Workshop', value: 2, color: '#3b82f6' },
-                              { name: 'Webinar', value: 2, color: '#10b981' },
-                              { name: 'Meetup', value: 2, color: '#f59e0b' },
-                              { name: 'Conference', value: 1, color: '#8b5cf6' },
-                            ]}
+                            data={eventsData?.eventsByType || []}
                             cx="50%"
                             cy="50%"
                             labelLine={false}
@@ -782,12 +754,7 @@ const AdminAnalytics = () => {
                             fill="#8884d8"
                             dataKey="value"
                           >
-                            {[
-                              { name: 'Workshop', value: 2, color: '#3b82f6' },
-                              { name: 'Webinar', value: 2, color: '#10b981' },
-                              { name: 'Meetup', value: 2, color: '#f59e0b' },
-                              { name: 'Conference', value: 1, color: '#8b5cf6' },
-                            ].map((entry, index) => (
+                            {(eventsData?.eventsByType || []).map((entry, index) => (
                               <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
                           </Pie>
@@ -805,14 +772,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={[
-                          { month: 'Jul', registrations: 35 },
-                          { month: 'Aug', registrations: 48 },
-                          { month: 'Sep', registrations: 62 },
-                          { month: 'Oct', registrations: 78 },
-                          { month: 'Nov', registrations: 95 },
-                          { month: 'Dec', registrations: 112 },
-                        ]}>
+                        <LineChart data={eventsData?.participationTrend || []}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="month" />
                           <YAxis />
@@ -832,11 +792,7 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={[
-                          { format: 'Virtual', count: 4 },
-                          { format: 'In-person', count: 2 },
-                          { format: 'Hybrid', count: 1 },
-                        ]}>
+                        <BarChart data={eventsData?.eventsByFormat || []}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="format" />
                           <YAxis />
@@ -855,25 +811,24 @@ const AdminAnalytics = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {[
-                          { topic: 'Career Development', count: 145, color: 'bg-blue-500' },
-                          { topic: 'Technology Trends', count: 128, color: 'bg-green-500' },
-                          { topic: 'Networking', count: 112, color: 'bg-purple-500' },
-                          { topic: 'Entrepreneurship', count: 98, color: 'bg-orange-500' },
-                          { topic: 'Industry Insights', count: 85, color: 'bg-pink-500' },
-                        ].map((item, index) => (
-                          <div key={index} className="flex items-center gap-3">
-                            <div className="flex-1">
-                              <div className="flex justify-between mb-1">
-                                <span className="text-sm font-medium">{item.topic}</span>
-                                <span className="text-sm text-gray-600">{item.count} attendees</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className={`${item.color} h-2 rounded-full`} style={{ width: `${(item.count / 145) * 100}%` }}></div>
+                        {(eventsData?.popularTopics && eventsData.popularTopics.length > 0) ? eventsData.popularTopics.map((item, index) => {
+                          const maxCount = Math.max(...eventsData.popularTopics.map(t => t.count));
+                          return (
+                            <div key={index} className="flex items-center gap-3">
+                              <div className="flex-1">
+                                <div className="flex justify-between mb-1">
+                                  <span className="text-sm font-medium">{item.topic}</span>
+                                  <span className="text-sm text-gray-600">{item.count} attendees</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div className={`${item.color} h-2 rounded-full`} style={{ width: `${(item.count / maxCount) * 100}%` }}></div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        }) : (
+                          <div className="text-center text-gray-500">No topic data available</div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -891,28 +846,28 @@ const AdminAnalytics = () => {
                       <div>
                         <div className="flex justify-between mb-2">
                           <span className="text-sm font-medium">Daily Active Users</span>
-                          <span className="text-sm text-gray-600">65%</span>
+                          <span className="text-sm text-gray-600">{engagementData?.dailyActivePercentage || 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div className="bg-blue-600 h-3 rounded-full" style={{ width: '65%' }}></div>
+                          <div className="bg-blue-600 h-3 rounded-full" style={{ width: `${engagementData?.dailyActivePercentage || 0}%` }}></div>
                         </div>
                       </div>
                       <div>
                         <div className="flex justify-between mb-2">
                           <span className="text-sm font-medium">Weekly Active Users</span>
-                          <span className="text-sm text-gray-600">82%</span>
+                          <span className="text-sm text-gray-600">{engagementData?.weeklyActivePercentage || 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div className="bg-green-600 h-3 rounded-full" style={{ width: '82%' }}></div>
+                          <div className="bg-green-600 h-3 rounded-full" style={{ width: `${engagementData?.weeklyActivePercentage || 0}%` }}></div>
                         </div>
                       </div>
                       <div>
                         <div className="flex justify-between mb-2">
                           <span className="text-sm font-medium">Monthly Active Users</span>
-                          <span className="text-sm text-gray-600">94%</span>
+                          <span className="text-sm text-gray-600">{engagementData?.monthlyActivePercentage || 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div className="bg-purple-600 h-3 rounded-full" style={{ width: '94%' }}></div>
+                          <div className="bg-purple-600 h-3 rounded-full" style={{ width: `${engagementData?.monthlyActivePercentage || 0}%` }}></div>
                         </div>
                       </div>
                     </div>
