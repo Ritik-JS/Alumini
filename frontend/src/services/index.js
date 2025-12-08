@@ -32,6 +32,11 @@ import mockCareerPathService from './mockCareerPathService';
 import mockHeatmapService from './mockHeatmapService';
 import mockSkillGraphService from './mockSkillGraphService';
 import mockKnowledgeService from './mockKnowledgeService';
+import mockDatasetService from './mockDatasetService';
+import mockAIMonitorService from './mockAIMonitorService';
+import { mockCareerPredictionService } from './mockCareerPredictionService';
+import { mockEngagementAIService } from './mockEngagementAIService';
+import mockSkillRecommendationService from './mockSkillRecommendationService';
 
 // Import real API services
 import { apiAuth } from './apiAuth';
@@ -48,6 +53,11 @@ import apiCareerPathService from './apiCareerPathService';
 import apiHeatmapService from './apiHeatmapService';
 import apiSkillGraphService from './apiSkillGraphService';
 import apiKnowledgeService from './apiKnowledgeService';
+import apiDatasetService from './apiDatasetService';
+import apiAIMonitorService from './apiAIMonitorService';
+import apiCareerPredictionService from './apiCareerPredictionService';
+import apiEngagementAIService from './apiEngagementAIService';
+import apiSkillRecommendationService from './apiSkillRecommendationService';
 
 // Export the appropriate service based on environment variable
 export const authService = USE_MOCK_DATA ? mockAuth : apiAuth;
@@ -64,6 +74,11 @@ export const careerPathService = USE_MOCK_DATA ? mockCareerPathService : apiCare
 export const heatmapService = USE_MOCK_DATA ? mockHeatmapService : apiHeatmapService;
 export const skillGraphService = USE_MOCK_DATA ? mockSkillGraphService : apiSkillGraphService;
 export const knowledgeService = USE_MOCK_DATA ? mockKnowledgeService : apiKnowledgeService;
+export const datasetService = USE_MOCK_DATA ? mockDatasetService : apiDatasetService;
+export const aiMonitorService = USE_MOCK_DATA ? mockAIMonitorService : apiAIMonitorService;
+export const careerPredictionService = USE_MOCK_DATA ? mockCareerPredictionService : apiCareerPredictionService;
+export const engagementAIService = USE_MOCK_DATA ? mockEngagementAIService : apiEngagementAIService;
+export const skillRecommendationService = USE_MOCK_DATA ? mockSkillRecommendationService : apiSkillRecommendationService;
 
 // Export service mode for debugging
 export const isUsingMockData = USE_MOCK_DATA;
@@ -84,5 +99,10 @@ export default {
   heatmapService,
   skillGraphService,
   knowledgeService,
+  datasetService,
+  aiMonitorService,
+  careerPredictionService,
+  engagementAIService,
+  skillRecommendationService,
   isUsingMockData,
 };
