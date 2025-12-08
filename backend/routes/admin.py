@@ -8,7 +8,7 @@ from database.models import (
     UserResponse
 )
 from services.admin_service import AdminService
-from middleware.auth_middleware import require_role
+from middleware.auth_middleware import require_admin
 import logging
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 @router.post("/profiles/verify/{user_id}", response_model=dict)
 async def verify_profile(
     user_id: str,
-    current_user: UserResponse = Depends(require_role(["admin"]))
+    current_user: dict = Depends(require_admin)
 ):
     """
     Verify alumni profile (Admin only)
@@ -29,7 +29,7 @@ async def verify_profile(
     - Sends notification to user
     """
     try:
-        result = await AdminService.verify_profile(user_id, current_user.id)
+        result = await AdminService.verify_profile(user_id, current_user["id"])
         
         return {
             "success": True,
@@ -53,7 +53,7 @@ async def verify_profile(
 async def reject_profile(
     user_id: str,
     rejection_data: RejectProfileRequest,
-    current_user: UserResponse = Depends(require_role(["admin"]))
+    current_user: dict = Depends(require_admin)
 ):
     """
     Reject alumni profile verification (Admin only)
@@ -64,7 +64,7 @@ async def reject_profile(
     try:
         result = await AdminService.reject_profile(
             user_id,
-            current_user.id,
+            current_user["id"],
             rejection_data.rejection_reason
         )
         
@@ -93,7 +93,7 @@ async def reject_profile(
 async def get_pending_verifications(
     page: int = 1,
     limit: int = 20,
-    current_user: UserResponse = Depends(require_role(["admin"]))
+    current_user: dict = Depends(require_admin)
 ):
     """
     Get pending profile verification requests (Admin only)
@@ -123,7 +123,7 @@ async def get_verification_requests(
     status: Optional[str] = None,
     page: int = 1,
     limit: int = 20,
-    current_user: UserResponse = Depends(require_role(["admin"]))
+    current_user: dict = Depends(require_admin)
 ):
     """
     Get all verification requests with optional status filter (Admin only)
@@ -159,7 +159,7 @@ async def get_verification_requests(
 @router.get("/profiles/verification-status/{user_id}", response_model=dict)
 async def get_user_verification_status(
     user_id: str,
-    current_user: UserResponse = Depends(require_role(["admin"]))
+    current_user: dict = Depends(require_admin)
 ):
     """
     Get verification status for a specific user (Admin only)

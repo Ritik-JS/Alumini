@@ -9,7 +9,7 @@ from database.models import (
 from services.admin_service import AdminService
 from middleware.auth_middleware import get_current_user, require_admin
 
-router = APIRouter(prefix="/admin/users", tags=["Admin - User Management"])
+router = APIRouter(prefix="/api/admin/users", tags=["Admin - User Management"])
 
 
 @router.get("")

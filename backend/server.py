@@ -112,7 +112,7 @@ async def health_check():
         }
 
 # Include authentication routes
-api_router.include_router(auth_router)
+app.include_router(auth_router)
 
 # Include profile routes (Phase 2)
 app.include_router(profiles_router)

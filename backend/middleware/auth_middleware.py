@@ -89,6 +89,23 @@ def require_verified_email(current_user: dict = Depends(get_current_user)) -> di
     return current_user
 
 
+# Backward compatibility alias
+def require_role(allowed_roles: List[str]):
+    """
+    Backward compatibility function for require_role.
+    Converts string roles to UserRole enums.
+    """
+    role_mapping = {
+        "admin": UserRole.ADMIN,
+        "alumni": UserRole.ALUMNI,
+        "student": UserRole.STUDENT,
+        "recruiter": UserRole.RECRUITER
+    }
+    
+    enum_roles = [role_mapping.get(role.lower(), role) for role in allowed_roles]
+    return require_roles(enum_roles)
+
+
 # Convenience dependencies for specific roles
 require_admin = require_roles([UserRole.ADMIN])
 require_alumni = require_roles([UserRole.ALUMNI, UserRole.ADMIN])

@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 import logging
 
-from ..middleware.auth_middleware import get_current_user
-from ..database.connection import get_db_pool
-from ..services.career_prediction_service import CareerPredictionService
+from middleware.auth_middleware import get_current_user
+from database.connection import get_db_pool
+from services.career_prediction_service import CareerPredictionService
 
 logger = logging.getLogger(__name__)
 

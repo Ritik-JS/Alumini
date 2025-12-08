@@ -10,7 +10,7 @@ from database.models import (
 from services.analytics_service import AnalyticsService
 from middleware.auth_middleware import require_admin
 
-router = APIRouter(prefix="/analytics", tags=["Analytics"])
+router = APIRouter(prefix="/api/analytics", tags=["Analytics"])
 
 
 @router.get("/skills", response_model=List[SkillDistribution])

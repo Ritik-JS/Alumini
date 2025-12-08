@@ -7,9 +7,9 @@ from pydantic import BaseModel, Field
 from typing import Optional
 import logging
 
-from ..middleware.auth_middleware import get_current_user, require_role
-from ..database.connection import get_db_pool
-from ..services.alumni_card_service import AlumniCardService
+from middleware.auth_middleware import get_current_user, require_role
+from database.connection import get_db_pool
+from services.alumni_card_service import AlumniCardService
 
 logger = logging.getLogger(__name__)
 

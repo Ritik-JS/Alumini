@@ -9,7 +9,7 @@ from database.models import (
 from services.admin_service import AdminService
 from middleware.auth_middleware import require_admin
 
-router = APIRouter(prefix="/admin/settings", tags=["Admin - System Settings"])
+router = APIRouter(prefix="/api/admin/settings", tags=["Admin - System Settings"])
 
 
 @router.get("", response_model=SystemConfigListResponse)
