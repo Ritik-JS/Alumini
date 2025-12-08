@@ -43,6 +43,18 @@ class ApiLeaderboardService {
       return { success: false, message: error.message, data: [] };
     }
   }
+
+  // Get my engagement score
+  async getMyScore(userId) {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/engagement/my-score`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return { success: false, message: error.message, data: { total_score: 0 } };
+    }
+  }
 }
 
 export default new ApiLeaderboardService();

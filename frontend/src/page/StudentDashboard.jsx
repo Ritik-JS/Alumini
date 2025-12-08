@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockProfileService } from '@/services/mockProfileService';
-import { mockLeaderboardService } from '@/services/mockLeaderboardService';
-import { createMentorshipRequest } from '@/services/mockMentorshipService';
+import { profileService, leaderboardService, mentorshipService, eventService, jobService } from '@/services';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
@@ -16,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { Users, Briefcase, Calendar, MessageSquare, Award, TrendingUp, Eye, FileText, UserCheck, Trophy } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import mockData from '@/mockdata.json';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -36,26 +33,26 @@ const StudentDashboard = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [profileData, appsData, mentorRequests, scoreData] = await Promise.all([
-          mockProfileService.getProfileByUserId(user.id),
-          mockProfileService.getJobApplicationsByUser(user.id),
-          mockProfileService.getMentorshipRequestsByStudent(user.id),
-          mockLeaderboardService.getMyScore(user.id),
+        const [profileData, appsData, mentorRequests, scoreData, eventsData, mentorsData] = await Promise.all([
+          profileService.getProfileByUserId(user.id),
+          profileService.getJobApplicationsByUser(user.id),
+          profileService.getMentorshipRequestsByStudent(user.id),
+          leaderboardService.getMyScore(user.id),
+          eventService.getAllEvents({ is_upcoming: true }),
+          mentorshipService.getMentors(),
         ]);
 
-        setProfile(profileData);
-        setApplications(appsData);
-        setMentorshipRequests(mentorRequests);
+        setProfile(profileData?.data || profileData);
+        setApplications(appsData || []);
+        setMentorshipRequests(mentorRequests || []);
         if (scoreData.success) setEngagementScore(scoreData.data);
         
         // Get upcoming events
-        const events = mockData.events?.filter(e => 
-          new Date(e.start_date) > new Date()
-        ).slice(0, 3) || [];
+        const events = eventsData?.data?.slice(0, 3) || [];
         setUpcomingEvents(events);
 
         // Get recommended mentors
-        const mentors = mockData.mentor_profiles?.slice(0, 3) || [];
+        const mentors = mentorsData?.data?.slice(0, 3) || [];
         setRecommendedMentors(mentors);
       } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -81,7 +78,7 @@ const StudentDashboard = () => {
     }
 
     try {
-      const result = await createMentorshipRequest({
+      const result = await mentorshipService.createMentorshipRequest({
         student_id: user.id,
         mentor_id: selectedMentor.user_id,
         request_message: requestMessage,
@@ -95,7 +92,7 @@ const StudentDashboard = () => {
         setRequestMessage('');
         setRequestGoals('');
         // Reload mentorship requests
-        const mentorRequests = await mockProfileService.getMentorshipRequestsByStudent(user.id);
+        const mentorRequests = await profileService.getMentorshipRequestsByStudent(user.id);
         setMentorshipRequests(mentorRequests);
       } else {
         toast.error('Failed to send request');
@@ -211,7 +208,6 @@ const StudentDashboard = () => {
                   {recentApplications.length > 0 ? (
                     <div className="space-y-3">
                       {recentApplications.map(app => {
-                        const job = mockData.jobs?.find(j => j.id === app.job_id);
                         return (
                           <div 
                             key={app.id} 
@@ -220,8 +216,8 @@ const StudentDashboard = () => {
                             data-testid={`application-${app.id}`}
                           >
                             <div className="flex-1">
-                              <p className="font-medium text-sm">{job?.title || 'Job Title'}</p>
-                              <p className="text-xs text-gray-500">{job?.company || 'Company'}</p>
+                              <p className="font-medium text-sm">{app.job_title || 'Job Title'}</p>
+                              <p className="text-xs text-gray-500">{app.job_company || app.company || 'Company'}</p>
                               <div className="mt-1">
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                                   app.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
@@ -264,8 +260,6 @@ const StudentDashboard = () => {
                 <CardContent>
                   <div className="space-y-3">
                     {recommendedMentors.map(mentor => {
-                      const mentorUser = mockData.users?.find(u => u.id === mentor.user_id);
-                      const mentorProfile = mockData.alumni_profiles?.find(p => p.user_id === mentor.user_id);
                       const hasRequested = mentorshipRequests.some(r => r.mentor_id === mentor.user_id && r.status === 'pending');
                       const isConnected = mentorshipRequests.some(r => r.mentor_id === mentor.user_id && r.status === 'accepted');
                       
@@ -273,13 +267,13 @@ const StudentDashboard = () => {
                         <div key={mentor.id} className="flex items-center justify-between p-3 border rounded-lg">
                           <div className="flex items-center gap-3">
                             <img
-                              src={mentorProfile?.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mentorUser?.email}`}
-                              alt={mentorProfile?.name}
+                              src={mentor.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mentor.email || mentor.user_email || 'mentor'}`}
+                              alt={mentor.name}
                               className="h-10 w-10 rounded-full"
                             />
                             <div>
-                              <p className="font-medium text-sm">{mentorProfile?.name}</p>
-                              <p className="text-xs text-gray-500">{mentorProfile?.current_role}</p>
+                              <p className="font-medium text-sm">{mentor.name}</p>
+                              <p className="text-xs text-gray-500">{mentor.current_role}</p>
                             </div>
                           </div>
                           <div className="flex gap-2">
@@ -322,13 +316,12 @@ const StudentDashboard = () => {
                 <CardContent>
                   <div className="space-y-3">
                     {upcomingSessions.map(session => {
-                      const mentor = mockData.alumni_profiles?.find(p => p.user_id === session.mentor_id);
                       return (
                         <div key={session.id} className="flex items-center justify-between p-3 border rounded-lg">
                           <div className="flex items-center gap-3">
                             <MessageSquare className="h-8 w-8 text-blue-600" />
                             <div>
-                              <p className="font-medium text-sm">Session with {mentor?.name}</p>
+                              <p className="font-medium text-sm">Session with {session.mentor_name || 'Mentor'}</p>
                               <p className="text-xs text-gray-500">Status: {session.status}</p>
                             </div>
                           </div>
@@ -352,7 +345,7 @@ const StudentDashboard = () => {
           <DialogHeader>
             <DialogTitle>Request Mentorship</DialogTitle>
             <DialogDescription>
-              Send a mentorship request to {selectedMentor && mockData.alumni_profiles?.find(p => p.user_id === selectedMentor.user_id)?.name}
+              Send a mentorship request to {selectedMentor?.name || 'Mentor'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">

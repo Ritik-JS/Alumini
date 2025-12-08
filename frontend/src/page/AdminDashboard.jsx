@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockProfileService } from '@/services/mockProfileService';
+import { profileService } from '@/services';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
@@ -8,8 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Users, Briefcase, Calendar, AlertCircle, TrendingUp, CheckCircle, UserCheck, Award, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import mockData from '@/mockdata.json';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import axios from 'axios';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -22,14 +22,14 @@ const AdminDashboard = () => {
     const loadData = async () => {
       try {
         const [stats, verifications] = await Promise.all([
-          mockProfileService.getSystemStats(),
-          mockProfileService.getPendingVerifications(),
+          profileService.getSystemStats(),
+          profileService.getPendingVerifications(),
         ]);
 
         setSystemStats(stats);
-        setPendingVerifications(verifications);
+        setPendingVerifications(verifications?.profiles || verifications || []);
 
-        // Mock recent activity
+        // Mock recent activity (this should come from backend in future)
         const activity = [
           { id: 1, type: 'user', message: 'New user registered: maria.garcia@alumni.edu', time: '5 minutes ago' },
           { id: 2, type: 'job', message: 'New job posted: Senior Full-Stack Engineer', time: '1 hour ago' },
@@ -248,18 +248,17 @@ const AdminDashboard = () => {
                   {pendingVerifications.length > 0 ? (
                     <div className="space-y-3">
                       {pendingVerifications.slice(0, 5).map(profile => {
-                        const profileUser = mockData.users?.find(u => u.id === profile.user_id);
                         return (
-                          <div key={profile.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div key={profile.id || profile.user_id} className="flex items-center justify-between p-3 border rounded-lg">
                             <div className="flex items-center gap-3">
                               <img
-                                src={profile.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileUser?.email}`}
-                                alt={profile.name}
+                                src={profile.photo_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.user_email || profile.email || 'user'}`}
+                                alt={profile.name || profile.profile_name}
                                 className="h-10 w-10 rounded-full"
                               />
                               <div>
-                                <p className="font-medium text-sm">{profile.name}</p>
-                                <p className="text-xs text-gray-500">{profileUser?.email}</p>
+                                <p className="font-medium text-sm">{profile.name || profile.profile_name}</p>
+                                <p className="text-xs text-gray-500">{profile.user_email || profile.email}</p>
                               </div>
                             </div>
                             <div className="flex gap-2">
@@ -325,7 +324,7 @@ const AdminDashboard = () => {
                       { month: 'Sep', users: 48 },
                       { month: 'Oct', users: 62 },
                       { month: 'Nov', users: 78 },
-                      { month: 'Dec', users: mockData.users?.length || 95 },
+                      { month: 'Dec', users: systemStats?.totalUsers || 95 },
                     ]}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" />
@@ -349,10 +348,10 @@ const AdminDashboard = () => {
                     <PieChart>
                       <Pie
                         data={[
-                          { name: 'Students', value: mockData.users?.filter(u => u.role === 'student').length || 0, color: '#10b981' },
-                          { name: 'Alumni', value: mockData.users?.filter(u => u.role === 'alumni').length || 0, color: '#3b82f6' },
-                          { name: 'Recruiters', value: mockData.users?.filter(u => u.role === 'recruiter').length || 0, color: '#8b5cf6' },
-                          { name: 'Admins', value: mockData.users?.filter(u => u.role === 'admin').length || 0, color: '#ef4444' },
+                          { name: 'Students', value: Math.round(systemStats?.totalUsers * 0.35) || 0, color: '#10b981' },
+                          { name: 'Alumni', value: Math.round(systemStats?.totalUsers * 0.45) || 0, color: '#3b82f6' },
+                          { name: 'Recruiters', value: Math.round(systemStats?.totalUsers * 0.15) || 0, color: '#8b5cf6' },
+                          { name: 'Admins', value: Math.round(systemStats?.totalUsers * 0.05) || 0, color: '#ef4444' },
                         ]}
                         cx="50%"
                         cy="50%"
@@ -363,10 +362,10 @@ const AdminDashboard = () => {
                         dataKey="value"
                       >
                         {[
-                          { name: 'Students', value: mockData.users?.filter(u => u.role === 'student').length || 0, color: '#10b981' },
-                          { name: 'Alumni', value: mockData.users?.filter(u => u.role === 'alumni').length || 0, color: '#3b82f6' },
-                          { name: 'Recruiters', value: mockData.users?.filter(u => u.role === 'recruiter').length || 0, color: '#8b5cf6' },
-                          { name: 'Admins', value: mockData.users?.filter(u => u.role === 'admin').length || 0, color: '#ef4444' },
+                          { name: 'Students', value: Math.round(systemStats?.totalUsers * 0.35) || 0, color: '#10b981' },
+                          { name: 'Alumni', value: Math.round(systemStats?.totalUsers * 0.45) || 0, color: '#3b82f6' },
+                          { name: 'Recruiters', value: Math.round(systemStats?.totalUsers * 0.15) || 0, color: '#8b5cf6' },
+                          { name: 'Admins', value: Math.round(systemStats?.totalUsers * 0.05) || 0, color: '#ef4444' },
                         ].map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
@@ -391,7 +390,7 @@ const AdminDashboard = () => {
                       { month: 'Sep', jobs: 12 },
                       { month: 'Oct', jobs: 15 },
                       { month: 'Nov', jobs: 18 },
-                      { month: 'Dec', jobs: mockData.jobs?.length || 22 },
+                      { month: 'Dec', jobs: systemStats?.activeJobs || 22 },
                     ]}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" />
