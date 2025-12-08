@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useParams, useNavigate } from 'react-router-dom';
-import { mockProfileService } from '@/services/mockProfileService';
-import { jobService } from '@/services/mockJobService';
+import { profileService } from '@/services';
+import { jobService } from '@/services';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FileText, Mail, Calendar, ArrowLeft, Download, CheckCircle, XCircle, Eye } from 'lucide-react';
-import mockData from '../../mockdata.json';
+import { toast } from 'sonner';
 
 const JobApplicationsManager = () => {
   const { user } = useAuth();
@@ -30,26 +30,27 @@ const JobApplicationsManager = () => {
   const loadData = async () => {
     try {
       // Load job details
-      const jobData = mockData.jobs?.find(j => j.id === jobId);
-      setJob(jobData);
+      const jobResponse = await jobService.getJobById(jobId);
+      if (!jobResponse.success) {
+        console.error('Failed to load job:', jobResponse.error);
+        toast.error('Unable to load job details. Please try again later.');
+        setLoading(false);
+        return;
+      }
+      setJob(jobResponse.data);
 
       // Load applications for this job
-      const apps = mockData.job_applications?.filter(app => app.job_id === jobId) || [];
-      
-      // Enrich applications with user data
-      const enrichedApps = apps.map(app => {
-        const applicant = mockData.users?.find(u => u.id === app.applicant_id);
-        const profile = mockData.alumni_profiles?.find(p => p.user_id === app.applicant_id);
-        return {
-          ...app,
-          applicant,
-          profile,
-        };
-      });
-
-      setApplications(enrichedApps);
+      const appsResponse = await jobService.getJobApplications(jobId);
+      if (!appsResponse.success) {
+        console.error('Failed to load applications:', appsResponse.error);
+        toast.error('Unable to load applications. Please try again later.');
+        setApplications([]);
+      } else {
+        setApplications(appsResponse.data || []);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
+      toast.error('An error occurred while loading data. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -57,17 +58,23 @@ const JobApplicationsManager = () => {
 
   const handleStatusUpdate = async (applicationId, newStatus) => {
     try {
-      // In a real app, this would call an API
-      setApplications(prev =>
-        prev.map(app =>
-          app.id === applicationId
-            ? { ...app, status: newStatus, updated_at: new Date().toISOString() }
-            : app
-        )
-      );
+      const response = await jobService.updateApplicationStatus(applicationId, newStatus);
+      if (response.success) {
+        setApplications(prev =>
+          prev.map(app =>
+            app.id === applicationId
+              ? { ...app, status: newStatus, updated_at: new Date().toISOString() }
+              : app
+          )
+        );
+        toast.success('Application status updated successfully');
+      } else {
+        console.error('Failed to update status:', response.error);
+        toast.error('Failed to update status. Please try again.');
+      }
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('Failed to update status');
+      toast.error('An error occurred. Please try again.');
     }
   };
 

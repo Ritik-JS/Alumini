@@ -8,8 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import mockEventService from '@/services/mockEventService';
-import mockData from '@/mockdata.json';
+import { eventService } from '@/services';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -30,16 +29,18 @@ const EventDetails = () => {
   const loadEvent = async () => {
     setLoading(true);
     try {
-      const response = await mockEventService.getEventById(eventId);
+      const response = await eventService.getEventById(eventId);
       
       if (response.success) {
         setEvent(response.data);
       } else {
-        toast.error('Event not found');
+        console.error('Failed to load event:', response.message);
+        toast.error('Unable to load event. Please try again later.');
         navigate('/events');
       }
     } catch (error) {
-      toast.error('Error loading event');
+      console.error('Error loading event:', error);
+      toast.error('An error occurred while loading the event.');
       navigate('/events');
     } finally {
       setLoading(false);
@@ -48,9 +49,11 @@ const EventDetails = () => {
 
   const loadAttendees = async () => {
     try {
-      const response = await mockEventService.getEventAttendees(eventId);
+      const response = await eventService.getEventAttendees(eventId);
       if (response.success) {
         setAttendees(response.data.slice(0, 10)); // Show first 10
+      } else {
+        console.error('Failed to load attendees:', response.message);
       }
     } catch (error) {
       console.error('Error loading attendees:', error);

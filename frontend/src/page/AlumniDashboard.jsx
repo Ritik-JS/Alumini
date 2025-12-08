@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockProfileService } from '@/services/mockProfileService';
-import { mockLeaderboardService } from '@/services/mockLeaderboardService';
+import { profileService, leaderboardService, eventService } from '@/services';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
@@ -10,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Users, Briefcase, Calendar, TrendingUp, Award, Trophy } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import mockData from '@/mockdata.json';
+import { toast } from 'sonner';
 
 const AlumniDashboard = () => {
   const { user } = useAuth();
@@ -26,27 +25,31 @@ const AlumniDashboard = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [profileData, mentorData, mentorRequests, jobsData, scoreData] = await Promise.all([
-          mockProfileService.getProfileByUserId(user.id),
-          mockProfileService.getMentorProfile(user.id),
-          mockProfileService.getMentorshipRequestsByMentor(user.id),
-          mockProfileService.getJobsByPoster(user.id),
-          mockLeaderboardService.getMyScore(user.id),
+        const [profileData, mentorData, mentorRequests, jobsData, scoreData, eventsData] = await Promise.all([
+          profileService.getProfileByUserId(user.id),
+          profileService.getMentorProfile(user.id),
+          profileService.getMentorshipRequestsByMentor(user.id),
+          profileService.getJobsByPoster(user.id),
+          leaderboardService.getMyScore(user.id),
+          eventService.getUpcomingEvents(),
         ]);
 
-        setProfile(profileData);
-        setMentorProfile(mentorData);
-        setMentorshipRequests(mentorRequests);
-        setPostedJobs(jobsData);
-        if (scoreData.success) setEngagementScore(scoreData.data);
+        if (profileData?.success) setProfile(profileData.data);
+        if (mentorData?.success) setMentorProfile(mentorData.data);
+        
+        setMentorshipRequests(Array.isArray(mentorRequests) ? mentorRequests : []);
+        setPostedJobs(Array.isArray(jobsData) ? jobsData : []);
+        
+        if (scoreData?.success) setEngagementScore(scoreData.data);
         
         // Get upcoming events
-        const events = mockData.events?.filter(e => 
-          new Date(e.start_date) > new Date()
-        ).slice(0, 3) || [];
-        setUpcomingEvents(events);
+        if (eventsData?.success) {
+          const events = (eventsData.data || []).slice(0, 3);
+          setUpcomingEvents(events);
+        }
       } catch (error) {
         console.error('Error loading dashboard data:', error);
+        toast.error('Some dashboard data could not be loaded.');
       } finally {
         setLoading(false);
       }
@@ -186,12 +189,10 @@ const AlumniDashboard = () => {
                 <CardContent>
                   {mentorshipRequests.length > 0 ? (
                     <div className="space-y-3">
-                      {mentorshipRequests.slice(0, 3).map(request => {
-                        const student = mockData.users?.find(u => u.id === request.student_id);
-                        return (
+                      {mentorshipRequests.slice(0, 3).map(request => (
                           <div key={request.id} className="flex items-start justify-between p-3 border rounded-lg">
                             <div className="flex-1">
-                              <p className="font-medium text-sm">{student?.email || 'Student'}</p>
+                              <p className="font-medium text-sm">{request.student_name || request.student_email || 'Student'}</p>
                               <p className="text-xs text-gray-500 mt-1">{request.request_message?.substring(0, 60)}...</p>
                               <div className="mt-2">
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
@@ -204,8 +205,7 @@ const AlumniDashboard = () => {
                               </div>
                             </div>
                           </div>
-                        );
-                      })}
+                        ))}
                       <Button asChild variant="outline" className="w-full" size="sm">
                         <Link to="/mentorship/dashboard">View All Requests</Link>
                       </Button>
