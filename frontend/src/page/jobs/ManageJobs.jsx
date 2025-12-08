@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockProfileService } from '@/services/mockProfileService';
-import { jobService } from '@/services/mockJobService';
+import { jobService } from '@/services';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
@@ -9,28 +8,53 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, Eye, FileText, Edit, Trash2, Search, Plus } from 'lucide-react';
+import { Briefcase, Eye, FileText, Edit, Trash2, Search, Plus, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import mockData from '../../mockdata.json';
 
 const ManageJobs = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [postedJobs, setPostedJobs] = useState([]);
+  const [jobApplicationsMap, setJobApplicationsMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadJobs();
   }, [user.id]);
 
   const loadJobs = async () => {
+    setError(null);
     try {
-      const jobsData = await mockProfileService.getJobsByPoster(user.id);
-      setPostedJobs(jobsData);
+      // Load jobs posted by this recruiter
+      const jobsResponse = await jobService.getMyJobs(user.id);
+      if (!jobsResponse.success) {
+        throw new Error(jobsResponse.error || 'Failed to load jobs');
+      }
+      const jobs = jobsResponse.data || [];
+      setPostedJobs(jobs);
+
+      // Load applications for each job
+      const applicationsMap = {};
+      for (const job of jobs) {
+        try {
+          const appsResponse = await jobService.getJobApplications(job.id);
+          if (appsResponse.success) {
+            applicationsMap[job.id] = appsResponse.data || [];
+          } else {
+            applicationsMap[job.id] = [];
+          }
+        } catch (error) {
+          console.error(`Error loading applications for job ${job.id}:`, error);
+          applicationsMap[job.id] = [];
+        }
+      }
+      setJobApplicationsMap(applicationsMap);
     } catch (error) {
       console.error('Error loading jobs:', error);
+      setError(error.message || 'Failed to load jobs');
     } finally {
       setLoading(false);
     }
@@ -39,8 +63,12 @@ const ManageJobs = () => {
   const handleDeleteJob = async (jobId) => {
     if (window.confirm('Are you sure you want to delete this job posting?')) {
       try {
-        await jobService.deleteJob(jobId);
-        setPostedJobs(prev => prev.filter(j => j.id !== jobId));
+        const response = await jobService.deleteJob(jobId);
+        if (response.success) {
+          setPostedJobs(prev => prev.filter(j => j.id !== jobId));
+        } else {
+          alert('Failed to delete job: ' + (response.error || 'Unknown error'));
+        }
       } catch (error) {
         console.error('Error deleting job:', error);
         alert('Failed to delete job');
@@ -62,6 +90,35 @@ const ManageJobs = () => {
     const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-red-800">
+                  <AlertCircle className="h-5 w-5" />
+                  <div>
+                    <h3 className="font-semibold">Error Loading Jobs</h3>
+                    <p className="text-sm mt-1">{error}</p>
+                    <Button onClick={loadJobs} variant="outline" size="sm" className="mt-3">
+                      Try Again
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -160,9 +217,7 @@ const ManageJobs = () => {
             ) : (
               <div className="space-y-4">
                 {filteredJobs.map(job => {
-                  const applicationsCount = mockData.job_applications?.filter(
-                    app => app.job_id === job.id
-                  ).length || job.applications_count || 0;
+                  const applicationsCount = (jobApplicationsMap[job.id] || []).length;
 
                   return (
                     <Card key={job.id} data-testid={`job-card-${job.id}`}>

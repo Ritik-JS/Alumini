@@ -1,28 +1,43 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockProfileService } from '@/services/mockProfileService';
+import { jobService } from '@/services';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Briefcase, Users, Eye, TrendingUp, FileText } from 'lucide-react';
+import { Briefcase, Users, Eye, TrendingUp, FileText, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import mockData from '../mockdata.json';
 
 const RecruiterDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [postedJobs, setPostedJobs] = useState([]);
+  const [allApplications, setAllApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const jobsData = await mockProfileService.getJobsByPoster(user.id);
-        setPostedJobs(jobsData);
+        setError(null);
+        // Load jobs posted by this recruiter
+        const jobsResponse = await jobService.getMyJobs(user.id);
+        if (!jobsResponse.success) {
+          throw new Error(jobsResponse.error || 'Failed to load jobs');
+        }
+        const jobs = jobsResponse.data || [];
+        setPostedJobs(jobs);
+
+        // Load all applications for recruiter's jobs
+        const appsResponse = await jobService.getAllRecruiterApplications(user.id);
+        if (!appsResponse.success) {
+          throw new Error(appsResponse.error || 'Failed to load applications');
+        }
+        setAllApplications(appsResponse.data || []);
       } catch (error) {
         console.error('Error loading dashboard data:', error);
+        setError(error.message || 'Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
@@ -31,14 +46,36 @@ const RecruiterDashboard = () => {
     loadData();
   }, [user.id]);
 
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <MainNavbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <main className="flex-1 p-6">
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-red-800">
+                  <AlertCircle className="h-5 w-5" />
+                  <div>
+                    <h3 className="font-semibold">Error Loading Dashboard</h3>
+                    <p className="text-sm mt-1">{error}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </main>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   const activeJobs = postedJobs.filter(j => j.status === 'active');
-  const totalApplications = postedJobs.reduce((sum, job) => sum + (job.applications_count || 0), 0);
+  const totalApplications = allApplications.length;
   const totalViews = postedJobs.reduce((sum, job) => sum + (job.views_count || 0), 0);
-  
-  // Get recent applications across all jobs
-  const recentApplications = mockData.job_applications?.filter(app =>
-    postedJobs.some(job => job.id === app.job_id)
-  ).slice(0, 5) || [];
+  const recentApplications = allApplications.slice(0, 5);
 
   const stats = [
     {
@@ -150,47 +187,55 @@ const RecruiterDashboard = () => {
                   <CardDescription>Manage your active job postings</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {postedJobs.length > 0 ? (
+                  {loading ? (
+                    <div className="text-center py-8">
+                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <p className="mt-2 text-gray-600">Loading...</p>
+                    </div>
+                  ) : postedJobs.length > 0 ? (
                     <div className="space-y-3">
-                      {postedJobs.slice(0, 5).map(job => (
-                        <div key={job.id} className="p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <p className="font-medium text-sm">{job.title}</p>
-                              <p className="text-xs text-gray-500">{job.company}</p>
-                              <div className="flex gap-4 mt-2 text-xs text-gray-600">
-                                <span>👁️ {job.views_count} views</span>
-                                <span>📄 {job.applications_count} applications</span>
+                      {postedJobs.slice(0, 5).map(job => {
+                        const jobApplications = allApplications.filter(app => app.job_id === job.id);
+                        return (
+                          <div key={job.id} className="p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <p className="font-medium text-sm">{job.title}</p>
+                                <p className="text-xs text-gray-500">{job.company}</p>
+                                <div className="flex gap-4 mt-2 text-xs text-gray-600">
+                                  <span>👁️ {job.views_count || 0} views</span>
+                                  <span>📄 {jobApplications.length} applications</span>
+                                </div>
                               </div>
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                job.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {job.status}
+                              </span>
                             </div>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              job.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {job.status}
-                            </span>
+                            <div className="flex gap-2 mt-3">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="flex-1"
+                                onClick={() => navigate(`/jobs/applications/${job.id}`)}
+                                data-testid={`view-applications-btn-${job.id}`}
+                              >
+                                View Applications
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="flex-1"
+                                onClick={() => navigate(`/jobs/edit/${job.id}`)}
+                                data-testid={`edit-job-btn-${job.id}`}
+                              >
+                                Edit
+                              </Button>
+                            </div>
                           </div>
-                          <div className="flex gap-2 mt-3">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="flex-1"
-                              onClick={() => navigate(`/jobs/applications/${job.id}`)}
-                              data-testid={`view-applications-btn-${job.id}`}
-                            >
-                              View Applications
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="flex-1"
-                              onClick={() => navigate(`/jobs/edit/${job.id}`)}
-                              data-testid={`edit-job-btn-${job.id}`}
-                            >
-                              Edit
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                       <Button asChild variant="outline" className="w-full" size="sm">
                         <Link to="/jobs/manage">View All Jobs</Link>
                       </Button>
@@ -214,16 +259,20 @@ const RecruiterDashboard = () => {
                   <CardDescription>Latest applications to your jobs</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {recentApplications.length > 0 ? (
+                  {loading ? (
+                    <div className="text-center py-8">
+                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <p className="mt-2 text-gray-600">Loading...</p>
+                    </div>
+                  ) : recentApplications.length > 0 ? (
                     <div className="space-y-3">
                       {recentApplications.map(app => {
                         const job = postedJobs.find(j => j.id === app.job_id);
-                        const applicant = mockData.users?.find(u => u.id === app.applicant_id);
                         return (
                           <div key={app.id} className="flex items-start justify-between p-3 border rounded-lg">
                             <div className="flex-1">
-                              <p className="font-medium text-sm">{applicant?.email || 'Applicant'}</p>
-                              <p className="text-xs text-gray-500">{job?.title || 'Job'}</p>
+                              <p className="font-medium text-sm">Application for {job?.title || 'Job'}</p>
+                              <p className="text-xs text-gray-500">Applicant ID: {app.applicant_id}</p>
                               <div className="mt-2">
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                                   app.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
@@ -276,7 +325,7 @@ const RecruiterDashboard = () => {
                   </div>
                   <div className="text-center p-4 border rounded-lg">
                     <div className="text-3xl font-bold text-purple-600">
-                      {activeJobs.length > 0 ? Math.round((totalApplications / totalViews) * 100) : 0}%
+                      {totalViews > 0 && activeJobs.length > 0 ? Math.round((totalApplications / totalViews) * 100) : 0}%
                     </div>
                     <div className="text-sm text-gray-600 mt-1">Application Rate</div>
                   </div>

@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Calendar, Eye, Building } from 'lucide-react';
+import { FileText, Calendar, Eye, Building, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Footer from '@/components/layout/Footer';
 import ApplicationStatusBadge from '@/components/jobs/ApplicationStatusBadge';
-import { getAllApplicationsWithUserApps } from '@/services/mockJobService';
+import { jobService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
-import mockData from '@/mockdata.json';
 
 const MyApplications = () => {
   const navigate = useNavigate();
@@ -17,6 +16,7 @@ const MyApplications = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -29,20 +29,34 @@ const MyApplications = () => {
 
   const loadApplications = async () => {
     setLoading(true);
+    setError(null);
     try {
       // Get user's applications
-      const response = await getAllApplicationsWithUserApps(user.id);
-      const userApplications = response.success ? response.data : [];
+      const response = await jobService.getMyApplications(user.id);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to load applications');
+      }
+      const userApplications = response.data || [];
       
-      // Enrich with job data
-      const enriched = userApplications.map(app => {
-        const job = mockData.jobs.find(j => j.id === app.job_id) || 
-                    JSON.parse(localStorage.getItem('jobs') || '[]').find(j => j.id === app.job_id);
-        return {
-          ...app,
-          job: job || { title: 'Unknown Job', company: 'Unknown Company' },
-        };
+      // Enrich with job data from jobService
+      const enrichedPromises = userApplications.map(async (app) => {
+        try {
+          const jobResponse = await jobService.getJobById(app.job_id);
+          const job = jobResponse.success ? jobResponse.data : null;
+          return {
+            ...app,
+            job: job || { title: 'Unknown Job', company: 'Unknown Company' },
+          };
+        } catch (error) {
+          console.error(`Error loading job ${app.job_id}:`, error);
+          return {
+            ...app,
+            job: { title: 'Unknown Job', company: 'Unknown Company' },
+          };
+        }
       });
+
+      const enriched = await Promise.all(enrichedPromises);
 
       // Sort by applied date (most recent first)
       enriched.sort((a, b) => new Date(b.applied_at) - new Date(a.applied_at));
@@ -50,6 +64,7 @@ const MyApplications = () => {
       setApplications(enriched);
     } catch (error) {
       console.error('Error loading applications:', error);
+      setError(error.message || 'Failed to load applications');
     } finally {
       setLoading(false);
     }
@@ -80,6 +95,34 @@ const MyApplications = () => {
 
   const counts = getStatusCounts();
   const filteredApplications = filterApplications(activeTab);
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col" data-testid="my-applications-page">
+        <MainNavbar />
+        <main className="flex-1 bg-gray-50 dark:bg-gray-900">
+          <div className="container mx-auto px-4 py-8">
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-red-800">
+                  <AlertCircle className="h-5 w-5" />
+                  <div>
+                    <h3 className="font-semibold">Error Loading Applications</h3>
+                    <p className="text-sm mt-1">{error}</p>
+                    <Button onClick={loadApplications} variant="outline" size="sm" className="mt-3">
+                      Try Again
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col" data-testid="my-applications-page">
