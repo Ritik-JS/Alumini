@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import FileUploader from '@/components/datasets/FileUploader';
-import mockDatasetService from '@/services/mockDatasetService';
+import apiDatasetService from '@/services/apiDatasetService';
 
 const DatasetUpload = () => {
   const navigate = useNavigate();
@@ -19,24 +19,25 @@ const DatasetUpload = () => {
   const [description, setDescription] = useState('');
   const [uploading, setUploading] = useState(false);
 
+  // Updated dataset types to match backend schema
   const datasetTypes = [
     {
       value: 'alumni',
       label: 'Alumni Data',
-      description: 'Alumni profiles, career history, skills, and achievements',
-      schema: ['user_id', 'name', 'email', 'batch_year', 'skills', 'company', 'role'],
+      description: 'Alumni profiles with career history, skills, and professional information',
+      schema: ['email', 'name', 'batch_year', 'department', 'current_company', 'current_role', 'location', 'skills', 'linkedin_url'],
     },
     {
       value: 'job_market',
       label: 'Job Market Data',
-      description: 'External job market trends, salary data, skill demands',
-      schema: ['job_title', 'company', 'location', 'skills_required', 'salary_range', 'posted_date'],
+      description: 'Job postings with requirements, salary ranges, and market trends',
+      schema: ['job_title', 'company', 'industry', 'location', 'salary_min', 'salary_max', 'required_skills', 'experience_level'],
     },
     {
       value: 'educational',
       label: 'Educational Programs',
-      description: 'Courses, certifications, learning paths, and resources',
-      schema: ['program_name', 'provider', 'duration', 'skills_taught', 'level', 'url'],
+      description: 'Student records, courses, grades, and skills learned',
+      schema: ['student_id', 'email', 'course_name', 'grade', 'completion_date', 'skills_learned', 'instructor'],
     },
   ];
 
@@ -56,12 +57,13 @@ const DatasetUpload = () => {
     setUploading(true);
 
     try {
-      const result = await mockDatasetService.uploadDataset(selectedFile, datasetType, description);
+      // Call real backend API
+      const result = await apiDatasetService.uploadDataset(selectedFile, datasetType, description);
       
       if (result.success) {
         toast.success('Upload started successfully!');
         // Navigate to progress page
-        navigate(`/admin/datasets/upload/${result.uploadId}/progress`);
+        navigate(`/admin/datasets/upload/${result.data.upload_id}/progress`);
       }
     } catch (error) {
       toast.error(error.message || 'Upload failed');

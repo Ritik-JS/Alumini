@@ -18,57 +18,48 @@ import {
 } from '@/components/ui/alert-dialog';
 import ProgressTracker from '@/components/datasets/ProgressTracker';
 import ProcessingLog from '@/components/datasets/ProcessingLog';
-import mockDatasetService from '@/services/mockDatasetService';
+import apiDatasetService from '@/services/apiDatasetService';
 
 const DatasetProgress = () => {
   const { uploadId } = useParams();
   const navigate = useNavigate();
   const [uploadData, setUploadData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     fetchProgress();
     
-    // Poll for updates every 2 seconds if still processing
+    // Poll for updates every 3 seconds if still processing
     const interval = setInterval(() => {
-      if (uploadData?.status === 'processing') {
+      if (uploadData && !['completed', 'failed'].includes(uploadData.status)) {
         fetchProgress();
       }
-    }, 2000);
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, [uploadId, uploadData?.status]);
+  }, [uploadId]);
+
+  useEffect(() => {
+    // If completed or failed, redirect to report after a short delay
+    if (uploadData && uploadData.status === 'completed') {
+      setTimeout(() => {
+        toast.success('Upload completed successfully!');
+        navigate(`/admin/datasets/upload/${uploadId}/report`);
+      }, 2000);
+    }
+  }, [uploadData?.status]);
 
   const fetchProgress = async () => {
     try {
-      const data = await mockDatasetService.getUploadProgress(uploadId);
+      const data = await apiDatasetService.getUploadProgress(uploadId);
       setUploadData(data);
-      
-      // If completed, redirect to report after a short delay
-      if (data.status === 'completed' && loading) {
-        setTimeout(() => {
-          toast.success('Upload completed successfully!');
-          navigate(`/admin/datasets/upload/${uploadId}/report`);
-        }, 2000);
-      }
     } catch (error) {
       toast.error(error.message || 'Failed to fetch progress');
-      navigate('/admin/datasets/history');
+      if (!uploadData) {
+        navigate('/admin/datasets/history');
+      }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleCancel = async () => {
-    setCancelling(true);
-    try {
-      await mockDatasetService.cancelUpload(uploadId);
-      toast.success('Upload cancelled');
-      navigate('/admin/datasets/history');
-    } catch (error) {
-      toast.error(error.message || 'Failed to cancel upload');
-      setCancelling(false);
     }
   };
 
@@ -81,6 +72,23 @@ const DatasetProgress = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-gray-600">Loading progress...</p>
             </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!uploadData) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Upload Not Found</h2>
+            <p className="text-gray-600 mb-6">The upload you're looking for doesn't exist.</p>
+            <Button onClick={() => navigate('/admin/datasets/history')}>
+              Back to History
+            </Button>
           </div>
         </div>
       </MainLayout>
@@ -103,78 +111,90 @@ const DatasetProgress = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Upload Progress</h1>
-              <p className="text-gray-600 mt-2">{uploadData?.fileName}</p>
+              <p className="text-gray-600 mt-2">
+                Tracking: {uploadData.upload_id}
+              </p>
             </div>
-            {uploadData?.status === 'processing' && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" disabled={cancelling}>
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Cancel Upload
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Cancel Upload?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to cancel this upload? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>No, Continue</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleCancel} className="bg-red-600 hover:bg-red-700">
-                      Yes, Cancel Upload
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+            {uploadData.status === 'failed' && (
+              <div className="flex items-center text-red-600">
+                <XCircle className="h-6 w-6 mr-2" />
+                <span className="font-medium">Processing Failed</span>
+              </div>
             )}
-            {uploadData?.status === 'completed' && (
-              <Button onClick={() => navigate(`/admin/datasets/upload/${uploadId}/report`)}>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                View Report
-              </Button>
+            {uploadData.status === 'completed' && (
+              <div className="flex items-center text-green-600">
+                <CheckCircle className="h-6 w-6 mr-2" />
+                <span className="font-medium">Processing Complete</span>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Progress Tracker */}
         <div className="space-y-6">
-          <ProgressTracker
-            currentStage={uploadData?.currentStage}
-            progress={uploadData?.progress}
-            stats={{
-              totalRows: uploadData?.totalRows,
-              processedRows: uploadData?.processedRows,
-              validRows: uploadData?.validRows,
-              errorRows: uploadData?.errorRows,
-              processingTime: uploadData?.processingTime,
-            }}
-          />
+          {/* Progress Tracker */}
+          <Card className="p-6">
+            <ProgressTracker data={uploadData} />
+          </Card>
 
-          {/* Processing Log */}
-          <ProcessingLog logs={uploadData?.logs || []} />
-
-          {/* Status Message */}
-          {uploadData?.status === 'completed' && (
-            <Card className="p-6 bg-green-50 border-green-200">
-              <div className="flex items-start space-x-3">
-                <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold text-green-900">Upload Completed Successfully!</h3>
-                  <p className="text-sm text-green-700 mt-1">
-                    Your dataset has been processed and stored. AI systems have been triggered for analysis.
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-3 border-green-300 hover:bg-green-100"
-                    onClick={() => navigate(`/admin/datasets/upload/${uploadId}/report`)}
-                  >
-                    View Detailed Report
-                  </Button>
-                </div>
-              </div>
+          {/* Statistics */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="p-4">
+              <p className="text-sm text-gray-600">Total Rows</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {uploadData.total_rows?.toLocaleString() || 0}
+              </p>
             </Card>
+            <Card className="p-4">
+              <p className="text-sm text-gray-600">Processed</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {uploadData.processed_rows?.toLocaleString() || 0}
+              </p>
+            </Card>
+            <Card className="p-4">
+              <p className="text-sm text-gray-600">Valid Rows</p>
+              <p className="text-2xl font-bold text-green-600">
+                {uploadData.valid_rows?.toLocaleString() || 0}
+              </p>
+            </Card>
+            <Card className="p-4">
+              <p className="text-sm text-gray-600">Errors</p>
+              <p className="text-2xl font-bold text-red-600">
+                {uploadData.error_rows?.toLocaleString() || 0}
+              </p>
+            </Card>
+          </div>
+
+          {/* Actions */}
+          {uploadData.status === 'completed' && (
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/admin/datasets/history')}
+              >
+                Back to History
+              </Button>
+              <Button
+                onClick={() => navigate(`/admin/datasets/upload/${uploadId}/report`)}
+              >
+                View Full Report
+              </Button>
+            </div>
+          )}
+
+          {uploadData.status === 'failed' && (
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/admin/datasets/upload')}
+              >
+                Upload New Dataset
+              </Button>
+              <Button
+                onClick={() => navigate(`/admin/datasets/upload/${uploadId}/report`)}
+              >
+                View Error Report
+              </Button>
+            </div>
           )}
         </div>
       </div>

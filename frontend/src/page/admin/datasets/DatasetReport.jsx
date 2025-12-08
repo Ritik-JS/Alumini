@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, CheckCircle, Clock, Database } from 'lucide-react';
+import { ArrowLeft, Download, CheckCircle, Clock, Database, XCircle, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import ValidationReport from '@/components/datasets/ValidationReport';
 import ProcessingLog from '@/components/datasets/ProcessingLog';
-import mockDatasetService from '@/services/mockDatasetService';
+import apiDatasetService from '@/services/apiDatasetService';
 import { format } from 'date-fns';
 
 const DatasetReport = () => {
@@ -24,7 +24,7 @@ const DatasetReport = () => {
 
   const fetchReport = async () => {
     try {
-      const data = await mockDatasetService.getUploadReport(uploadId);
+      const data = await apiDatasetService.getUploadReport(uploadId);
       setReportData(data);
     } catch (error) {
       toast.error(error.message || 'Failed to fetch report');
@@ -36,7 +36,7 @@ const DatasetReport = () => {
 
   const handleDownloadErrorReport = async () => {
     try {
-      await mockDatasetService.downloadErrorReport(uploadId);
+      await apiDatasetService.downloadErrorReport(uploadId);
       toast.success('Error report downloaded');
     } catch (error) {
       toast.error(error.message || 'Failed to download report');
@@ -47,11 +47,12 @@ const DatasetReport = () => {
     try {
       return format(new Date(dateString), 'MMM dd, yyyy HH:mm:ss');
     } catch {
-      return dateString;
+      return dateString || 'N/A';
     }
   };
 
   const formatTime = (seconds) => {
+    if (!seconds) return 'N/A';
     if (seconds < 60) return `${seconds}s`;
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -78,11 +79,28 @@ const DatasetReport = () => {
       case 'completed':
         return 'bg-green-100 text-green-800';
       case 'processing':
+      case 'validating':
+      case 'cleaning':
         return 'bg-blue-100 text-blue-800';
       case 'failed':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
+      case 'failed':
+        return <XCircle className="h-5 w-5 text-red-600" />;
+      case 'processing':
+      case 'validating':
+      case 'cleaning':
+        return <Clock className="h-5 w-5 text-blue-600" />;
+      default:
+        return <Clock className="h-5 w-5 text-gray-600" />;
     }
   };
 
@@ -99,141 +117,141 @@ const DatasetReport = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to History
           </Button>
-          <div className="flex items-start justify-between">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Upload Report</h1>
-              <p className="text-gray-600 mt-2">{reportData?.fileName}</p>
+              <h1 className="text-3xl font-bold text-gray-900">Processing Report</h1>
+              <p className="text-gray-600 mt-2">{reportData.file_name}</p>
             </div>
-            <Badge className={getStatusColor(reportData?.status)}>
-              {reportData?.status}
-            </Badge>
+            <div className="flex items-center space-x-3">
+              {getStatusIcon(reportData.status)}
+              <Badge className={getStatusColor(reportData.status)}>
+                {reportData.status.toUpperCase()}
+              </Badge>
+            </div>
           </div>
         </div>
 
         <div className="space-y-6">
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Processing Time</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">
-                    {formatTime(reportData?.processingTime || 0)}
-                  </p>
-                </div>
-                <Clock className="h-8 w-8 text-blue-500" />
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Success Rate</p>
-                  <p className="text-2xl font-bold text-green-600 mt-2">
-                    {((reportData?.validRows / reportData?.totalRows) * 100).toFixed(1)}%
-                  </p>
-                </div>
-                <CheckCircle className="h-8 w-8 text-green-500" />
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Data Quality Score</p>
-                  <p className="text-2xl font-bold text-primary mt-2">
-                    {reportData?.dataQualityScore?.toFixed(1) || 0}%
-                  </p>
-                </div>
-                <Database className="h-8 w-8 text-primary" />
-              </div>
-            </Card>
-          </div>
-
-          {/* Upload Details */}
+          {/* Summary */}
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Upload Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <Database className="h-5 w-5 mr-2" />
+              Processing Summary
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div>
-                <p className="text-sm text-gray-500">Dataset Type</p>
-                <p className="font-medium text-gray-900 mt-1 capitalize">
-                  {reportData?.datasetType?.replace('_', ' ')}
+                <p className="text-sm text-gray-600 mb-1">Total Rows</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {reportData.summary?.total_rows?.toLocaleString() || 0}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Upload Date</p>
-                <p className="font-medium text-gray-900 mt-1">
-                  {formatDate(reportData?.uploadDate)}
+                <p className="text-sm text-gray-600 mb-1">Valid Rows</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {reportData.summary?.valid_rows?.toLocaleString() || 0}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {reportData.summary?.total_rows > 0
+                    ? `${((reportData.summary.valid_rows / reportData.summary.total_rows) * 100).toFixed(1)}%`
+                    : '0%'}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Uploaded By</p>
-                <p className="font-medium text-gray-900 mt-1">
-                  {reportData?.uploadedByName}
+                <p className="text-sm text-gray-600 mb-1">Error Rows</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {reportData.summary?.error_rows?.toLocaleString() || 0}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {reportData.summary?.total_rows > 0
+                    ? `${((reportData.summary.error_rows / reportData.summary.total_rows) * 100).toFixed(1)}%`
+                    : '0%'}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">File Size</p>
-                <p className="font-medium text-gray-900 mt-1">
-                  {(reportData?.fileSize / (1024 * 1024)).toFixed(2)} MB
+                <p className="text-sm text-gray-600 mb-1">Processing Time</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {formatTime(reportData.summary?.processing_time_seconds)}
                 </p>
               </div>
-              {reportData?.description && (
-                <div className="md:col-span-2">
-                  <p className="text-sm text-gray-500">Description</p>
-                  <p className="font-medium text-gray-900 mt-1">
-                    {reportData?.description}
-                  </p>
-                </div>
-              )}
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-600">Upload ID:</span>
+                <p className="font-mono text-xs mt-1">{reportData.upload_id}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Dataset Type:</span>
+                <p className="font-medium mt-1 capitalize">{reportData.file_type}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Upload Date:</span>
+                <p className="font-medium mt-1">{formatDate(reportData.created_at)}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Completed:</span>
+                <p className="font-medium mt-1">{formatDate(reportData.completed_at)}</p>
+              </div>
             </div>
           </Card>
 
           {/* AI Systems Triggered */}
-          {reportData?.aiSystemsTriggered && reportData.aiSystemsTriggered.length > 0 && (
+          {reportData.ai_processing_triggered && reportData.ai_processing_triggered.length > 0 && (
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">AI Processing Triggered</h3>
-              <div className="space-y-3">
-                {reportData.aiSystemsTriggered.map((system, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-2 h-2 rounded-full ${
-                        system.status === 'completed' ? 'bg-green-500' :
-                        system.status === 'processing' ? 'bg-blue-500 animate-pulse' :
-                        'bg-gray-400'
-                      }`} />
-                      <div>
-                        <p className="font-medium text-gray-900">{system.system}</p>
-                        <p className="text-xs text-gray-500">
-                          Updated: {formatDate(system.updatedAt)}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant={system.status === 'completed' ? 'default' : 'secondary'}>
-                      {system.status}
-                    </Badge>
+              <h2 className="text-xl font-semibold mb-4">AI Systems Triggered</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {reportData.ai_processing_triggered.map((system, index) => (
+                  <div key={index} className="flex items-center p-3 bg-blue-50 rounded-lg">
+                    <CheckCircle className="h-5 w-5 text-blue-600 mr-2" />
+                    <span className="font-medium text-gray-900">{system}</span>
                   </div>
                 ))}
               </div>
             </Card>
           )}
 
-          <Separator />
-
           {/* Validation Report */}
-          <ValidationReport
-            report={{
-              validationErrors: reportData?.validationErrors || [],
-              dataQualityScore: reportData?.dataQualityScore,
-              validRows: reportData?.validRows,
-              errorRows: reportData?.errorRows,
-              totalRows: reportData?.totalRows,
-            }}
-            onDownloadReport={handleDownloadErrorReport}
-          />
+          {reportData.validation_report && (
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Validation Report</h2>
+                {reportData.summary?.error_rows > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadErrorReport}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download Errors CSV
+                  </Button>
+                )}
+              </div>
+              <ValidationReport report={reportData.validation_report} />
+            </Card>
+          )}
 
-          {/* Processing Log */}
-          <ProcessingLog logs={reportData?.logs || []} />
+          {/* Processing Logs */}
+          {reportData.processing_logs && reportData.processing_logs.length > 0 && (
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Processing Logs</h2>
+              <ProcessingLog logs={reportData.processing_logs} />
+            </Card>
+          )}
+
+          {/* Error Log */}
+          {reportData.error_log && (
+            <Card className="p-6 bg-red-50 border-red-200">
+              <h2 className="text-xl font-semibold mb-4 text-red-900 flex items-center">
+                <AlertTriangle className="h-5 w-5 mr-2" />
+                Error Details
+              </h2>
+              <pre className="bg-white p-4 rounded-md border border-red-200 overflow-x-auto text-sm">
+                {reportData.error_log}
+              </pre>
+            </Card>
+          )}
 
           {/* Actions */}
           <div className="flex justify-end space-x-3">
@@ -243,12 +261,9 @@ const DatasetReport = () => {
             >
               Back to History
             </Button>
-            {reportData?.validationErrors && reportData.validationErrors.length > 0 && (
-              <Button onClick={handleDownloadErrorReport}>
-                <Download className="h-4 w-4 mr-2" />
-                Download Error Report
-              </Button>
-            )}
+            <Button onClick={() => navigate('/admin/datasets/upload')}>
+              Upload New Dataset
+            </Button>
           </div>
         </div>
       </div>
