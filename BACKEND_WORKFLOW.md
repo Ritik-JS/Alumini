@@ -1332,19 +1332,28 @@ curl -X POST http://localhost:8001/api/engagement/check-badges \
      - GET `/api/heatmap/industries` - Industry distribution
    - **Note**: Data aggregated from alumni profiles and job locations; includes lat/long for map visualization
 
-6. **Knowledge Capsules System**
+6. **Knowledge Capsules System** ✅ COMPLETED
    - **Tables**: `knowledge_capsules`, `capsule_bookmarks`, `capsule_likes` (already defined in `/app/database_schema.sql`)
    - KnowledgeCapsule fields: id, title, content, author_id, category (ENUM), tags (JSON), duration_minutes, featured_image, likes_count, views_count, bookmarks_count, is_featured
    - Endpoints:
-     - POST `/api/capsules/create` - Create capsule (Alumni only)
-     - GET `/api/capsules` - List capsules with filters (category, tags, featured)
-     - GET `/api/capsules/{capsule_id}` - Get capsule details
-     - POST `/api/capsules/{capsule_id}/like` - Like/unlike capsule
-     - POST `/api/capsules/{capsule_id}/bookmark` - Bookmark capsule
-     - GET `/api/capsules/trending` - Get trending capsules (by views/likes)
+     - POST `/api/capsules/create` - Create capsule (Alumni only) ✅
+     - GET `/api/capsules` - List capsules with filters (category, tags, featured) ✅
+     - GET `/api/capsules/{capsule_id}` - Get capsule details ✅
+     - PUT `/api/capsules/{capsule_id}` - Update capsule (Author only) ✅
+     - DELETE `/api/capsules/{capsule_id}` - Delete capsule (Author/Admin only) ✅
+     - POST `/api/capsules/{capsule_id}/like` - Like/unlike capsule ✅
+     - POST `/api/capsules/{capsule_id}/bookmark` - Bookmark capsule ✅
+     - GET `/api/capsules/trending` - Get trending capsules (by views/likes) ✅
+     - GET `/api/capsules/my-bookmarks` - Get user's bookmarked capsules ✅
+   - **Implementation**: 
+     - Service: `/app/backend/services/capsule_service.py` ✅
+     - Routes: `/app/backend/routes/capsules.py` ✅
+     - Models: Added to `/app/backend/database/models.py` ✅
+     - Registered in server.py ✅
    - **Note**: 
      - FULLTEXT index on title/content enables powerful search
      - Separate tables for likes and bookmarks with unique constraints
+     - Trending algorithm: views_count * 0.3 + likes_count * 0.5 + bookmarks_count * 0.2
 
 ### Testing Checkpoints
 - Test skill graph data generation
@@ -1352,7 +1361,7 @@ curl -X POST http://localhost:8001/api/engagement/check-badges \
 - Test AES calculation and rankings
 - Validate digital ID card generation
 - Test heatmap data aggregation
-- Verify knowledge capsules CRUD
+- ✅ Verify knowledge capsules CRUD - COMPLETED
 
 ### Deliverables
 - Skill graph visualization data
