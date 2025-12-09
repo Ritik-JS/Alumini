@@ -189,13 +189,51 @@ async def get_trending_skills(
         )
 
 
+@router.get("/related/{skill_name}")
+async def get_related_skills_ai(
+    skill_name: str,
+    limit: int = Query(10, ge=1, le=50),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get AI-powered related skills using embeddings and FAISS similarity
+    Phase 10.3: Enhanced with semantic similarity
+    """
+    try:
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            related = await skill_graph_service.get_related_skills_ai(
+                conn,
+                skill_name,
+                limit=limit
+            )
+            
+            return {
+                "success": True,
+                "data": {
+                    "skill": skill_name,
+                    "related_skills": related,
+                    "total": len(related),
+                    "ai_powered": True
+                }
+            }
+    
+    except Exception as e:
+        logger.error(f"Error getting AI-based related skills: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch related skills: {str(e)}"
+        )
+
+
 @router.post("/rebuild")
 async def rebuild_skill_graph(
     current_user: dict = Depends(require_role(['admin']))
 ):
     """
     Rebuild skill graph from current data
-    Admin only - Updates all skill relationships
+    Admin only - Updates all skill relationships with AI embeddings
+    Phase 10.3: Enhanced with AI/ML processing
     """
     try:
         pool = await get_db_pool()
@@ -205,7 +243,7 @@ async def rebuild_skill_graph(
             return {
                 "success": True,
                 "data": result,
-                "message": "Skill graph rebuilt successfully"
+                "message": "Skill graph rebuilt successfully with AI enhancements"
             }
     
     except Exception as e:
