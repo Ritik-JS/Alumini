@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { mockKnowledgeService } from '@/services/mockKnowledgeService';
+import { knowledgeService } from '@/services';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,7 +42,7 @@ const LearningPath = () => {
   const loadPaths = async () => {
     try {
       setLoading(true);
-      const res = await mockKnowledgeService.getLearningPaths();
+      const res = await knowledgeService.getLearningPaths();
       if (res.success) {
         setPaths(res.data);
       }
@@ -55,7 +55,7 @@ const LearningPath = () => {
 
   const loadSpecificPath = async (pathId) => {
     try {
-      const res = await mockKnowledgeService.getLearningPath(pathId);
+      const res = await knowledgeService.getLearningPath(pathId);
       if (res.success) {
         setSelectedPath(res.data);
         setShowGenerator(false);
@@ -70,7 +70,7 @@ const LearningPath = () => {
     if (!currentUser.id) return;
     
     try {
-      const res = await mockKnowledgeService.getPathProgress(currentUser.id, pathId);
+      const res = await knowledgeService.getPathProgress(currentUser.id, pathId);
       if (res.success) {
         setPathProgress(res.data);
       }
@@ -87,7 +87,7 @@ const LearningPath = () => {
 
     try {
       setGenerating(true);
-      const res = await mockKnowledgeService.generateLearningPath(customGoal, []);
+      const res = await knowledgeService.generateLearningPath(customGoal, []);
       if (res.success) {
         setSelectedPath(res.data);
         setShowGenerator(false);
@@ -110,7 +110,7 @@ const LearningPath = () => {
     const isCompleted = pathProgress.completed_capsules?.includes(capsuleId);
     
     try {
-      const res = await mockKnowledgeService.updatePathProgress(
+      const res = await knowledgeService.updatePathProgress(
         currentUser.id,
         selectedPath.id,
         capsuleId,

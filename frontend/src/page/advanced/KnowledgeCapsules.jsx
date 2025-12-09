@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { mockKnowledgeService } from '@/services/mockKnowledgeService';
+import { knowledgeService } from '@/services';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,8 +61,8 @@ const KnowledgeCapsules = () => {
     try {
       setLoading(true);
       const [capsulesRes, categoriesRes] = await Promise.all([
-        mockKnowledgeService.getKnowledgeCapsules(filters),
-        mockKnowledgeService.getCategories()
+        knowledgeService.getKnowledgeCapsules(filters),
+        knowledgeService.getCategories()
       ]);
 
       if (capsulesRes.success) setCapsules(capsulesRes.data);
@@ -83,7 +83,7 @@ const KnowledgeCapsules = () => {
 
     try {
       setLoadingPersonalized(true);
-      const res = await mockKnowledgeService.getPersonalizedCapsules(currentUser.id);
+      const res = await knowledgeService.getPersonalizedCapsules(currentUser.id);
       if (res.success) {
         setPersonalizedCapsules(res.data);
       }
@@ -97,7 +97,7 @@ const KnowledgeCapsules = () => {
   const handleSearch = async () => {
     try {
       setLoading(true);
-      const res = await mockKnowledgeService.getKnowledgeCapsules(filters);
+      const res = await knowledgeService.getKnowledgeCapsules(filters);
       if (res.success) {
         setCapsules(res.data);
         if (res.data.length === 0) {
@@ -120,7 +120,7 @@ const KnowledgeCapsules = () => {
 
     try {
       if (likedCapsules.has(capsuleId)) {
-        await mockKnowledgeService.unlikeCapsule(capsuleId);
+        await knowledgeService.unlikeCapsule(capsuleId);
         setLikedCapsules(prev => {
           const newSet = new Set(prev);
           newSet.delete(capsuleId);
@@ -141,7 +141,7 @@ const KnowledgeCapsules = () => {
         
         toast.success('Like removed');
       } else {
-        await mockKnowledgeService.likeCapsule(capsuleId);
+        await knowledgeService.likeCapsule(capsuleId);
         setLikedCapsules(prev => new Set(prev).add(capsuleId));
         
         // Update localStorage
@@ -170,7 +170,7 @@ const KnowledgeCapsules = () => {
     }
 
     try {
-      await mockKnowledgeService.bookmarkCapsule(capsuleId);
+      await knowledgeService.bookmarkCapsule(capsuleId);
       
       if (bookmarkedCapsules.has(capsuleId)) {
         setBookmarkedCapsules(prev => {

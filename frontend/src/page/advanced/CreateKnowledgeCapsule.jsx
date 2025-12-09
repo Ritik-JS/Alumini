@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockKnowledgeService } from '@/services/mockKnowledgeService';
+import { knowledgeService } from '@/services';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -92,7 +92,7 @@ const CreateKnowledgeCapsule = () => {
         duration_minutes: parseInt(formData.duration_minutes)
       };
 
-      const res = await mockKnowledgeService.createCapsule(capsuleData);
+      const res = await knowledgeService.createCapsule(capsuleData);
       
       if (res.success) {
         toast.success('Knowledge capsule created successfully!');
