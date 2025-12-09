@@ -2284,15 +2284,246 @@ Enhance existing engagement scoring with AI-powered activity analysis.
 
 ---
 
-## 📋 PHASE 11: Performance, Security & Deployment (4-5 credits)
+## 📋 PHASE 11: Missing Endpoints, Performance, Security & Deployment (5-6 credits)
 
 ### Objectives
+- Implement missing frontend-required endpoints
 - Optimize database queries and API performance
 - Implement comprehensive security measures
 - Set up monitoring and logging
 - Prepare for production deployment
 
 ### Tasks
+
+### **0. Missing Endpoints Implementation (NEW)** ⚠️
+
+**Context**: Frontend audit (January 2025) revealed missing endpoints required for complete toggle functionality.
+
+**Reference**: See `/app/MOCK_DATA_FALLBACK_FIX_GUIDE.md` Phase 4.4 for full frontend requirements.
+
+#### **A. Privacy Settings Endpoints**
+
+**Table**: `privacy_settings` (already exists in database_schema.sql, lines 407-421)
+
+**Missing Endpoints**:
+```python
+# File: /app/backend/routes/privacy.py (NEW)
+
+GET  /api/privacy/settings              # Get current user's privacy settings
+PUT  /api/privacy/settings              # Update privacy settings
+```
+
+**Fields to Support**:
+- `profile_visibility`: ENUM('public', 'alumni', 'connections', 'private')
+- `show_email`: BOOLEAN
+- `show_phone`: BOOLEAN
+- `allow_messages`: BOOLEAN
+- `allow_mentorship_requests`: BOOLEAN
+- `show_in_directory`: BOOLEAN
+- `show_activity`: BOOLEAN
+
+**Implementation Notes**:
+- Default values should be created when user registers
+- Use stored procedure if available or manual INSERT
+- Requires authentication (JWT token)
+
+**cURL Testing**:
+```bash
+# Get privacy settings
+curl -X GET http://localhost:8001/api/privacy/settings \
+  -H "Authorization: Bearer USER_JWT_TOKEN"
+
+# Update privacy settings
+curl -X PUT http://localhost:8001/api/privacy/settings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer USER_JWT_TOKEN" \
+  -d '{
+    "profile_visibility": "alumni",
+    "show_email": false,
+    "show_phone": false,
+    "allow_messages": true,
+    "show_in_directory": true
+  }'
+```
+
+---
+
+#### **B. Knowledge Capsule User Status Endpoint**
+
+**Tables**: `capsule_likes`, `capsule_bookmarks` (already exist in database_schema.sql)
+
+**Missing Endpoint**:
+```python
+# File: /app/backend/routes/capsules.py (UPDATE existing file)
+
+GET  /api/capsules/{capsule_id}/status  # Get user's like/bookmark status for a capsule
+```
+
+**Response Format**:
+```json
+{
+  "success": true,
+  "data": {
+    "is_liked": true,
+    "is_bookmarked": false,
+    "likes_count": 124,
+    "bookmarks_count": 89
+  }
+}
+```
+
+**Implementation Notes**:
+- Check if user has liked: `SELECT * FROM capsule_likes WHERE capsule_id=? AND user_id=?`
+- Check if user has bookmarked: `SELECT * FROM capsule_bookmarks WHERE capsule_id=? AND user_id=?`
+- Get counts from `knowledge_capsules` table
+- Return 404 if capsule doesn't exist
+- Requires authentication
+
+**cURL Testing**:
+```bash
+curl -X GET http://localhost:8001/api/capsules/{capsule_id}/status \
+  -H "Authorization: Bearer USER_JWT_TOKEN"
+```
+
+---
+
+#### **C. Notification Preferences Endpoints (Verify)**
+
+**Table**: `notification_preferences` (already exists in database_schema.sql, lines 391-404)
+
+**Endpoints to Verify** (should already exist from Phase 6):
+```python
+# File: /app/backend/routes/notifications.py (should already exist)
+
+GET  /api/notifications/preferences     # Get notification preferences
+PUT  /api/notifications/preferences     # Update notification preferences
+```
+
+**Fields to Support**:
+- `email_notifications`: BOOLEAN
+- `push_notifications`: BOOLEAN
+- `notification_types`: JSON (profile, job, event, mentorship, forum, system, verification)
+- `notification_frequency`: ENUM('instant', 'daily', 'weekly')
+- `quiet_hours_start`: TIME
+- `quiet_hours_end`: TIME
+
+**Action Required**:
+- ✅ Verify endpoint exists in `/app/backend/routes/notifications.py`
+- ✅ If missing, implement following Phase 6 pattern
+- ✅ Test with frontend Settings page
+
+---
+
+#### **D. Password Change Endpoint (Verify)**
+
+**Table**: `users` (password_hash field)
+
+**Endpoint to Verify** (should exist from Phase 1):
+```python
+# File: /app/backend/routes/auth.py (should already exist)
+
+POST /api/auth/change-password          # Change user password
+```
+
+**Request Format**:
+```json
+{
+  "current_password": "OldPassword123",
+  "new_password": "NewSecurePassword456"
+}
+```
+
+**Implementation Notes**:
+- Verify current password matches hash in database
+- Hash new password with bcrypt
+- Update `password_hash` in users table
+- Invalidate existing JWT tokens (optional but recommended)
+- Send email notification about password change
+
+**Action Required**:
+- ✅ Verify endpoint exists in `/app/backend/routes/auth.py`
+- ✅ If missing, add to auth routes
+- ✅ Test with frontend Settings page
+
+---
+
+#### **E. Service Method Verification Checklist**
+
+Ensure all services have methods that frontend expects:
+
+**Job Service** (`/app/backend/services/job_service.py`):
+- ✅ `getAllJobs()` - Verify exists
+- ✅ `getJobById(id)` - Verify exists
+- ✅ `getFilterOptions()` - Verify exists
+- ✅ `submitApplication(jobId, data)` - Verify exists
+
+**Event Service** (`/app/backend/services/event_service.py`):
+- ✅ `getAllEvents()` - Verify exists
+- ✅ `getEventById(id)` - Verify exists
+- ✅ `rsvpToEvent(eventId, status)` - Verify exists
+- ✅ `getEventAttendees(eventId)` - Verify exists
+
+**Forum Service** (`/app/backend/services/forum_service.py`):
+- ✅ `getAllPosts()` - Verify exists
+- ✅ `getPostById(id)` - Verify exists
+- ✅ `createComment(postId, data)` - Verify exists
+- ✅ `likePost(postId)` - Verify exists
+
+**Mentorship Service** (`/app/backend/services/mentorship_service.py`):
+- ✅ `getAllMentors()` - Verify exists
+- ✅ `createRequest(data)` - Verify exists
+- ✅ `createSession(data)` - Verify exists
+- ✅ `submitFeedback(sessionId, data)` - Verify exists
+
+**Knowledge Service** (`/app/backend/services/knowledge_service.py`):
+- ✅ `getAllCapsules()` - Verify exists
+- ✅ `getCapsuleById(id)` - Verify exists
+- ⚠️ `getCapsuleStatus(capsuleId)` - **ADD THIS METHOD**
+- ✅ `likeCapsule(capsuleId)` - Verify exists
+- ✅ `bookmarkCapsule(capsuleId)` - Verify exists
+
+**Profile Service** (`/app/backend/services/profile_service.py`):
+- ✅ `getProfile(userId)` - Verify exists
+- ✅ `updateProfile(userId, data)` - Verify exists
+- ⚠️ `getPrivacySettings(userId)` - **ADD THIS METHOD**
+- ⚠️ `updatePrivacySettings(userId, data)` - **ADD THIS METHOD**
+
+**Directory Service** (`/app/backend/services/directory_service.py`):
+- ✅ `searchAlumni(query)` - Verify exists
+- ✅ `getSearchSuggestions(query)` - Verify exists
+- ✅ `getFilterOptions()` - Verify exists
+
+---
+
+#### **F. Implementation Priority**
+
+**HIGH Priority** (Required for frontend Phase 4.1, 4.2):
+1. Privacy settings endpoints (Settings page needs this)
+2. Knowledge capsule status endpoint (KnowledgeCapsuleDetail needs this)
+3. Verify notification preferences endpoints exist
+4. Verify password change endpoint exists
+
+**MEDIUM Priority** (Code quality & consistency):
+5. Add missing service methods
+6. Ensure consistent error responses across all endpoints
+
+**LOW Priority** (Nice to have):
+7. Add API documentation for new endpoints
+8. Create test cases for new endpoints
+
+---
+
+#### **G. Deliverables**
+
+- ✅ Privacy settings routes and service methods
+- ✅ Knowledge capsule status endpoint
+- ✅ Verification checklist for existing endpoints
+- ✅ Service method additions where needed
+- ✅ cURL test commands for all new endpoints
+- ✅ Updated API documentation
+
+---
+
 1. **Performance Optimization**
    - Add database indexes for frequently queried fields
    - Implement caching with Redis

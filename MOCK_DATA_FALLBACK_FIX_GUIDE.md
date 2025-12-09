@@ -966,7 +966,7 @@ All components are ready to test with both:
 
 ---
 
-## ✅ Phase 4 Complete - Ready for Phase 5
+## ✅ Phase 4 Complete - Ready for Additional Phases
 
 All 4 mentorship components have been successfully refactored to use the service layer. The toggle mechanism now works correctly for the entire mentorship section.
 
@@ -974,8 +974,782 @@ All 4 mentorship components have been successfully refactored to use the service
 - ✅ **13 components total refactored**
   - 9 Admin components (Phase 3)
   - 4 Mentorship components (Phase 4)
-- ✅ **Zero direct mock imports remaining**
+- ✅ **Zero direct mock imports remaining in admin/mentorship**
 - ✅ **All components respect REACT_APP_USE_MOCK_DATA toggle**
+
+---
+
+## 🔍 **Additional Comprehensive Analysis - Remaining Issues**
+
+After thorough analysis of the entire codebase, several components and pages still have issues with the toggle mechanism:
+
+### **Issues Found:**
+
+1. **Settings Page (`/app/frontend/src/page/Settings.jsx`)**
+   - ❌ All save operations have TODO comments: "TODO: Save to backend when available"
+   - ❌ Uses hardcoded initial state instead of loading from backend
+   - ❌ No integration with backend APIs for privacy, notifications, password change
+   - **Impact**: Settings don't persist when USE_MOCK_DATA=false
+
+2. **Knowledge Capsule Detail (`/app/frontend/src/page/advanced/KnowledgeCapsuleDetail.jsx`)**
+   - ❌ Uses localStorage for like/bookmark state
+   - ❌ Manual state management instead of service-based approach
+   - ❌ View count increment uses localStorage (mockdata approach)
+   - **Impact**: User interactions (likes, bookmarks) not stored in database when toggle is false
+
+3. **Service Layer Issues**
+   - ⚠️ Some mock services still use direct `mockdata.json` import (correct for mock mode)
+   - ⚠️ Need to verify error handling in API services when backend fails
+   - ⚠️ Ensure no automatic fallback to mock data in service layer
+
+4. **Backend API Coverage**
+   - ❓ Need to verify all required APIs exist for Settings page
+   - ❓ Validate knowledge capsule APIs support all operations
+   - ❓ Check database schema compatibility with frontend expectations
+
+---
+
+## 📋 **PHASE 4.1: Settings Page Backend Integration** ⚠️ **NEW - TO BE IMPLEMENTED**
+
+**Objective**: Integrate Settings page with backend APIs for persistence
+
+**Status**: ❌ NOT STARTED
+
+### **Affected File:**
+- `/app/frontend/src/page/Settings.jsx`
+
+### **Current Issues:**
+1. **Profile Settings** (Lines 88-91):
+   ```javascript
+   const handleProfileSave = () => {
+     // TODO: Save to backend when available
+     toast.success('Profile settings saved successfully');
+   };
+   ```
+   - Need to call `profileService.updateProfile(profileSettings)`
+
+2. **Privacy Settings** (Lines 93-96):
+   ```javascript
+   const handlePrivacySave = () => {
+     // TODO: Save to backend when available
+     toast.success('Privacy settings saved successfully');
+   };
+   ```
+   - Need API endpoint: `PUT /api/privacy/settings`
+   - Or use `profileService.updatePrivacySettings(privacySettings)`
+
+3. **Notification Settings** (Lines 98-101):
+   ```javascript
+   const handleNotificationSave = () => {
+     // TODO: Save to backend when available
+     toast.success('Notification preferences saved successfully');
+   };
+   ```
+   - Need API endpoint: `PUT /api/notifications/preferences`
+   - Or use `notificationService.updatePreferences(notificationSettings)`
+
+4. **Password Change** (Lines 103-123):
+   ```javascript
+   // TODO: Save to backend when available
+   ```
+   - Need API endpoint: `POST /api/auth/change-password`
+   - Should call `authService.changePassword(securitySettings)`
+
+### **Required Backend APIs:**
+```
+GET  /api/profiles/me/privacy          - Get privacy settings
+PUT  /api/profiles/me/privacy          - Update privacy settings
+GET  /api/notifications/preferences    - Get notification preferences  
+PUT  /api/notifications/preferences    - Update notification preferences
+POST /api/auth/change-password         - Change password
+```
+
+### **Implementation Tasks:**
+1. ✅ Verify backend APIs exist (check `/app/BACKEND_WORKFLOW.md` Phase 6 & Phase 7)
+2. ❌ Add data loading on component mount
+3. ❌ Replace TODO comments with actual API calls
+4. ❌ Add loading states during save operations
+5. ❌ Add proper error handling with user-friendly messages
+6. ❌ Test with both mock and backend modes
+
+### **Expected Behavior:**
+- **Mock Mode (USE_MOCK_DATA=true)**: Use mock services (already implemented)
+- **Backend Mode (USE_MOCK_DATA=false)**: Save to database, load initial values from backend
+
+---
+
+## 📋 **PHASE 4.2: Knowledge Capsule Detail Page Fix** ⚠️ **NEW - TO BE IMPLEMENTED**
+
+**Objective**: Remove localStorage usage and use service layer for all operations
+
+**Status**: ❌ NOT STARTED
+
+### **Affected File:**
+- `/app/frontend/src/page/advanced/KnowledgeCapsuleDetail.jsx`
+
+### **Current Issues:**
+
+1. **Like/Bookmark State Management** (Lines 61-67):
+   ```javascript
+   // Check if user has liked this capsule
+   const userLikes = JSON.parse(localStorage.getItem('user_capsule_likes') || '{}');
+   setIsLiked(userLikes[currentUser.id]?.includes(capsuleId) || false);
+   
+   // Check if user has bookmarked this capsule
+   const userBookmarks = JSON.parse(localStorage.getItem('user_capsule_bookmarks') || '{}');
+   setIsBookmarked(userBookmarks[currentUser.id]?.includes(capsuleId) || false);
+   ```
+   - ❌ Uses localStorage instead of backend API
+   - Should call `knowledgeService.getUserCapsuleStatus(capsuleId)` to get like/bookmark status
+
+2. **View Count Increment** (Lines 87-94):
+   ```javascript
+   const incrementViewCount = () => {
+     // Increment view count in localStorage (for mockdata)
+     const viewedCapsules = JSON.parse(localStorage.getItem('viewed_capsules') || '{}');
+     if (!viewedCapsules[capsuleId]) {
+       viewedCapsules[capsuleId] = true;
+       localStorage.setItem('viewed_capsules', JSON.stringify(viewedCapsules));
+     }
+   };
+   ```
+   - ❌ Should call backend API to increment view count
+   - Backend should track views per capsule
+
+3. **Like Action** (Lines 96-133):
+   ```javascript
+   // Update localStorage
+   const userLikes = JSON.parse(localStorage.getItem('user_capsule_likes') || '{}');
+   ```
+   - ❌ Manually manages localStorage
+   - Should only rely on service response
+
+4. **Bookmark Action** (Lines 135-172):
+   ```javascript
+   // Update localStorage
+   const userBookmarks = JSON.parse(localStorage.getItem('user_capsule_bookmarks') || '{}');
+   ```
+   - ❌ Same issue as like action
+
+### **Required Backend APIs:**
+```
+GET  /api/capsules/{id}/status            - Get user's like/bookmark status
+POST /api/capsules/{id}/like              - Like/unlike capsule
+POST /api/capsules/{id}/bookmark          - Bookmark/unbookmark capsule
+POST /api/capsules/{id}/view              - Increment view count
+```
+
+### **Implementation Tasks:**
+1. ✅ Verify backend APIs exist in knowledge service
+2. ❌ Replace `checkUserInteractions()` to call backend API
+3. ❌ Remove all localStorage management code
+4. ❌ Update like/bookmark handlers to rely on service responses
+5. ❌ Add proper error handling
+6. ❌ Test with both mock and backend modes
+
+### **Expected Behavior:**
+- **Mock Mode**: Uses localStorage (current implementation) - OK to keep
+- **Backend Mode**: All state from database, no localStorage usage
+
+---
+
+## 📋 **PHASE 4.3: Service Layer Error Handling Validation** ⚠️ **NEW - TO BE IMPLEMENTED**
+
+**Objective**: Ensure all API services return consistent errors and never fallback to mock data
+
+**Status**: ❌ NOT STARTED
+
+### **Services to Validate:**
+
+1. **API Services** (`/app/frontend/src/services/api*.js`)
+   - Ensure all return consistent error format:
+     ```javascript
+     { success: false, error: "User-friendly error message", data: null }
+     ```
+   - No fallback to mockdata.json
+   - Proper error messages for common scenarios:
+     - Backend down: "Unable to connect to server. Please try again later."
+     - 404 Not Found: "Resource not found"
+     - 401 Unauthorized: "Please login to continue"
+     - 403 Forbidden: "You don't have permission for this action"
+     - 500 Server Error: "Server error. Please try again later."
+
+2. **Mock Services** (`/app/frontend/src/services/mock*.js`)
+   - ✅ Can use direct mockdata.json imports (this is correct)
+   - Ensure consistent response format matching API services
+
+### **Files to Review:**
+```
+/app/frontend/src/services/apiAuth.js
+/app/frontend/src/services/apiJobService.js
+/app/frontend/src/services/apiEventService.js
+/app/frontend/src/services/apiMentorshipService.js
+/app/frontend/src/services/apiForumService.js
+/app/frontend/src/services/apiProfileService.js
+/app/frontend/src/services/apiDirectoryService.js
+/app/frontend/src/services/apiNotificationService.js
+/app/frontend/src/services/apiLeaderboardService.js
+/app/frontend/src/services/apiAlumniCardService.js
+/app/frontend/src/services/apiCareerPathService.js
+/app/frontend/src/services/apiHeatmapService.js
+/app/frontend/src/services/apiSkillGraphService.js
+/app/frontend/src/services/apiKnowledgeService.js
+/app/frontend/src/services/apiDatasetService.js
+/app/frontend/src/services/apiAIMonitorService.js
+/app/frontend/src/services/apiCareerPredictionService.js
+/app/frontend/src/services/apiEngagementAIService.js
+/app/frontend/src/services/apiSkillRecommendationService.js
+/app/frontend/src/services/apiBadgeService.js
+/app/frontend/src/services/apiAnalyticsService.js
+```
+
+### **Implementation Tasks:**
+1. ❌ Review all 21 API service files
+2. ❌ Ensure consistent error handling pattern
+3. ❌ Verify no mockdata.json imports in API services
+4. ❌ Add proper error messages for all error cases
+5. ❌ Test error scenarios with backend down
+
+---
+
+## 📋 **PHASE 4.4: Backend API & Database Schema Validation** ✅ **DOCUMENTED**
+
+**Objective**: Verify all required backend APIs exist and match database schema
+
+**Status**: ✅ **MISSING ENDPOINTS DOCUMENTED IN BACKEND_WORKFLOW.md**
+
+### **Validation Complete:**
+
+1. **Backend Implementation Check** (Reference: `/app/BACKEND_WORKFLOW.md`)
+   - ✅ Phase 1: Authentication APIs - COMPLETED
+   - ✅ Phase 2: Profile APIs - COMPLETED
+   - ✅ Phase 3: Jobs APIs - COMPLETED
+   - ✅ Phase 4: Mentorship APIs - COMPLETED
+   - ✅ Phase 5: Events & Forum APIs - COMPLETED
+   - ✅ Phase 6: Notifications APIs - COMPLETED
+   - ✅ Phase 7: Admin & Analytics APIs - COMPLETED
+   - ✅ Phase 8: Matching & Recommendations APIs - COMPLETED
+   - ✅ Phase 9: Innovative Features APIs - COMPLETED
+   - ✅ **Phase 11 Section 0: Missing Endpoints Added** (NEW)
+
+2. **Missing Endpoints Identified & Documented:**
+
+   **HIGH Priority** (Required for Phase 4.1 & 4.2):
+   - ⚠️ **Privacy Settings Endpoints** (NEW - documented in Phase 11):
+     - `GET /api/privacy/settings` - Get user privacy settings
+     - `PUT /api/privacy/settings` - Update privacy settings
+     - **File**: `/app/backend/routes/privacy.py` (NEW FILE NEEDED)
+     - **Table**: `privacy_settings` (already exists in database_schema.sql)
+   
+   - ⚠️ **Knowledge Capsule Status Endpoint** (NEW - documented in Phase 11):
+     - `GET /api/capsules/{capsule_id}/status` - Get user's like/bookmark status
+     - **File**: `/app/backend/routes/capsules.py` (UPDATE EXISTING)
+     - **Tables**: `capsule_likes`, `capsule_bookmarks` (already exist)
+   
+   **VERIFY** (Should already exist):
+   - ✅ **Notification Preferences** (Phase 6):
+     - `GET /api/notifications/preferences`
+     - `PUT /api/notifications/preferences`
+     - **Action**: Verify in `/app/backend/routes/notifications.py`
+   
+   - ✅ **Password Change** (Phase 1):
+     - `POST /api/auth/change-password`
+     - **Action**: Verify in `/app/backend/routes/auth.py`
+
+3. **Database Schema Validation** (Reference: `/app/database_schema.sql`)
+   - ✅ All required tables exist and match frontend expectations:
+     - ✅ `privacy_settings` table (Lines 407-421)
+     - ✅ `notification_preferences` table (Lines 391-404)
+     - ✅ `knowledge_capsules` table (Lines 831-855)
+     - ✅ `capsule_likes` table (Lines 857-867)
+     - ✅ `capsule_bookmarks` table (Lines 869-879)
+     - ✅ All tables have proper indexes and foreign keys
+
+4. **Backend Phase 11 Section 0 - Added** ✅
+   - ✅ Complete documentation of missing endpoints
+   - ✅ Implementation priority (HIGH/MEDIUM/LOW)
+   - ✅ Database table references
+   - ✅ cURL testing examples
+   - ✅ Service method verification checklist
+   - ✅ Response format specifications
+
+### **Reference Documentation:**
+
+📖 **See `/app/BACKEND_WORKFLOW.md` Phase 11, Section 0** for:
+- Complete endpoint specifications
+- Request/response formats
+- Database table mappings
+- Implementation priority
+- Testing commands
+- Service method checklist
+
+### **Implementation Tasks (Backend Developer):**
+
+**From Phase 11 Section 0:**
+1. ⚠️ Create `/app/backend/routes/privacy.py` with privacy settings endpoints
+2. ⚠️ Add `getCapsuleStatus()` method to knowledge service
+3. ⚠️ Update `/app/backend/routes/capsules.py` with status endpoint
+4. ✅ Verify notification preferences endpoints exist
+5. ✅ Verify password change endpoint exists
+6. ⚠️ Add missing service methods identified in checklist
+7. ⚠️ Test all new endpoints with provided cURL commands
+
+### **Frontend Integration:**
+
+Once backend Phase 11 Section 0 is implemented:
+- ✅ Phase 4.1 (Settings page) can use privacy endpoints
+- ✅ Phase 4.2 (Knowledge capsule detail) can use status endpoint
+- ✅ All frontend components will have complete backend support
+
+---
+
+## 📋 **PHASE 4.5: Comprehensive Component Audit** ✅ **AUDIT COMPLETED**
+
+**Objective**: Find any other components using mock data or localStorage incorrectly
+
+**Status**: ✅ **AUDIT COMPLETE - ISSUES FOUND**
+
+### **Audit Results:**
+
+#### **Critical Finding: 44 Files Bypassing Service Layer** ❌
+
+**29 Page Files with Direct Mock Service Imports:**
+
+1. **Mentorship Pages (1 file):**
+   - `/app/frontend/src/page/mentorship/FindMentors.jsx` - imports from `mockMentorshipService`
+
+2. **Event Pages (4 files):**
+   - `/app/frontend/src/page/events/EventAttendees.jsx`
+   - `/app/frontend/src/page/events/CreateEvent.jsx`
+   - `/app/frontend/src/page/events/ManageEvents.jsx`
+   - `/app/frontend/src/page/events/Events.jsx`
+   - All import from `mockEventService`
+
+3. **Job Pages (5 files):**
+   - `/app/frontend/src/page/jobs/ApplicationsManager.jsx`
+   - `/app/frontend/src/page/jobs/PostJob.jsx`
+   - `/app/frontend/src/page/jobs/Jobs.jsx`
+   - `/app/frontend/src/page/jobs/JobDetails.jsx`
+   - `/app/frontend/src/page/jobs/EditJob.jsx`
+   - All import from `mockJobService`
+
+4. **Advanced Feature Pages (8 files):**
+   - `/app/frontend/src/page/advanced/CareerPaths.jsx` - imports `mockCareerPathService`
+   - `/app/frontend/src/page/advanced/Leaderboard.jsx` - imports `mockLeaderboardService` & `mockEngagementAIService`
+   - `/app/frontend/src/page/advanced/LearningPath.jsx` - imports `mockKnowledgeService`
+   - `/app/frontend/src/page/advanced/SkillGraph.jsx` - imports `mockSkillGraphService` & `skillRecommendationService`
+   - `/app/frontend/src/page/advanced/TalentHeatmap.jsx` - imports `mockHeatmapService`
+   - `/app/frontend/src/page/advanced/AlumniCard.jsx` - imports `mockAlumniCardService`
+   - `/app/frontend/src/page/advanced/KnowledgeCapsules.jsx` - imports `mockKnowledgeService`
+   - `/app/frontend/src/page/advanced/CreateKnowledgeCapsule.jsx` - imports `mockKnowledgeService`
+
+5. **Forum Pages (3 files):**
+   - `/app/frontend/src/page/forum/PostDetails.jsx`
+   - `/app/frontend/src/page/forum/Forum.jsx`
+   - `/app/frontend/src/page/forum/ManagePosts.jsx`
+   - All import from `mockForumService`
+
+6. **Profile & Directory Pages (3 files):**
+   - `/app/frontend/src/page/Profile.jsx` - imports `mockProfileService`
+   - `/app/frontend/src/page/AlumniDirectory.jsx` - imports from `mockDirectoryService`
+   - `/app/frontend/src/page/ProfileView.jsx` - imports from `mockDirectoryService`
+
+7. **Notification Pages (2 files):**
+   - `/app/frontend/src/page/notifications/Notifications.jsx`
+   - `/app/frontend/src/page/notifications/NotificationPreferences.jsx`
+   - Both import from `mockNotificationService`
+
+8. **Admin Pages (1 file):**
+   - `/app/frontend/src/page/admin/AdminAIMonitor.jsx` - imports `mockAIMonitorService`
+
+9. **Career Pages (1 file):**
+   - `/app/frontend/src/page/career/CareerInsights.jsx` - imports `mockCareerPredictionService`
+
+10. **Other (1 file):**
+    - `/app/frontend/src/page/Settings.jsx` - Already covered in Phase 4.1
+
+**15 Component Files with Direct Mock Service Imports:**
+
+1. **Mentorship Components (3 files):**
+   - `/app/frontend/src/components/mentorship/FeedbackModal.jsx`
+   - `/app/frontend/src/components/mentorship/ScheduleSessionModal.jsx`
+   - `/app/frontend/src/components/mentorship/RequestMentorshipModal.jsx`
+
+2. **Event Components (1 file):**
+   - `/app/frontend/src/components/events/RSVPButton.jsx`
+
+3. **Job Components (2 files):**
+   - `/app/frontend/src/components/jobs/JobFilterSidebar.jsx`
+   - `/app/frontend/src/components/jobs/ApplicationModal.jsx`
+
+4. **Forum Components (3 files):**
+   - `/app/frontend/src/components/forum/CreatePostModal.jsx`
+   - `/app/frontend/src/components/forum/PostCard.jsx`
+   - `/app/frontend/src/components/forum/CommentThread.jsx`
+
+5. **Directory Components (2 files):**
+   - `/app/frontend/src/components/directory/SearchBar.jsx`
+   - `/app/frontend/src/components/directory/FilterSidebar.jsx`
+
+6. **Other Components (4 files):**
+   - `/app/frontend/src/components/heatmap/ClusterDetailsModal.jsx`
+   - `/app/frontend/src/components/advanced/VerificationHistory.jsx`
+   - `/app/frontend/src/components/notifications/NotificationBell.jsx`
+   - `/app/frontend/src/components/career/PredictionDetailsModal.jsx`
+
+### **Impact Analysis:**
+
+**When `REACT_APP_USE_MOCK_DATA=false`:**
+- ❌ All 44 files will **STILL USE MOCK DATA** instead of backend
+- ❌ Toggle mechanism is **COMPLETELY BYPASSED**
+- ❌ Backend APIs are **NEVER CALLED** from these components
+- ❌ Database is **NOT USED** at all
+
+**This is a CRITICAL issue** - the toggle is ineffective for majority of the application!
+
+### **Root Cause:**
+
+All these files import directly from mock services:
+```javascript
+// ❌ WRONG - Bypasses service switcher
+import mockJobService from '@/services/mockJobService';
+
+// ✅ CORRECT - Uses service switcher
+import { jobService } from '@/services';
+```
+
+The service switcher in `/app/frontend/src/services/index.js` is properly configured, but components are not using it!
+
+---
+
+## 📋 **PHASE 4.6: Mass Service Layer Migration** ⚠️ **CRITICAL - HIGH PRIORITY**
+
+**Objective**: Fix all 44 files to use service layer switcher instead of direct mock imports
+
+**Status**: ❌ NOT STARTED
+
+**Priority**: 🔴 **CRITICAL** - This affects majority of the application
+
+### **Implementation Strategy:**
+
+#### **Pattern to Follow:**
+
+**Before (❌ Wrong):**
+```javascript
+import mockJobService from '@/services/mockJobService';
+import { getJobById, updateJob } from '@/services/mockJobService';
+
+// Later in code:
+const result = await mockJobService.getAllJobs();
+const job = await getJobById(jobId);
+```
+
+**After (✅ Correct):**
+```javascript
+import { jobService } from '@/services';
+
+// Later in code:
+const result = await jobService.getAllJobs();
+const job = await jobService.getJobById(jobId);
+```
+
+#### **Migration Checklist - By Module:**
+
+### **1. Job Module (7 files) - Priority: HIGH**
+
+**Files:**
+- `/app/frontend/src/page/jobs/ApplicationsManager.jsx`
+- `/app/frontend/src/page/jobs/PostJob.jsx`
+- `/app/frontend/src/page/jobs/Jobs.jsx`
+- `/app/frontend/src/page/jobs/JobDetails.jsx`
+- `/app/frontend/src/page/jobs/EditJob.jsx`
+- `/app/frontend/src/components/jobs/JobFilterSidebar.jsx`
+- `/app/frontend/src/components/jobs/ApplicationModal.jsx`
+
+**Change:**
+```javascript
+// OLD
+import mockJobService from '@/services/mockJobService';
+import { getJobById, updateJob, submitApplication, getFilterOptions } from '@/services/mockJobService';
+
+// NEW
+import { jobService } from '@/services';
+```
+
+**Service Methods Available:**
+- `jobService.getAllJobs()`
+- `jobService.getJobById(id)`
+- `jobService.createJob(data)`
+- `jobService.updateJob(id, data)`
+- `jobService.deleteJob(id)`
+- `jobService.submitApplication(jobId, data)`
+- `jobService.getMyApplications()`
+- `jobService.getFilterOptions()`
+
+---
+
+### **2. Event Module (5 files) - Priority: HIGH**
+
+**Files:**
+- `/app/frontend/src/page/events/EventAttendees.jsx`
+- `/app/frontend/src/page/events/CreateEvent.jsx`
+- `/app/frontend/src/page/events/ManageEvents.jsx`
+- `/app/frontend/src/page/events/Events.jsx`
+- `/app/frontend/src/components/events/RSVPButton.jsx`
+
+**Change:**
+```javascript
+// OLD
+import mockEventService from '@/services/mockEventService';
+
+// NEW
+import { eventService } from '@/services';
+```
+
+**Service Methods Available:**
+- `eventService.getAllEvents()`
+- `eventService.getEventById(id)`
+- `eventService.createEvent(data)`
+- `eventService.updateEvent(id, data)`
+- `eventService.deleteEvent(id)`
+- `eventService.rsvpToEvent(eventId, status)`
+- `eventService.getEventAttendees(eventId)`
+
+---
+
+### **3. Forum Module (6 files) - Priority: HIGH**
+
+**Files:**
+- `/app/frontend/src/page/forum/PostDetails.jsx`
+- `/app/frontend/src/page/forum/Forum.jsx`
+- `/app/frontend/src/page/forum/ManagePosts.jsx`
+- `/app/frontend/src/components/forum/CreatePostModal.jsx`
+- `/app/frontend/src/components/forum/PostCard.jsx`
+- `/app/frontend/src/components/forum/CommentThread.jsx`
+
+**Change:**
+```javascript
+// OLD
+import mockForumService from '@/services/mockForumService';
+
+// NEW
+import { forumService } from '@/services';
+```
+
+**Service Methods Available:**
+- `forumService.getAllPosts()`
+- `forumService.getPostById(id)`
+- `forumService.createPost(data)`
+- `forumService.updatePost(id, data)`
+- `forumService.deletePost(id)`
+- `forumService.likePost(postId)`
+- `forumService.createComment(postId, data)`
+- `forumService.getComments(postId)`
+
+---
+
+### **4. Mentorship Module (4 files) - Priority: MEDIUM**
+
+**Files:**
+- `/app/frontend/src/page/mentorship/FindMentors.jsx`
+- `/app/frontend/src/components/mentorship/FeedbackModal.jsx`
+- `/app/frontend/src/components/mentorship/ScheduleSessionModal.jsx`
+- `/app/frontend/src/components/mentorship/RequestMentorshipModal.jsx`
+
+**Change:**
+```javascript
+// OLD
+import { getMentorProfiles, createMentorshipRequest, createSession, completeSession } from '@/services/mockMentorshipService';
+
+// NEW
+import { mentorshipService } from '@/services';
+```
+
+**Service Methods Available:**
+- `mentorshipService.getAllMentors()`
+- `mentorshipService.getMentorById(id)`
+- `mentorshipService.createRequest(data)`
+- `mentorshipService.createSession(data)`
+- `mentorshipService.completeSession(sessionId, data)`
+- `mentorshipService.submitFeedback(sessionId, data)`
+
+---
+
+### **5. Knowledge Capsule Module (3 files) - Priority: MEDIUM**
+
+**Files:**
+- `/app/frontend/src/page/advanced/LearningPath.jsx`
+- `/app/frontend/src/page/advanced/KnowledgeCapsules.jsx`
+- `/app/frontend/src/page/advanced/CreateKnowledgeCapsule.jsx`
+
+**Change:**
+```javascript
+// OLD
+import { mockKnowledgeService } from '@/services/mockKnowledgeService';
+
+// NEW
+import { knowledgeService } from '@/services';
+```
+
+**Note:** KnowledgeCapsuleDetail.jsx already covered in Phase 4.2
+
+---
+
+### **6. Directory & Profile Module (5 files) - Priority: MEDIUM**
+
+**Files:**
+- `/app/frontend/src/page/Profile.jsx`
+- `/app/frontend/src/page/AlumniDirectory.jsx`
+- `/app/frontend/src/page/ProfileView.jsx`
+- `/app/frontend/src/components/directory/SearchBar.jsx`
+- `/app/frontend/src/components/directory/FilterSidebar.jsx`
+
+**Change:**
+```javascript
+// OLD
+import { mockProfileService } from '@/services/mockProfileService';
+import { getSearchSuggestions, getFilterOptions } from '@/services/mockDirectoryService';
+
+// NEW
+import { profileService, directoryService } from '@/services';
+```
+
+---
+
+### **7. Notification Module (3 files) - Priority: MEDIUM**
+
+**Files:**
+- `/app/frontend/src/page/notifications/Notifications.jsx`
+- `/app/frontend/src/page/notifications/NotificationPreferences.jsx`
+- `/app/frontend/src/components/notifications/NotificationBell.jsx`
+
+**Change:**
+```javascript
+// OLD
+import { notificationService } from '@/services/mockNotificationService';
+
+// NEW
+import { notificationService } from '@/services';
+```
+
+---
+
+### **8. Advanced Features Module (8 files) - Priority: LOW**
+
+**Files:**
+- `/app/frontend/src/page/advanced/CareerPaths.jsx` → use `careerPathService`
+- `/app/frontend/src/page/advanced/Leaderboard.jsx` → use `leaderboardService`, `engagementAIService`
+- `/app/frontend/src/page/advanced/SkillGraph.jsx` → use `skillGraphService`, `skillRecommendationService`
+- `/app/frontend/src/page/advanced/TalentHeatmap.jsx` → use `heatmapService`
+- `/app/frontend/src/page/advanced/AlumniCard.jsx` → use `alumniCardService`
+- `/app/frontend/src/components/heatmap/ClusterDetailsModal.jsx` → use `heatmapService`
+- `/app/frontend/src/components/advanced/VerificationHistory.jsx` → use `alumniCardService`
+- `/app/frontend/src/components/career/PredictionDetailsModal.jsx` → use `careerPredictionService`
+
+**Change:**
+```javascript
+// OLD
+import { mockCareerPathService } from '@/services/mockCareerPathService';
+import { mockHeatmapService } from '@/services/mockHeatmapService';
+// ... etc
+
+// NEW
+import { careerPathService, heatmapService, skillGraphService, /* etc */ } from '@/services';
+```
+
+---
+
+### **9. Career & Admin Module (2 files) - Priority: LOW**
+
+**Files:**
+- `/app/frontend/src/page/career/CareerInsights.jsx` → use `careerPredictionService`
+- `/app/frontend/src/page/admin/AdminAIMonitor.jsx` → use `aiMonitorService`
+
+---
+
+### **Implementation Steps (Per File):**
+
+1. ✅ **Identify current mock imports**
+2. ❌ **Change import statement** to use service switcher
+3. ❌ **Update all service calls** to use new service name
+4. ❌ **Remove any direct mockdata.json imports** (if present)
+5. ❌ **Test with REACT_APP_USE_MOCK_DATA=true** (should work as before)
+6. ❌ **Test with REACT_APP_USE_MOCK_DATA=false** (should use backend)
+7. ❌ **Verify error handling** displays properly
+
+### **Batch Processing Recommendation:**
+
+**Batch 1 (Day 1):** Job Module (7 files) - Most critical user-facing features
+**Batch 2 (Day 2):** Event Module (5 files) + Forum Module (6 files)
+**Batch 3 (Day 3):** Mentorship (4 files) + Knowledge (3 files) + Directory (5 files)
+**Batch 4 (Day 4):** Notifications (3 files) + Advanced Features (8 files)
+**Batch 5 (Day 5):** Career + Admin (2 files) + Testing all modules
+
+### **Testing Matrix (Per Batch):**
+
+| Test Case | MOCK=true | MOCK=false | Expected Result |
+|-----------|-----------|------------|-----------------|
+| Load data | ✅ Mock data | ✅ Backend data | Different sources work |
+| Create operation | ✅ localStorage | ✅ Database | Persists correctly |
+| Update operation | ✅ localStorage | ✅ Database | Updates correctly |
+| Delete operation | ✅ localStorage | ✅ Database | Deletes correctly |
+| Backend down | ✅ Mock works | ❌ Error message | No fallback to mock |
+
+### **Success Criteria:**
+
+- ✅ All 44 files use service switcher from `@/services`
+- ✅ Zero direct imports from `mockXXXService` files
+- ✅ Toggle works correctly for all modules
+- ✅ Backend mode uses database only
+- ✅ Mock mode uses mockdata.json only
+- ✅ Error handling displays when backend fails
+
+---
+
+## 📊 **Phase Summary - Before Phase 5**
+
+### **Completed Phases:**
+- ✅ **Phase 1**: Pre-Implementation Analysis
+- ✅ **Phase 2**: API Service Creation & Verification
+- ✅ **Phase 3**: Admin Components Refactoring (9 components)
+- ✅ **Phase 4**: Mentorship Components Refactoring (4 components)
+- ✅ **Phase 4.5**: Comprehensive Component Audit - **AUDIT COMPLETED**
+
+### **Critical Phases to Complete (In Order):**
+- 🔴 **Phase 4.6**: Mass Service Layer Migration (44 files) - **CRITICAL - START HERE**
+  - **Impact**: Fixes toggle for entire application (Jobs, Events, Forum, etc.)
+  - **Files**: 29 pages + 15 components bypassing service layer
+  - **Priority**: HIGH - This is blocking true toggle functionality
+  
+- ⚠️ **Phase 4.1**: Settings Page Backend Integration (1 file) - **HIGH PRIORITY**
+  - **Impact**: Settings persistence to database
+  - **Files**: `/app/frontend/src/page/Settings.jsx`
+  
+- ⚠️ **Phase 4.2**: Knowledge Capsule Detail Fix (1 file) - **MEDIUM PRIORITY**
+  - **Impact**: Likes/bookmarks persistence
+  - **Files**: `/app/frontend/src/page/advanced/KnowledgeCapsuleDetail.jsx`
+  
+- ⚠️ **Phase 4.3**: Service Layer Error Handling Validation (21 files) - **MEDIUM PRIORITY**
+  - **Impact**: Consistent error experience
+  - **Files**: All `/app/frontend/src/services/api*.js`
+  
+- ⚠️ **Phase 4.4**: Backend API & Database Schema Validation - **LOW PRIORITY**
+  - **Impact**: Ensure all required APIs exist
+  - **Action**: ✅ **Missing endpoints documented in BACKEND_WORKFLOW.md Phase 11 Section 0**
+
+### **Summary:**
+- **Total Files Needing Fixes**: 46 files (44 from Phase 4.6 + 2 from Phase 4.1 & 4.2)
+- **Critical Blocker**: Phase 4.6 (affects 90% of application features)
+- **Estimated Time**: 
+  - Phase 4.6: 4-5 days (batch processing recommended)
+  - Phase 4.1: 1 day
+  - Phase 4.2: 0.5 day
+  - Phase 4.3: 1 day
+  - Phase 4.4: 0.5 day
+  - **Total**: ~7-8 days
+
+### **Then Proceed To:**
+- **Phase 5**: Error Handling & Testing (Original plan)
 
 ---
 
