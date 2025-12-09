@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { handleApiError } from './apiErrorHandler';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
@@ -12,10 +13,8 @@ export const apiAuth = {
       });
       return response.data;
     } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Login failed',
-      };
+      // Use standardized error handler - returns { success: false, error: "message", data: null }
+      return handleApiError(error);
     }
   },
 
@@ -24,10 +23,7 @@ export const apiAuth = {
       const response = await axios.post(`${BACKEND_URL}/api/auth/register`, userData);
       return response.data;
     } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Registration failed',
-      };
+      return handleApiError(error);
     }
   },
 
@@ -38,10 +34,7 @@ export const apiAuth = {
       });
       return response.data;
     } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Request failed',
-      };
+      return handleApiError(error);
     }
   },
 
@@ -53,10 +46,7 @@ export const apiAuth = {
       });
       return response.data;
     } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Password reset failed',
-      };
+      return handleApiError(error);
     }
   },
 
@@ -65,10 +55,7 @@ export const apiAuth = {
       const response = await axios.post(`${BACKEND_URL}/api/auth/google-signin`);
       return response.data;
     } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Google sign-in failed',
-      };
+      return handleApiError(error);
     }
   },
 
@@ -92,10 +79,7 @@ export const apiAuth = {
         message: response.data?.message || 'Password changed successfully',
       };
     } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.detail || error.response?.data?.message || 'Password change failed',
-      };
+      return handleApiError(error);
     }
   },
 };

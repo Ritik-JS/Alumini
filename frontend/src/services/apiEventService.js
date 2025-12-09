@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { handleApiError } from './apiErrorHandler';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
@@ -10,7 +11,7 @@ class ApiEventService {
       const response = await axios.get(`${BACKEND_URL}/api/events`, { params: filters });
       return response.data;
     } catch (error) {
-      return { success: false, message: error.message };
+      return handleApiError(error, []);
     }
   }
 
@@ -20,7 +21,7 @@ class ApiEventService {
       const response = await axios.get(`${BACKEND_URL}/api/events/${eventId}`);
       return response.data;
     } catch (error) {
-      return { success: false, message: error.message };
+      return handleApiError(error);
     }
   }
 
@@ -30,7 +31,7 @@ class ApiEventService {
       const response = await axios.post(`${BACKEND_URL}/api/events`, eventData);
       return response.data;
     } catch (error) {
-      return { success: false, message: error.message };
+      return handleApiError(error);
     }
   }
 
@@ -40,7 +41,7 @@ class ApiEventService {
       const response = await axios.put(`${BACKEND_URL}/api/events/${eventId}`, eventData);
       return response.data;
     } catch (error) {
-      return { success: false, message: error.message };
+      return handleApiError(error);
     }
   }
 
@@ -50,7 +51,7 @@ class ApiEventService {
       const response = await axios.delete(`${BACKEND_URL}/api/events/${eventId}`);
       return response.data;
     } catch (error) {
-      return { success: false, message: error.message };
+      return handleApiError(error);
     }
   }
 
@@ -62,7 +63,7 @@ class ApiEventService {
       });
       return response.data;
     } catch (error) {
-      return { success: false, message: error.message };
+      return handleApiError(error);
     }
   }
 
@@ -72,7 +73,7 @@ class ApiEventService {
       const response = await axios.get(`${BACKEND_URL}/api/events/${eventId}/my-rsvp`);
       return response.data;
     } catch (error) {
-      return { success: false, message: error.message };
+      return handleApiError(error);
     }
   }
 
@@ -82,7 +83,7 @@ class ApiEventService {
       const response = await axios.get(`${BACKEND_URL}/api/events/${eventId}/attendees`);
       return response.data;
     } catch (error) {
-      return { success: false, message: error.message };
+      return handleApiError(error, []);
     }
   }
 
@@ -92,7 +93,7 @@ class ApiEventService {
       const response = await axios.get(`${BACKEND_URL}/api/events/my-events`);
       return response.data;
     } catch (error) {
-      return { success: false, message: error.message };
+      return handleApiError(error, []);
     }
   }
 }

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { handleApiError } from './apiErrorHandler';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
@@ -10,7 +11,7 @@ export const apiJobService = {
       const response = await axios.get(`${BACKEND_URL}/api/jobs`, { params: filters });
       return response.data;
     } catch (error) {
-      return { success: false, error: error.message, data: [] };
+      return handleApiError(error, []);
     }
   },
 
@@ -20,7 +21,7 @@ export const apiJobService = {
       const response = await axios.get(`${BACKEND_URL}/api/jobs/${jobId}`);
       return response.data;
     } catch (error) {
-      return { success: false, error: error.message };
+      return handleApiError(error);
     }
   },
 
@@ -30,7 +31,7 @@ export const apiJobService = {
       const response = await axios.post(`${BACKEND_URL}/api/jobs`, jobData);
       return response.data;
     } catch (error) {
-      return { success: false, error: error.message };
+      return handleApiError(error);
     }
   },
 
@@ -40,7 +41,7 @@ export const apiJobService = {
       const response = await axios.put(`${BACKEND_URL}/api/jobs/${jobId}`, jobData);
       return response.data;
     } catch (error) {
-      return { success: false, error: error.message };
+      return handleApiError(error);
     }
   },
 
@@ -50,7 +51,7 @@ export const apiJobService = {
       const response = await axios.delete(`${BACKEND_URL}/api/jobs/${jobId}`);
       return response.data;
     } catch (error) {
-      return { success: false, error: error.message };
+      return handleApiError(error);
     }
   },
 
@@ -63,7 +64,7 @@ export const apiJobService = {
       );
       return response.data;
     } catch (error) {
-      return { success: false, error: error.message };
+      return handleApiError(error);
     }
   },
 
@@ -73,7 +74,7 @@ export const apiJobService = {
       const response = await axios.get(`${BACKEND_URL}/api/applications/user/${userId}`);
       return response.data;
     } catch (error) {
-      return { success: false, error: error.message, data: [] };
+      return handleApiError(error, []);
     }
   },
 
@@ -83,7 +84,7 @@ export const apiJobService = {
       const response = await axios.get(`${BACKEND_URL}/api/jobs/${jobId}/applications`);
       return response.data;
     } catch (error) {
-      return { success: false, error: error.message, data: [] };
+      return handleApiError(error, []);
     }
   },
 
@@ -96,7 +97,7 @@ export const apiJobService = {
       );
       return response.data;
     } catch (error) {
-      return { success: false, error: error.message };
+      return handleApiError(error);
     }
   },
 
@@ -106,7 +107,7 @@ export const apiJobService = {
       const response = await axios.get(`${BACKEND_URL}/api/jobs/user/${userId}`);
       return response.data;
     } catch (error) {
-      return { success: false, error: error.message, data: [] };
+      return handleApiError(error, []);
     }
   },
 
@@ -116,7 +117,7 @@ export const apiJobService = {
       const response = await axios.get(`${BACKEND_URL}/api/applications/recruiter/${recruiterId}`);
       return response.data;
     } catch (error) {
-      return { success: false, error: error.message, data: [] };
+      return handleApiError(error, []);
     }
   },
 };
