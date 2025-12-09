@@ -1,12 +1,15 @@
 """
 Career Path Prediction Service
-Provides rule-based career path predictions with ML model placeholder
+Provides ML-based and rule-based career path predictions with LLM enhancement
 """
 import logging
 import json
 from typing import Dict, List, Optional
 from collections import Counter
 from datetime import datetime
+
+from ml.model_loader import get_model_loader
+from ml.llm_advisor import get_llm_advisor
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +24,8 @@ class CareerPredictionService:
     ) -> Dict:
         """
         Predict career trajectory for a user based on current role and skills
-        Uses rule-based logic with ML model placeholder
+        Uses ML model when available, falls back to rule-based logic
+        Enhanced with LLM-generated personalized advice
         """
         try:
             # Get user's current profile
@@ -43,7 +47,7 @@ class CareerPredictionService:
             skills = profile[2]
             years_exp = profile[3] or 0
             batch_year = profile[4]
-            industry = profile[5]
+            industry = profile[5] or "Unknown"
             
             # Parse skills
             user_skills = []
@@ -55,10 +59,22 @@ class CareerPredictionService:
                 except (json.JSONDecodeError, TypeError):
                     user_skills = []
             
-            # Get career transitions from database
-            predicted_roles = await self._get_predicted_roles(
-                db_conn, current_role, user_skills, years_exp
+            # Try ML model prediction first
+            ml_predictions = await self._get_ml_predictions(
+                current_role, user_skills, years_exp, industry
             )
+            
+            # Get career transitions from database (rule-based or ML-enhanced)
+            if ml_predictions:
+                logger.info("Using ML model predictions")
+                predicted_roles = await self._enhance_ml_predictions_with_db(
+                    db_conn, ml_predictions, user_skills
+                )
+            else:
+                logger.info("Using rule-based predictions")
+                predicted_roles = await self._get_predicted_roles(
+                    db_conn, current_role, user_skills, years_exp
+                )
             
             # Get recommended skills
             recommended_skills = await self._get_recommended_skills(
@@ -70,9 +86,22 @@ class CareerPredictionService:
                 db_conn, user_id, current_role, user_skills, years_exp
             )
             
-            # Calculate confidence score (rule-based)
+            # Calculate confidence score
             confidence_score = await self._calculate_confidence(
                 db_conn, current_role, len(user_skills), years_exp
+            )
+            
+            # Generate LLM-based personalized advice
+            user_profile_dict = {
+                "current_role": current_role,
+                "current_company": current_company,
+                "skills": user_skills,
+                "years_of_experience": years_exp,
+                "industry": industry
+            }
+            
+            personalized_advice = await self._generate_personalized_advice(
+                user_profile_dict, predicted_roles, similar_alumni
             )
             
             # Store prediction
@@ -91,10 +120,13 @@ class CareerPredictionService:
                 "current_role": current_role,
                 "current_company": current_company,
                 "years_of_experience": years_exp,
+                "industry": industry,
                 "predicted_roles": predicted_roles,
                 "recommended_skills": recommended_skills,
                 "similar_alumni": similar_alumni,
                 "confidence_score": confidence_score,
+                "personalized_advice": personalized_advice,
+                "prediction_method": "ml" if ml_predictions else "rule-based",
                 "prediction_date": datetime.now().isoformat()
             }
         
