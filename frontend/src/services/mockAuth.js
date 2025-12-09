@@ -7,8 +7,8 @@ import mockData from '../mockdata.json';
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Storage keys
-const AUTH_KEY = 'auth_user';
-const TOKEN_KEY = 'auth_token';
+const AUTH_KEY = 'user';
+const TOKEN_KEY = 'token';
 
 export const mockAuthService = {
   // Login
