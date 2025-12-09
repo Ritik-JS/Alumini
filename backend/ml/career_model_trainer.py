@@ -6,7 +6,7 @@ import logging
 import json
 import joblib
 import numpy as np
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from datetime import datetime
 from pathlib import Path
 from collections import Counter
@@ -18,14 +18,21 @@ from sklearn.metrics import accuracy_score, classification_report
 
 logger = logging.getLogger(__name__)
 
+# Get the directory where this file is located
+_current_dir = Path(__file__).parent.resolve()
+_default_model_dir = _current_dir / "models"
+
 
 class CareerModelTrainer:
     """
     Trains ML models for career path prediction
     """
     
-    def __init__(self, model_dir: str = "/app/backend/ml/models"):
-        self.model_dir = Path(model_dir)
+    def __init__(self, model_dir: Optional[str] = None):
+        if model_dir is None:
+            self.model_dir = _default_model_dir
+        else:
+            self.model_dir = Path(model_dir)
         self.model_dir.mkdir(parents=True, exist_ok=True)
         
         self.role_encoder = LabelEncoder()

@@ -46,10 +46,14 @@ flower>=2.0.1
 
 # Machine Learning Core
 scikit-learn>=1.4.0
+joblib>=1.3.0
 
 # Embeddings & Similarity Search
 sentence-transformers>=2.3.1
 faiss-cpu>=1.7.4
+
+# HTTP Client (for LLM API calls)
+aiohttp>=3.9.0
 
 # LLM Integration (via Emergent LLM Key)
 openai>=1.10.0

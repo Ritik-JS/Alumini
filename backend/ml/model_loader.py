@@ -5,11 +5,16 @@ Loads trained models and encoders for inference
 import logging
 import joblib
 import json
+import os
 from pathlib import Path
 from typing import Optional, Dict, List
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
+# Get the directory where this file is located
+_current_dir = Path(__file__).parent.resolve()
+_default_model_dir = _current_dir / "models"
 
 
 class CareerModelLoader:
@@ -17,13 +22,16 @@ class CareerModelLoader:
     Loads and manages trained career prediction model
     """
     
-    def __init__(self, model_dir: str = "/app/backend/ml/models"):
-        self.model_dir = Path(model_dir)
+    def __init__(self, model_dir: Optional[str] = None):
+        if model_dir is None:
+            self.model_dir = _default_model_dir
+        else:
+            self.model_dir = Path(model_dir)
         self.model = None
         self.encoders = None
         self.feature_names = []
         
-        logger.info(f"CareerModelLoader initialized with model_dir: {model_dir}")
+        logger.info(f"CareerModelLoader initialized with model_dir: {self.model_dir}")
     
     def load_latest_model(self) -> bool:
         """
