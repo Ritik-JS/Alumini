@@ -68,6 +68,9 @@ from routes.skills_routes import router as skills_router
 # Import Phase 10.2 routes - Admin Dataset Upload
 from routes.datasets import router as datasets_router
 
+# Import Phase 10.7 routes - Knowledge Capsules Ranking Engine
+from routes.capsule_ranking import router as capsule_ranking_router
+
 # Import middleware
 from middleware.rate_limit import rate_limiter
 
@@ -175,6 +178,9 @@ app.include_router(skills_router)
 
 # Include Phase 10.2 routes - Admin Dataset Upload
 app.include_router(datasets_router)
+
+# Include Phase 10.7 routes - Knowledge Capsules Ranking Engine
+app.include_router(capsule_ranking_router)
 
 # Include API router in main app
 app.include_router(api_router)

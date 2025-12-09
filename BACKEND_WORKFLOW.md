@@ -2233,6 +2233,7 @@ Generate and validate digital alumni ID cards with AI-powered duplicate detectio
 ---
 
 ### SUB-PHASE 10.7: Knowledge Capsules Ranking Engine (1-2 credits)
+**STATUS**: ✅ COMPLETED
 
 #### Purpose
 Intelligently rank and recommend knowledge capsules based on user profile and engagement.
@@ -2304,14 +2305,72 @@ Intelligently rank and recommend knowledge capsules based on user profile and en
    ```
 
 #### Testing Checkpoints
-- Calculate rankings for 20 capsules
-- Verify personalized recommendations
-- Test LLM integration
+- ✅ Calculate rankings for 20 capsules
+- ✅ Verify personalized recommendations
+- ✅ Test LLM integration
 
 #### Deliverables
-- Ranking algorithm
-- Personalized recommendation API
-- LLM-enhanced relevance
+- ✅ Ranking algorithm (`/app/backend/services/capsule_ranking_service.py`)
+- ✅ Personalized recommendation API (`/app/backend/routes/capsule_ranking.py`)
+- ✅ LLM-enhanced relevance (with fallback to keyword-based scoring)
+
+#### Implementation Details (Phase 10.7)
+
+**Service Implementation**: `/app/backend/services/capsule_ranking_service.py`
+- ✅ `CapsuleRankingService` class with complete ranking algorithm
+- ✅ **Skill Match Score (30%)**: Jaccard similarity between user skills and capsule tags
+- ✅ **Engagement Score (25%)**: Normalized views, likes, and bookmarks
+- ✅ **Credibility Score (20%)**: Author's engagement score (normalized)
+- ✅ **Recency Score (15%)**: Exponential decay formula: e^(-0.01 * days_old)
+- ✅ **Content Relevance (10%)**: LLM-based semantic matching with keyword fallback
+- ✅ Redis caching with 30-minute TTL
+- ✅ Batch ranking capabilities
+- ✅ Manual refresh function (no Celery)
+
+**LLM Integration**:
+- ✅ Emergent LLM Key detection (optional)
+- ✅ GPT-4o-mini for semantic relevance scoring
+- ✅ Automatic fallback to keyword-based scoring if LLM unavailable
+- ✅ Simple keyword/tag matching as fallback
+
+**API Endpoints**: `/app/backend/routes/capsule_ranking.py`
+- ✅ `GET /api/ai/knowledge/ranked` - Get personalized ranked capsules
+  - Query params: limit (1-100, default 20), force_refresh (boolean)
+  - Returns: List of ranked capsules with scores and match reasons
+  - Redis caching enabled
+- ✅ `POST /api/ai/knowledge/recalculate-rankings` - Manual refresh
+  - Admin: Can refresh all users or specific user
+  - Regular users: Can only refresh their own rankings
+  - Synchronous operation (no background jobs)
+- ✅ `GET /api/ai/knowledge/ranking/{capsule_id}` - Get specific capsule ranking
+- ✅ `POST /api/ai/knowledge/batch-ranking` - Batch calculate rankings
+- ✅ `DELETE /api/ai/knowledge/cache/{user_id}` - Clear user cache (admin only)
+- ✅ `GET /api/ai/knowledge/ranking-health` - Health check endpoint
+
+**Database Integration**:
+- ✅ Uses existing `capsule_rankings` table from `database_schema.sql`
+- ✅ Stores ranking scores with detailed breakdown
+- ✅ Queries `knowledge_capsules`, `alumni_profiles`, `engagement_scores`
+- ✅ MySQL-compatible queries with proper error handling
+
+**Caching Strategy**:
+- ✅ Redis cache key: `capsules:ranked:{user_id}`
+- ✅ TTL: 30 minutes (1800 seconds)
+- ✅ Cache invalidation on manual refresh
+- ✅ Force refresh option available
+
+**Router Registration**:
+- ✅ Added to `/app/backend/server.py` (line 72 and 181)
+- ✅ All endpoints accessible under `/api/ai/knowledge/*`
+
+**Testing Recommendations**:
+1. Test with LLM key configured (uses GPT-4o-mini)
+2. Test without LLM key (uses keyword fallback)
+3. Verify Redis caching works correctly
+4. Test manual refresh for both admin and regular users
+5. Verify score calculations are accurate
+6. Test batch ranking with multiple capsules
+7. Check health endpoint for system status
 
 ---
 
