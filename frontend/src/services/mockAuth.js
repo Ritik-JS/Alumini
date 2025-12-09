@@ -6,7 +6,7 @@ import mockData from '../mockdata.json';
 // Simulate network delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Storage keys
+// Storage keys - MUST match what AuthContext.jsx uses
 const AUTH_KEY = 'user';
 const TOKEN_KEY = 'token';
 
@@ -28,7 +28,11 @@ export const mockAuthService = {
     // Generate mock token
     const token = `mock_token_${Date.now()}`;
     
-    // Store auth data
+    // Clear any old/conflicting localStorage keys
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('auth_token');
+    
+    // Store auth data with correct keys
     localStorage.setItem(AUTH_KEY, JSON.stringify(user));
     localStorage.setItem(TOKEN_KEY, token);
 
@@ -67,6 +71,10 @@ export const mockAuthService = {
     
     const token = `mock_token_${Date.now()}`;
     
+    // Clear any old/conflicting localStorage keys
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('auth_token');
+    
     localStorage.setItem(AUTH_KEY, JSON.stringify(newUser));
     localStorage.setItem(TOKEN_KEY, token);
 
@@ -80,8 +88,13 @@ export const mockAuthService = {
   // Logout
   async logout() {
     await delay(200);
+    // Remove current keys
     localStorage.removeItem(AUTH_KEY);
     localStorage.removeItem(TOKEN_KEY);
+    // Also remove any old keys for cleanup
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('rememberMe');
     return { success: true };
   },
 
