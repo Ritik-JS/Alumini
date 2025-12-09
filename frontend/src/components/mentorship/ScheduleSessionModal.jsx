@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { createSession } from '@/services/mockMentorshipService';
+import { mentorshipService } from '@/services';
 
 const ScheduleSessionModal = ({ mentorshipRequest, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -48,7 +48,7 @@ const ScheduleSessionModal = ({ mentorshipRequest, onClose, onSuccess }) => {
       }
 
       // Create session
-      const result = await createSession({
+      const result = await mentorshipService.createSession({
         mentorship_request_id: mentorshipRequest.id,
         scheduled_date: scheduledDateTime.toISOString(),
         duration: parseInt(formData.duration),

@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { createMentorshipRequest } from '@/services/mockMentorshipService';
+import { mentorshipService } from '@/services';
 
 const RequestMentorshipModal = ({ mentor, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -52,7 +52,7 @@ const RequestMentorshipModal = ({ mentor, onClose, onSuccess }) => {
         .filter(t => t);
 
       // Create request
-      const result = await createMentorshipRequest({
+      const result = await mentorshipService.createMentorshipRequest({
         student_id: user.id,
         mentor_id: mentor.user_id,
         request_message: formData.request_message,

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { completeSession } from '@/services/mockMentorshipService';
+import { mentorshipService } from '@/services';
 
 const FeedbackModal = ({ session, onClose, onSuccess }) => {
   const [rating, setRating] = useState(0);
@@ -29,11 +29,13 @@ const FeedbackModal = ({ session, onClose, onSuccess }) => {
     setIsSubmitting(true);
     
     try {
-      const result = await completeSession(
+      const result = await mentorshipService.completeSession(
         session.id,
-        feedback,
-        rating,
-        notes
+        {
+          feedback,
+          rating,
+          notes
+        }
       );
 
       if (result.success) {

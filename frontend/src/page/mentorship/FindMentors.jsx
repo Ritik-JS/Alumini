@@ -7,12 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import {
-  filterMentors,
-  sortMentors,
-  getUniqueExpertiseAreas,
-  paginateResults,
-} from '@/services/mockMentorshipService';
+import { mentorshipService } from '@/services';
+import { toast } from 'sonner';
 
 const FindMentors = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,20 +22,56 @@ const FindMentors = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedMentor, setSelectedMentor] = useState(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [expertiseAreas, setExpertiseAreas] = useState([]);
+  const [filteredMentors, setFilteredMentors] = useState([]);
+  const [paginatedResults, setPaginatedResults] = useState({ data: [], totalPages: 0 });
+  const [loading, setLoading] = useState(true);
 
-  const expertiseAreas = useMemo(() => getUniqueExpertiseAreas(), []);
+  useEffect(() => {
+    loadExpertiseAreas();
+  }, []);
 
-  // Filter and sort mentors
-  const filteredMentors = useMemo(() => {
-    const filtered = filterMentors({ ...filters, search: searchQuery });
-    const sorted = sortMentors(filtered, sortBy);
-    return sorted;
-  }, [searchQuery, filters, sortBy]);
+  useEffect(() => {
+    loadMentors();
+  }, [searchQuery, filters, sortBy, currentPage]);
 
-  // Paginate results
-  const paginatedResults = useMemo(() => {
-    return paginateResults(filteredMentors, currentPage, 12);
-  }, [filteredMentors, currentPage]);
+  const loadExpertiseAreas = async () => {
+    try {
+      const response = await mentorshipService.getUniqueExpertiseAreas();
+      if (response.success) {
+        setExpertiseAreas(response.data);
+      }
+    } catch (error) {
+      console.error('Error loading expertise areas:', error);
+    }
+  };
+
+  const loadMentors = async () => {
+    setLoading(true);
+    try {
+      const response = await mentorshipService.filterMentors({
+        ...filters,
+        search: searchQuery,
+        sortBy,
+        page: currentPage,
+        pageSize: 12
+      });
+      
+      if (response.success) {
+        setFilteredMentors(response.data.mentors || []);
+        setPaginatedResults({
+          data: response.data.mentors || [],
+          totalPages: response.data.totalPages || 1
+        });
+      } else {
+        toast.error('Failed to load mentors');
+      }
+    } catch (error) {
+      toast.error('Error loading mentors');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleExpertiseToggle = (expertise) => {
     setFilters(prev => ({
@@ -256,7 +288,13 @@ const FindMentors = () => {
         </div>
 
         {/* Mentor Grid */}
-        {paginatedResults.data.length > 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="h-64 bg-gray-200 animate-pulse rounded-lg" />
+            ))}
+          </div>
+        ) : paginatedResults.data.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedResults.data.map((mentor) => (
               <MentorCard
