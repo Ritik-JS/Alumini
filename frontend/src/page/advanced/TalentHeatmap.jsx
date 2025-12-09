@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockHeatmapService } from '@/services/mockHeatmapService';
+import { heatmapService } from '@/services';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -37,11 +37,11 @@ const TalentHeatmap = () => {
     try {
       setLoading(true);
       const [locationsRes, skillsRes, industriesRes, clustersRes, emergingRes] = await Promise.all([
-        mockHeatmapService.getGeographicData(),
-        mockHeatmapService.getSkills(),
-        mockHeatmapService.getIndustries(),
-        mockHeatmapService.getTalentClusters(),
-        mockHeatmapService.getEmergingHubs()
+        heatmapService.getGeographicData(),
+        heatmapService.getSkills(),
+        heatmapService.getIndustries(),
+        heatmapService.getTalentClusters(),
+        heatmapService.getEmergingHubs()
       ]);
 
       if (locationsRes.success) setLocations(locationsRes.data);
@@ -60,8 +60,8 @@ const TalentHeatmap = () => {
     try {
       setLoading(true);
       const [locationsRes, clustersRes] = await Promise.all([
-        mockHeatmapService.getGeographicData(filters),
-        mockHeatmapService.getTalentClusters(filters)
+        heatmapService.getGeographicData(filters),
+        heatmapService.getTalentClusters(filters)
       ]);
       
       if (locationsRes.success) {

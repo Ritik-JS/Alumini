@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { notificationService } from '@/services/mockNotificationService';
+import { notificationService } from '@/services';
 import NotificationCard from '@/components/notifications/NotificationCard';
 import { toast } from 'sonner';
 

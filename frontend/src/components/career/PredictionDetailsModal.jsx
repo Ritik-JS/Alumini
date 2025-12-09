@@ -8,7 +8,7 @@ import { TrendingUp, DollarSign, Clock, Users, Briefcase, BookOpen, Lightbulb, M
 import SkillGapIndicator from './SkillGapIndicator';
 import LearningPathStepper from './LearningPathStepper';
 import { useState, useEffect } from 'react';
-import { mockCareerPredictionService } from '@/services/mockCareerPredictionService';
+import { careerPredictionService } from '@/services';
 import { toast } from 'sonner';
 
 const PredictionDetailsModal = ({ open, onClose, prediction, userId }) => {
@@ -24,7 +24,7 @@ const PredictionDetailsModal = ({ open, onClose, prediction, userId }) => {
   const loadSimilarAlumni = async () => {
     try {
       setLoading(true);
-      const res = await mockCareerPredictionService.getSimilarAlumni(prediction.role_name);
+      const res = await careerPredictionService.getSimilarAlumni(prediction.role_name);
       if (res.success) {
         setSimilarAlumni(res.data);
       }

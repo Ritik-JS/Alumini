@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockAlumniCardService } from '@/services/mockAlumniCardService';
+import { alumniCardService } from '@/services';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,7 @@ const AlumniCard = () => {
       setLoading(true);
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       setCurrentUser(user);
-      const res = await mockAlumniCardService.getMyCard(user.id);
+      const res = await alumniCardService.getMyCard(user.id);
 
       if (res.success) {
         setCardData(res.data);
@@ -53,7 +53,7 @@ const AlumniCard = () => {
 
     try {
       setVerifying(true);
-      const res = await mockAlumniCardService.verifyCard(identifier);
+      const res = await alumniCardService.verifyCard(identifier);
 
       // Always set result to show AI validation checks
       setVerificationResult(res.data);
@@ -95,7 +95,7 @@ const AlumniCard = () => {
 
   const handleDownload = async () => {
     try {
-      await mockAlumniCardService.downloadCard(cardData.id);
+      await alumniCardService.downloadCard(cardData.id);
       toast.success('Card download started');
     } catch (error) {
       toast.error('Download failed');

@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { notificationService } from '@/services/mockNotificationService';
+import { notificationService } from '@/services';
 import { toast } from 'sonner';
 
 const NotificationPreferences = () => {

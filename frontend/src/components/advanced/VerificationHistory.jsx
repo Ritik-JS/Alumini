@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { mockAlumniCardService } from '@/services/mockAlumniCardService';
+import { alumniCardService } from '@/services';
 import { CheckCircle, XCircle, AlertTriangle, Clock, MapPin, Monitor, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
@@ -31,7 +31,7 @@ const VerificationHistory = ({ cardId = null, isAdmin = false }) => {
       let res;
       if (cardId) {
         // Get history for specific card
-        res = await mockAlumniCardService.getCardVerificationHistory(cardId);
+        res = await alumniCardService.getCardVerificationHistory(cardId);
         setVerifications(res.data);
       } else if (isAdmin) {
         // Get all verifications (admin view)
@@ -40,7 +40,7 @@ const VerificationHistory = ({ cardId = null, isAdmin = false }) => {
         if (filter.method !== 'all') filterParams.method = filter.method;
         if (filter.suspicious) filterParams.suspicious = true;
         
-        res = await mockAlumniCardService.getVerificationHistory(filterParams);
+        res = await alumniCardService.getVerificationHistory(filterParams);
         setVerifications(res.data.verifications);
         setStats(res.data.stats);
       }

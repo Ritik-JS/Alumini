@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AISystemCard from '@/components/admin/AISystemCard';
-import mockAIMonitorService from '@/services/mockAIMonitorService';
+import { aiMonitorService } from '@/services';
 import { toast } from 'sonner';
 import {
   Activity,
@@ -61,10 +61,10 @@ const AdminAIMonitor = () => {
     setLoading(true);
     try {
       const [systemsRes, queueRes, errorsRes, alertsRes] = await Promise.all([
-        mockAIMonitorService.getAllSystemsStatus(),
-        mockAIMonitorService.getProcessingQueue(),
-        mockAIMonitorService.getErrorLogs(),
-        mockAIMonitorService.getSystemAlerts(),
+        aiMonitorService.getAllSystemsStatus(),
+        aiMonitorService.getProcessingQueue(),
+        aiMonitorService.getErrorLogs(),
+        aiMonitorService.getSystemAlerts(),
       ]);
 
       if (systemsRes.success) {
@@ -100,8 +100,8 @@ const AdminAIMonitor = () => {
     setSelectedSystem(system);
     try {
       const [detailsRes, perfRes] = await Promise.all([
-        mockAIMonitorService.getSystemDetails(system.id),
-        mockAIMonitorService.getModelPerformance(system.id, 7),
+        aiMonitorService.getSystemDetails(system.id),
+        aiMonitorService.getModelPerformance(system.id, 7),
       ]);
 
       if (detailsRes.success) {
@@ -119,7 +119,7 @@ const AdminAIMonitor = () => {
 
   const handleTriggerUpdate = async (systemId) => {
     try {
-      const result = await mockAIMonitorService.triggerAIUpdate(systemId);
+      const result = await aiMonitorService.triggerAIUpdate(systemId);
       if (result.success) {
         toast.success('AI update triggered successfully');
         loadAllData();
@@ -134,7 +134,7 @@ const AdminAIMonitor = () => {
 
   const handleClearQueue = async () => {
     try {
-      const result = await mockAIMonitorService.clearQueue();
+      const result = await aiMonitorService.clearQueue();
       if (result.success) {
         toast.success(result.data.message);
         loadAllData();
@@ -148,7 +148,7 @@ const AdminAIMonitor = () => {
   const handleDownloadReport = async () => {
     try {
       toast.info('Generating report...');
-      const result = await mockAIMonitorService.downloadMetricsReport('json');
+      const result = await aiMonitorService.downloadMetricsReport('json');
       if (result.success) {
         // In real scenario, this would download a file
         const dataStr = JSON.stringify(result.data.report, null, 2);
@@ -168,7 +168,7 @@ const AdminAIMonitor = () => {
 
   const handleAcknowledgeAlert = async (alertId) => {
     try {
-      const result = await mockAIMonitorService.acknowledgeAlert(alertId);
+      const result = await aiMonitorService.acknowledgeAlert(alertId);
       if (result.success) {
         toast.success('Alert acknowledged');
         loadAllData();

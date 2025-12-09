@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockCareerPredictionService } from '@/services/mockCareerPredictionService';
+import { careerPredictionService } from '@/services';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,7 @@ const CareerInsights = () => {
       }
 
       const user = JSON.parse(userData);
-      const res = await mockCareerPredictionService.getUserPrediction(user.id);
+      const res = await careerPredictionService.getUserPrediction(user.id);
 
       if (res.success) {
         setPrediction(res.data);

@@ -15,7 +15,7 @@ import {
   X
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { mockHeatmapService } from '@/services/mockHeatmapService';
+import { heatmapService } from '@/services';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
@@ -25,7 +25,7 @@ const ClusterDetailsModal = ({ isOpen, onClose, cluster }) => {
 
   const handleExportData = async () => {
     try {
-      const res = await mockHeatmapService.exportClusterData(cluster.id);
+      const res = await heatmapService.exportClusterData(cluster.id);
       if (res.success) {
         // In real implementation, this would download a file
         // For mock, we'll show a success message

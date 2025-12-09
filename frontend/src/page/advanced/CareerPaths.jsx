@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockCareerPathService } from '@/services/mockCareerPathService';
+import { careerPathService } from '@/services';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,8 +29,8 @@ const CareerPaths = () => {
     try {
       setLoading(true);
       const [pathsRes, rolesRes] = await Promise.all([
-        mockCareerPathService.getCareerPaths(),
-        mockCareerPathService.getRoles()
+        careerPathService.getCareerPaths(),
+        careerPathService.getRoles()
       ]);
 
       if (pathsRes.success) setCareerPaths(pathsRes.data);
@@ -45,7 +45,7 @@ const CareerPaths = () => {
   const handleSearch = async () => {
     try {
       setLoading(true);
-      const res = await mockCareerPathService.getCareerPaths(filters);
+      const res = await careerPathService.getCareerPaths(filters);
       if (res.success) {
         setCareerPaths(res.data);
         if (res.data.length === 0) {

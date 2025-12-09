@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockSkillGraphService } from '@/services/mockSkillGraphService';
-import { skillRecommendationService } from '@/services/mockSkillRecommendationService';
+import { skillGraphService, skillRecommendationService } from '@/services';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -33,8 +32,8 @@ const SkillGraph = () => {
     try {
       setLoading(true);
       const [skillsRes, industriesRes, recommendationsRes, trendsRes] = await Promise.all([
-        mockSkillGraphService.getSkillGraph(),
-        mockSkillGraphService.getIndustries(),
+        skillGraphService.getSkillGraph(),
+        skillGraphService.getIndustries(),
         skillRecommendationService.getRecommendations(currentUser.id),
         skillRecommendationService.getTopTrendingSkills(10)
       ]);
@@ -53,7 +52,7 @@ const SkillGraph = () => {
   const handleSearch = async () => {
     try {
       setLoading(true);
-      const res = await mockSkillGraphService.getSkillGraph(filters);
+      const res = await skillGraphService.getSkillGraph(filters);
       if (res.success) {
         setSkills(res.data);
         if (res.data.length === 0) {
@@ -70,7 +69,7 @@ const SkillGraph = () => {
   const handleSkillClick = async (skill) => {
     setSelectedSkill(skill);
     try {
-      const res = await mockSkillGraphService.getAlumniBySkill(skill.skill_name);
+      const res = await skillGraphService.getAlumniBySkill(skill.skill_name);
       if (res.success) {
         toast.success(`Found ${res.count} alumni with ${skill.skill_name}`);
       }

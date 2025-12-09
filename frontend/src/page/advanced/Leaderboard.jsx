@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { mockLeaderboardService } from '@/services/mockLeaderboardService';
-import { mockEngagementAIService } from '@/services/mockEngagementAIService';
+import { leaderboardService, engagementAIService } from '@/services';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -39,11 +38,11 @@ const Leaderboard = () => {
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       
       const [leaderboardRes, myScoreRes, badgesRes, myBadgesRes, aiInsightsRes] = await Promise.all([
-        mockLeaderboardService.getLeaderboard({ role: roleFilter }),
-        mockLeaderboardService.getMyScore(currentUser.id),
-        mockLeaderboardService.getAllBadges(),
-        mockLeaderboardService.getUserBadges(currentUser.id),
-        mockEngagementAIService.getEngagementInsights(currentUser.id)
+        leaderboardService.getLeaderboard({ role: roleFilter }),
+        leaderboardService.getMyScore(currentUser.id),
+        leaderboardService.getAllBadges(),
+        leaderboardService.getUserBadges(currentUser.id),
+        engagementAIService.getEngagementInsights(currentUser.id)
       ]);
 
       if (leaderboardRes.success) setLeaderboard(leaderboardRes.data);
