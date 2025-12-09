@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Heart, Reply, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import mockForumService from '@/services/mockForumService';
+import { forumService } from '@/services';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -31,7 +31,7 @@ const CommentItem = ({ comment, onReply, onDelete, depth = 0 }) => {
 
   const handleLike = async () => {
     try {
-      const response = await mockForumService.toggleCommentLike(comment.id);
+      const response = await forumService.toggleCommentLike(comment.id);
       if (response.success) {
         setLiked(response.data.liked);
         setLikesCount(prev => response.data.liked ? prev + 1 : prev - 1);

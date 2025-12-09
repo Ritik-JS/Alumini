@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import mockEventService from '@/services/mockEventService';
+import { eventService } from '@/services';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -33,7 +33,7 @@ const ManageEvents = () => {
   const loadMyEvents = async () => {
     setLoading(true);
     try {
-      const response = await mockEventService.getMyEvents();
+      const response = await eventService.getMyEvents();
       
       if (response.success) {
         setEvents(response.data);
@@ -56,7 +56,7 @@ const ManageEvents = () => {
     if (!eventToDelete) return;
 
     try {
-      const response = await mockEventService.deleteEvent(eventToDelete.id);
+      const response = await eventService.deleteEvent(eventToDelete.id);
       
       if (response.success) {
         toast.success('Event deleted successfully');

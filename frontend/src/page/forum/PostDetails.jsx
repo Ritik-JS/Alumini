@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import mockForumService from '@/services/mockForumService';
+import { forumService } from '@/services';
 import { toast } from 'sonner';
 
 const PostDetails = () => {
@@ -40,7 +40,7 @@ const PostDetails = () => {
   const loadPost = async () => {
     setLoading(true);
     try {
-      const response = await mockForumService.getPostById(postId);
+      const response = await forumService.getPostById(postId);
       
       if (response.success) {
         setPost(response.data);
@@ -67,7 +67,7 @@ const PostDetails = () => {
 
     setSubmitting(true);
     try {
-      const response = await mockForumService.createComment(postId, {
+      const response = await forumService.createComment(postId, {
         content: commentContent.trim(),
         parent_comment_id: null
       });
@@ -88,7 +88,7 @@ const PostDetails = () => {
 
   const handleReply = async (parentCommentId, content) => {
     try {
-      const response = await mockForumService.createComment(postId, {
+      const response = await forumService.createComment(postId, {
         content: content.trim(),
         parent_comment_id: parentCommentId
       });
@@ -105,7 +105,7 @@ const PostDetails = () => {
 
   const handleDeleteComment = async (commentId) => {
     try {
-      const response = await mockForumService.deleteComment(commentId);
+      const response = await forumService.deleteComment(commentId);
       
       if (response.success) {
         loadPost(); // Reload to update
@@ -119,7 +119,7 @@ const PostDetails = () => {
 
   const handleDeletePost = async () => {
     try {
-      const response = await mockForumService.deletePost(postId);
+      const response = await forumService.deletePost(postId);
       
       if (response.success) {
         toast.success('Post deleted successfully');

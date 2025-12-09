@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import mockForumService from '@/services/mockForumService';
+import { forumService } from '@/services';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -33,7 +33,7 @@ const ManagePosts = () => {
   const loadMyPosts = async () => {
     setLoading(true);
     try {
-      const response = await mockForumService.getMyPosts();
+      const response = await forumService.getMyPosts();
       
       if (response.success) {
         setPosts(response.data);
@@ -56,7 +56,7 @@ const ManagePosts = () => {
     if (!postToDelete) return;
 
     try {
-      const response = await mockForumService.deletePost(postToDelete.id);
+      const response = await forumService.deletePost(postToDelete.id);
       
       if (response.success) {
         toast.success('Post deleted successfully');

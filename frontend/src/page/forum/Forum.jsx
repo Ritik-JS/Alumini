@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import mockForumService from '@/services/mockForumService';
+import { forumService } from '@/services';
 import { toast } from 'sonner';
 
 const Forum = () => {
@@ -39,7 +39,7 @@ const Forum = () => {
         filters.tag = selectedTag;
       }
 
-      const response = await mockForumService.getPosts(filters);
+      const response = await forumService.getPosts(filters);
       
       if (response.success) {
         setPosts(response.data);
@@ -55,7 +55,7 @@ const Forum = () => {
 
   const loadTags = async () => {
     try {
-      const response = await mockForumService.getAllTags();
+      const response = await forumService.getAllTags();
       if (response.success) {
         setAllTags(response.data);
       }

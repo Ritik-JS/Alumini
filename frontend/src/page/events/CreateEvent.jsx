@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import mockEventService from '@/services/mockEventService';
+import { eventService } from '@/services';
 import { toast } from 'sonner';
 
 const CreateEvent = () => {
@@ -66,7 +66,7 @@ const CreateEvent = () => {
 
     setSubmitting(true);
     try {
-      const response = await mockEventService.createEvent(formData);
+      const response = await eventService.createEvent(formData);
       
       if (response.success) {
         toast.success('Event created successfully!');

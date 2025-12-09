@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Check, X, Calendar } from 'lucide-react';
-import mockEventService from '@/services/mockEventService';
+import { eventService } from '@/services';
 import { toast } from 'sonner';
 import {
   DropdownMenu,
@@ -20,7 +20,7 @@ const RSVPButton = ({ eventId, onRSVPChange }) => {
 
   const loadUserRsvp = async () => {
     try {
-      const response = await mockEventService.getUserRsvp(eventId);
+      const response = await eventService.getUserRsvp(eventId);
       if (response.success && response.data) {
         setRsvpStatus(response.data.status);
       }
@@ -32,7 +32,7 @@ const RSVPButton = ({ eventId, onRSVPChange }) => {
   const handleRSVP = async (status) => {
     setLoading(true);
     try {
-      const response = await mockEventService.rsvpToEvent(eventId, status);
+      const response = await eventService.rsvpToEvent(eventId, status);
       
       if (response.success) {
         setRsvpStatus(status);

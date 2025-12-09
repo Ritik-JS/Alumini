@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
-import mockForumService from '@/services/mockForumService';
+import { forumService } from '@/services';
 import { toast } from 'sonner';
 
 const CreatePostModal = ({ open, onOpenChange, onPostCreated }) => {
@@ -47,7 +47,7 @@ const CreatePostModal = ({ open, onOpenChange, onPostCreated }) => {
 
     setSubmitting(true);
     try {
-      const response = await mockForumService.createPost({
+      const response = await forumService.createPost({
         title: title.trim() || null,
         content: content.trim(),
         tags: tags

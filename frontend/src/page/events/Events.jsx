@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import mockEventService from '@/services/mockEventService';
+import { eventService } from '@/services';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -43,7 +43,7 @@ const Events = () => {
         filters.type = selectedType;
       }
 
-      const response = await mockEventService.getEvents(filters);
+      const response = await eventService.getEvents(filters);
       
       if (response.success) {
         setEvents(response.data);

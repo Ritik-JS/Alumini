@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import mockEventService from '@/services/mockEventService';
+import { eventService } from '@/services';
 import { toast } from 'sonner';
 
 const EventAttendees = () => {
@@ -24,13 +24,13 @@ const EventAttendees = () => {
     setLoading(true);
     try {
       // Load event details
-      const eventResponse = await mockEventService.getEventById(eventId);
+      const eventResponse = await eventService.getEventById(eventId);
       if (eventResponse.success) {
         setEvent(eventResponse.data);
       }
 
       // Load attendees
-      const attendeesResponse = await mockEventService.getEventAttendees(eventId);
+      const attendeesResponse = await eventService.getEventAttendees(eventId);
       if (attendeesResponse.success) {
         setAttendees(attendeesResponse.data);
       }

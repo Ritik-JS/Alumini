@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, Pin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import mockForumService from '@/services/mockForumService';
+import { forumService } from '@/services';
 import { toast } from 'sonner';
 
 const PostCard = ({ post, showFullContent = false }) => {
@@ -18,7 +18,7 @@ const PostCard = ({ post, showFullContent = false }) => {
     e.stopPropagation();
     
     try {
-      const response = await mockForumService.togglePostLike(post.id);
+      const response = await forumService.togglePostLike(post.id);
       if (response.success) {
         setLiked(response.data.liked);
         setLikesCount(prev => response.data.liked ? prev + 1 : prev - 1);
