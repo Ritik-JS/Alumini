@@ -8,8 +8,30 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { getMentorByUserId, getSessionsByRequestId, getAllMentorshipRequests } from '@/services/mockMentorshipService';
-import mockData from '@/mockdata.json';
+import { mentorshipService, profileService } from '@/services';
+
+const LoadingSpinner = () => (
+  <div className="flex flex-col items-center justify-center py-12">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+    <p className="text-gray-600">Loading mentor profile...</p>
+  </div>
+);
+
+const ErrorMessage = ({ message, onRetry }) => (
+  <div className="flex flex-col items-center justify-center py-12">
+    <div className="text-red-500 mb-4">
+      <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+    <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Mentor Profile</h3>
+    <p className="text-gray-600 mb-4 text-center max-w-md">{message}</p>
+    {onRetry && (
+      <Button onClick={onRetry}>Try Again</Button>
+    )}
+  </div>
+);
 
 const MentorProfile = () => {
   const { userId } = useParams();
@@ -17,36 +39,90 @@ const MentorProfile = () => {
   const [mentor, setMentor] = useState(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Get mentor data
-    const mentorData = getMentorByUserId(userId);
-    if (mentorData) {
+    loadMentorData();
+  }, [userId]);
+
+  const loadMentorData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Get mentor data
+      const mentorResult = await mentorshipService.getMentorByUserId(userId);
+      if (!mentorResult.success) {
+        setError(mentorResult.error || 'Failed to load mentor profile');
+        return;
+      }
+
+      const mentorData = mentorResult.data;
       setMentor(mentorData);
 
       // Get reviews from completed sessions
-      const requests = getAllMentorshipRequests();
-      const mentorRequests = requests.filter(r => r.mentor_id === userId && r.status === 'accepted');
-      
-      const allReviews = [];
-      mentorRequests.forEach(request => {
-        const sessions = getSessionsByRequestId(request.id);
-        const completedSessions = sessions.filter(s => s.status === 'completed' && s.feedback && s.rating);
-        
-        completedSessions.forEach(session => {
-          // Get student profile
-          const studentProfile = mockData.alumni_profiles.find(p => p.user_id === request.student_id);
-          allReviews.push({
-            ...session,
-            studentName: studentProfile?.name || 'Anonymous',
-            studentPhoto: studentProfile?.photo_url,
-          });
-        });
-      });
-      
-      setReviews(allReviews.sort((a, b) => new Date(b.scheduled_date) - new Date(a.scheduled_date)));
+      const requestsResult = await mentorshipService.getAllMentorshipRequests();
+      if (requestsResult.success) {
+        const requests = requestsResult.data;
+        const mentorRequests = requests.filter(r => r.mentor_id === userId && r.status === 'accepted');
+
+        const allReviews = [];
+        for (const request of mentorRequests) {
+          const sessionsResult = await mentorshipService.getSessionsByRequestId(request.id);
+          if (sessionsResult.success) {
+            const sessions = sessionsResult.data;
+            const completedSessions = sessions.filter(s => s.status === 'completed' && s.feedback && s.rating);
+
+            for (const session of completedSessions) {
+              // Get student profile - service should provide enriched data
+              allReviews.push({
+                ...session,
+                studentName: session.student?.name || 'Anonymous',
+                studentPhoto: session.student?.photo_url,
+              });
+            }
+          }
+        }
+
+        setReviews(allReviews.sort((a, b) => new Date(b.scheduled_date) - new Date(a.scheduled_date)));
+      }
+    } catch (err) {
+      console.error('Error loading mentor data:', err);
+      setError('Failed to load mentor profile. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  }, [userId]);
+  };
+
+  const getInitials = (name) => {
+    return name
+      ?.split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || '??';
+  };
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <LoadingSpinner />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <ErrorMessage message={error} onRetry={loadMentorData} />
+        </div>
+      </MainLayout>
+    );
+  }
 
   if (!mentor) {
     return (
@@ -57,15 +133,6 @@ const MentorProfile = () => {
       </MainLayout>
     );
   }
-
-  const getInitials = (name) => {
-    return name
-      ?.split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2) || '??';
-  };
 
   const availableSlots = mentor.max_mentees - mentor.current_mentees_count;
   const isAvailable = mentor.is_available && availableSlots > 0;

@@ -15,17 +15,30 @@ import { toast } from 'sonner';
 import RequestCard from '@/components/mentorship/RequestCard';
 import SessionCard from '@/components/mentorship/SessionCard';
 import ScheduleSessionModal from '@/components/mentorship/ScheduleSessionModal';
-import {
-  getMentorByUserId,
-  getMentorRequests,
-  getActiveMentees,
-  getUpcomingSessions,
-  acceptMentorshipRequest,
-  rejectMentorshipRequest,
-  updateMentorProfile,
-  registerAsMentor,
-} from '@/services/mockMentorshipService';
-import mockData from '@/mockdata.json';
+import { mentorshipService } from '@/services';
+
+const LoadingSpinner = () => (
+  <div className="flex flex-col items-center justify-center py-12">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+    <p className="text-gray-600">Loading mentor management...</p>
+  </div>
+);
+
+const ErrorMessage = ({ message, onRetry }) => (
+  <div className="flex flex-col items-center justify-center py-12">
+    <div className="text-red-500 mb-4">
+      <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+    <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Data</h3>
+    <p className="text-gray-600 mb-4 text-center max-w-md">{message}</p>
+    {onRetry && (
+      <Button onClick={onRetry}>Try Again</Button>
+    )}
+  </div>
+);
 
 const MentorManagement = () => {
   const { user } = useAuth();
@@ -38,6 +51,8 @@ const MentorManagement = () => {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedMentorship, setSelectedMentorship] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -49,32 +64,51 @@ const MentorManagement = () => {
   const [newExpertise, setNewExpertise] = useState('');
 
   useEffect(() => {
-    loadMentorData();
-  }, [user.id]);
+    if (user?.id) {
+      loadMentorData();
+    }
+  }, [user?.id]);
 
-  const loadMentorData = () => {
-    const mentor = getMentorByUserId(user.id);
-    
-    if (mentor) {
-      setMentorProfile(mentor);
-      setFormData({
-        is_available: mentor.is_available,
-        max_mentees: mentor.max_mentees,
-        mentorship_approach: mentor.mentorship_approach || '',
-        expertise_areas: mentor.expertise_areas || [],
-      });
+  const loadMentorData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-      // Load mentor-specific data
-      const requests = getMentorRequests(user.id);
-      setPendingRequests(requests.filter(r => r.status === 'pending'));
+      const mentorResult = await mentorshipService.getMentorByUserId(user.id);
 
-      const mentees = getActiveMentees(user.id);
-      setActiveMentees(mentees);
+      if (mentorResult.success && mentorResult.data) {
+        const mentor = mentorResult.data;
+        setMentorProfile(mentor);
+        setFormData({
+          is_available: mentor.is_available,
+          max_mentees: mentor.max_mentees,
+          mentorship_approach: mentor.mentorship_approach || '',
+          expertise_areas: mentor.expertise_areas || [],
+        });
 
-      const sessions = getUpcomingSessions(user.id);
-      setUpcomingSessions(sessions);
-    } else {
-      setIsRegistering(true);
+        // Load mentor-specific data
+        const requestsResult = await mentorshipService.getMentorRequests(user.id);
+        if (requestsResult.success) {
+          setPendingRequests(requestsResult.data.filter(r => r.status === 'pending'));
+        }
+
+        const menteesResult = await mentorshipService.getActiveMentees(user.id);
+        if (menteesResult.success) {
+          setActiveMentees(menteesResult.data);
+        }
+
+        const sessionsResult = await mentorshipService.getUpcomingSessions(user.id);
+        if (sessionsResult.success) {
+          setUpcomingSessions(sessionsResult.data);
+        }
+      } else {
+        setIsRegistering(true);
+      }
+    } catch (err) {
+      console.error('Error loading mentor data:', err);
+      setError('Failed to load mentor data. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -84,7 +118,7 @@ const MentorManagement = () => {
       return;
     }
 
-    const result = await registerAsMentor(user.id, formData);
+    const result = await mentorshipService.registerAsMentor(user.id, formData);
     if (result.success) {
       toast.success('Successfully registered as a mentor!');
       setIsRegistering(false);
@@ -95,7 +129,7 @@ const MentorManagement = () => {
   };
 
   const handleUpdateProfile = async () => {
-    const result = await updateMentorProfile(user.id, formData);
+    const result = await mentorshipService.updateMentorProfile(user.id, formData);
     if (result.success) {
       toast.success('Mentor profile updated successfully');
       setEditMode(false);
@@ -123,7 +157,7 @@ const MentorManagement = () => {
   };
 
   const handleAcceptRequest = async (request) => {
-    const result = await acceptMentorshipRequest(request.id);
+    const result = await mentorshipService.acceptMentorshipRequest(request.id);
     if (result.success) {
       toast.success('Mentorship request accepted!');
       loadMentorData();
@@ -134,7 +168,7 @@ const MentorManagement = () => {
 
   const handleRejectRequest = async (request) => {
     const reason = prompt('Please provide a reason for rejection (optional):');
-    const result = await rejectMentorshipRequest(request.id, reason || '');
+    const result = await mentorshipService.rejectMentorshipRequest(request.id, reason || '');
     if (result.success) {
       toast.success('Mentorship request rejected');
       loadMentorData();
@@ -164,6 +198,26 @@ const MentorManagement = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <LoadingSpinner />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <ErrorMessage message={error} onRetry={loadMentorData} />
+        </div>
+      </MainLayout>
+    );
+  }
+
   // If not registered as mentor, show registration form
   if (isRegistering) {
     return (
@@ -187,7 +241,7 @@ const MentorManagement = () => {
                 </div>
                 <Switch
                   checked={formData.is_available}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     setFormData(prev => ({ ...prev, is_available: checked }))
                   }
                 />
@@ -201,7 +255,7 @@ const MentorManagement = () => {
                   min="1"
                   max="20"
                   value={formData.max_mentees}
-                  onChange={(e) => 
+                  onChange={(e) =>
                     setFormData(prev => ({ ...prev, max_mentees: parseInt(e.target.value) }))
                   }
                   className="mt-1 max-w-xs"
@@ -250,7 +304,7 @@ const MentorManagement = () => {
                 <Label>Mentorship Approach</Label>
                 <Textarea
                   value={formData.mentorship_approach}
-                  onChange={(e) => 
+                  onChange={(e) =>
                     setFormData(prev => ({ ...prev, mentorship_approach: e.target.value }))
                   }
                   placeholder="Describe your mentorship style, what mentees can expect, and how you like to structure sessions..."
@@ -415,7 +469,7 @@ const MentorManagement = () => {
                   <Button
                     variant={mentorProfile.is_available ? 'destructive' : 'default'}
                     onClick={async () => {
-                      const result = await updateMentorProfile(user.id, {
+                      const result = await mentorshipService.updateMentorProfile(user.id, {
                         ...formData,
                         is_available: !mentorProfile.is_available,
                       });
@@ -448,22 +502,17 @@ const MentorManagement = () => {
               <CardContent>
                 {pendingRequests.length > 0 ? (
                   <div className="space-y-4">
-                    {pendingRequests.map((request) => {
-                      const profile = mockData.alumni_profiles.find(
-                        p => p.user_id === request.student_id
-                      );
-                      return (
-                        <RequestCard
-                          key={request.id}
-                          request={request}
-                          userProfile={profile}
-                          isStudentView={false}
-                          onAccept={handleAcceptRequest}
-                          onReject={handleRejectRequest}
-                          onViewProfile={handleViewProfile}
-                        />
-                      );
-                    })}
+                    {pendingRequests.map((request) => (
+                      <RequestCard
+                        key={request.id}
+                        request={request}
+                        userProfile={request.studentProfile}
+                        isStudentView={false}
+                        onAccept={handleAcceptRequest}
+                        onReject={handleRejectRequest}
+                        onViewProfile={handleViewProfile}
+                      />
+                    ))}
                   </div>
                 ) : (
                   <div className="text-center py-12">

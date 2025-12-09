@@ -12,19 +12,30 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import {
-  getActiveMentorships,
-  getActiveMentees,
-  getStudentRequests,
-  getMentorRequests,
-  getUpcomingSessions,
-  getPastSessions,
-  acceptMentorshipRequest,
-  rejectMentorshipRequest,
-  cancelMentorshipRequest,
-  getMentorByUserId,
-} from '@/services/mockMentorshipService';
-import mockData from '@/mockdata.json';
+import { mentorshipService } from '@/services';
+
+const LoadingSpinner = () => (
+  <div className="flex flex-col items-center justify-center py-12">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+    <p className="text-gray-600">Loading mentorship dashboard...</p>
+  </div>
+);
+
+const ErrorMessage = ({ message, onRetry }) => (
+  <div className="flex flex-col items-center justify-center py-12">
+    <div className="text-red-500 mb-4">
+      <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+    <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Dashboard</h3>
+    <p className="text-gray-600 mb-4 text-center max-w-md">{message}</p>
+    {onRetry && (
+      <Button onClick={onRetry}>Try Again</Button>
+    )}
+  </div>
+);
 
 const MentorshipDashboard = () => {
   const navigate = useNavigate();
@@ -40,44 +51,77 @@ const MentorshipDashboard = () => {
   const [selectedMentorship, setSelectedMentorship] = useState(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Get current user
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     setUserData(user);
-
-    // Check if user is also a mentor
-    const mentorProfile = getMentorByUserId(user.id);
-    setIsMentor(!!mentorProfile);
-
-    loadData(user.id);
+    if (user.id) {
+      initializeData(user.id);
+    }
   }, []);
 
-  const loadData = (userId) => {
-    // Student data
-    const mentorships = getActiveMentorships(userId);
-    setActiveMentorships(mentorships);
+  const initializeData = async (userId) => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    const stuRequests = getStudentRequests(userId);
-    setStudentRequests(stuRequests);
+      // Check if user is also a mentor
+      const mentorResult = await mentorshipService.getMentorByUserId(userId);
+      setIsMentor(mentorResult.success && mentorResult.data);
 
-    // Mentor data
-    const mentees = getActiveMentees(userId);
-    setActiveMentees(mentees);
+      await loadData(userId);
+    } catch (err) {
+      console.error('Error initializing dashboard:', err);
+      setError('Failed to load dashboard data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const menRequests = getMentorRequests(userId);
-    setMentorRequests(menRequests);
+  const loadData = async (userId) => {
+    try {
+      // Student data
+      const mentorshipsResult = await mentorshipService.getActiveMentorships(userId);
+      if (mentorshipsResult.success) {
+        setActiveMentorships(mentorshipsResult.data || []);
+      }
 
-    // Sessions
-    const upcoming = getUpcomingSessions(userId);
-    setUpcomingSessions(upcoming);
+      const stuRequestsResult = await mentorshipService.getStudentRequests(userId);
+      if (stuRequestsResult.success) {
+        setStudentRequests(stuRequestsResult.data || []);
+      }
 
-    const past = getPastSessions(userId);
-    setPastSessions(past);
+      // Mentor data
+      const menteesResult = await mentorshipService.getActiveMentees(userId);
+      if (menteesResult.success) {
+        setActiveMentees(menteesResult.data || []);
+      }
+
+      const menRequestsResult = await mentorshipService.getMentorRequests(userId);
+      if (menRequestsResult.success) {
+        setMentorRequests(menRequestsResult.data || []);
+      }
+
+      // Sessions
+      const upcomingResult = await mentorshipService.getUpcomingSessions(userId);
+      if (upcomingResult.success) {
+        setUpcomingSessions(upcomingResult.data || []);
+      }
+
+      const pastResult = await mentorshipService.getPastSessions(userId);
+      if (pastResult.success) {
+        setPastSessions(pastResult.data || []);
+      }
+    } catch (err) {
+      console.error('Error loading mentorship data:', err);
+      toast.error('Some data could not be loaded');
+    }
   };
 
   const handleAcceptRequest = async (request) => {
-    const result = await acceptMentorshipRequest(request.id);
+    const result = await mentorshipService.acceptMentorshipRequest(request.id);
     if (result.success) {
       toast.success('Mentorship request accepted!');
       loadData(userData.id);
@@ -88,7 +132,7 @@ const MentorshipDashboard = () => {
 
   const handleRejectRequest = async (request) => {
     const reason = prompt('Please provide a reason for rejection (optional):');
-    const result = await rejectMentorshipRequest(request.id, reason || '');
+    const result = await mentorshipService.rejectMentorshipRequest(request.id, reason || '');
     if (result.success) {
       toast.success('Mentorship request rejected');
       loadData(userData.id);
@@ -99,7 +143,7 @@ const MentorshipDashboard = () => {
 
   const handleCancelRequest = async (request) => {
     if (window.confirm('Are you sure you want to cancel this request?')) {
-      const result = await cancelMentorshipRequest(request.id);
+      const result = await mentorshipService.cancelMentorshipRequest(request.id);
       if (result.success) {
         toast.success('Mentorship request cancelled');
         loadData(userData.id);
@@ -144,12 +188,25 @@ const MentorshipDashboard = () => {
       .slice(0, 2) || '??';
   };
 
-  // Get request details with profiles
-  const getRequestWithProfile = (request, isStudentView) => {
-    const userId = isStudentView ? request.mentor_id : request.student_id;
-    const profile = mockData.alumni_profiles.find(p => p.user_id === userId);
-    return { request, profile };
-  };
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <LoadingSpinner />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <ErrorMessage message={error} onRetry={() => initializeData(userData.id)} />
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -325,19 +382,16 @@ const MentorshipDashboard = () => {
                 <div className="grid grid-cols-1 gap-4">
                   {studentRequests
                     .filter(r => r.status === 'pending')
-                    .map((request) => {
-                      const { profile } = getRequestWithProfile(request, true);
-                      return (
-                        <RequestCard
-                          key={request.id}
-                          request={request}
-                          userProfile={profile}
-                          isStudentView={true}
-                          onCancel={handleCancelRequest}
-                          onViewProfile={handleViewProfile}
-                        />
-                      );
-                    })}
+                    .map((request) => (
+                      <RequestCard
+                        key={request.id}
+                        request={request}
+                        userProfile={request.mentorProfile}
+                        isStudentView={true}
+                        onCancel={handleCancelRequest}
+                        onViewProfile={handleViewProfile}
+                      />
+                    ))}
                 </div>
               </div>
             )}
@@ -435,20 +489,17 @@ const MentorshipDashboard = () => {
                   <div className="grid grid-cols-1 gap-4">
                     {mentorRequests
                       .filter(r => r.status === 'pending')
-                      .map((request) => {
-                        const { profile } = getRequestWithProfile(request, false);
-                        return (
-                          <RequestCard
-                            key={request.id}
-                            request={request}
-                            userProfile={profile}
-                            isStudentView={false}
-                            onAccept={handleAcceptRequest}
-                            onReject={handleRejectRequest}
-                            onViewProfile={handleViewProfile}
-                          />
-                        );
-                      })}
+                      .map((request) => (
+                        <RequestCard
+                          key={request.id}
+                          request={request}
+                          userProfile={request.studentProfile}
+                          isStudentView={false}
+                          onAccept={handleAcceptRequest}
+                          onReject={handleRejectRequest}
+                          onViewProfile={handleViewProfile}
+                        />
+                      ))}
                   </div>
                 </div>
               )}

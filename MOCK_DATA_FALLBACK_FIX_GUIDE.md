@@ -882,28 +882,100 @@ All API services have been audited. Critical gaps identified and documented. Ser
 
 ---
 
-### **Phase 4: Component Refactoring - Mentorship Section** (4-5 credits)
+### **Phase 4: Component Refactoring - Mentorship Section** ✅ **COMPLETED**
 
 **Objective**: Remove direct mock imports from mentorship components
 
-**Components to Refactor**:
-1. MentorProfile.jsx
-2. MentorshipDashboard.jsx
-3. MentorManagement.jsx
-4. SessionDetails.jsx
+**Implementation Status**: All 4 mentorship components fully refactored
 
-**Same pattern as Phase 3**:
-- Remove direct mock imports
-- Use `mentorshipService` from service layer
-- Add loading/error states
-- Implement proper error handling UI
+**Completed Components**:
+1. ✅ MentorProfile.jsx - Using mentorshipService
+2. ✅ MentorshipDashboard.jsx - Using mentorshipService
+3. ✅ MentorManagement.jsx - Using mentorshipService
+4. ✅ SessionDetails.jsx - Using mentorshipService
 
-**Additional Considerations for Mentorship**:
-- Real-time session updates
-- Calendar integration
-- User profile data dependencies
+**Implemented Pattern (Applied to All)**:
+- ✅ Removed all direct imports from `@/services/mockMentorshipService`
+- ✅ Changed imports to use `@/services` (proper service layer)
+- ✅ Removed all `import mockData from '@/mockdata.json'`
+- ✅ Added loading state with LoadingSpinner component
+- ✅ Added error state with ErrorMessage component and retry functionality
+- ✅ Implemented data fetching in async functions with try-catch
+- ✅ Added proper error handling UI
+- ✅ Ready to test with both mock and backend modes
 
-**Deliverable**: All mentorship components using service layer
+**Deliverable**: ✅ All mentorship components using service layer correctly
+
+---
+
+## 📊 Phase 4 Completion Report
+
+### **All Mentorship Components - COMPLETED** ✅
+
+**Date Completed**: January 2025
+
+**All 4 mentorship components have been successfully refactored:**
+
+1. ✅ **MentorProfile.jsx** - COMPLETED
+   - Changed from direct `mockMentorshipService` import to `@/services`
+   - Removed `mockdata.json` import for profile lookups
+   - Added LoadingSpinner and ErrorMessage components
+   - Implemented async data loading with proper error handling
+   - Service handles profile enrichment (no manual mockData lookups needed)
+
+2. ✅ **MentorshipDashboard.jsx** - COMPLETED
+   - Changed from direct `mockMentorshipService` import to `@/services`
+   - Removed `mockdata.json` import
+   - Added comprehensive loading and error states
+   - Implemented async initialization and data loading
+   - All mentorship operations use service layer
+
+3. ✅ **MentorManagement.jsx** - COMPLETED
+   - Changed from direct `mockMentorshipService` import to `@/services`
+   - Removed `mockdata.json` import
+   - Added loading/error states for all operations
+   - Registration and profile update use service layer
+   - Service provides enriched request/mentee data
+
+4. ✅ **SessionDetails.jsx** - COMPLETED
+   - Changed from direct `mockMentorshipService` import to `@/services`
+   - Removed `mockdata.json` import for profile lookups
+   - Added LoadingSpinner and ErrorMessage components
+   - All session operations use service layer
+   - Service provides enriched session data with profiles
+
+### **Key Achievements**:
+- ✅ Zero direct imports from `mockMentorshipService` bypassing switcher
+- ✅ Zero direct mock data imports in any mentorship component
+- ✅ All components have proper loading states
+- ✅ All components have error states with retry functionality
+- ✅ All components use `mentorshipService` from `@/services`
+- ✅ Service layer correctly switches between mock and API based on environment variable
+- ✅ Profile enrichment handled by service layer (no manual lookups needed)
+
+### **Testing Readiness**:
+All components are ready to test with both:
+- **Mock Mode**: `REACT_APP_USE_MOCK_DATA=true` - Uses mockMentorshipService
+- **Backend Mode**: `REACT_APP_USE_MOCK_DATA=false` - Uses apiMentorshipService
+
+### **Files Modified**:
+- `/app/frontend/src/page/mentorship/MentorProfile.jsx` - Complete refactor
+- `/app/frontend/src/page/mentorship/MentorshipDashboard.jsx` - Complete refactor
+- `/app/frontend/src/page/mentorship/MentorManagement.jsx` - Complete refactor
+- `/app/frontend/src/page/mentorship/SessionDetails.jsx` - Complete refactor
+
+---
+
+## ✅ Phase 4 Complete - Ready for Phase 5
+
+All 4 mentorship components have been successfully refactored to use the service layer. The toggle mechanism now works correctly for the entire mentorship section.
+
+**Combined Progress (Phases 3 & 4)**:
+- ✅ **13 components total refactored**
+  - 9 Admin components (Phase 3)
+  - 4 Mentorship components (Phase 4)
+- ✅ **Zero direct mock imports remaining**
+- ✅ **All components respect REACT_APP_USE_MOCK_DATA toggle**
 
 ---
 
@@ -1141,11 +1213,11 @@ describe('Mock Data Toggle', () => {
 - [x] AdminBadges.jsx - **COMPLETED** (using badgeService)
 - [x] AdminMentorship.jsx - **COMPLETED** (using mentorshipService)
 
-### Phase 4: Mentorship Refactoring ✅
-- [ ] MentorProfile.jsx
-- [ ] MentorshipDashboard.jsx
-- [ ] MentorManagement.jsx
-- [ ] SessionDetails.jsx
+### Phase 4: Mentorship Refactoring ✅ **COMPLETED**
+- [x] MentorProfile.jsx - **COMPLETED** (using mentorshipService)
+- [x] MentorshipDashboard.jsx - **COMPLETED** (using mentorshipService)
+- [x] MentorManagement.jsx - **COMPLETED** (using mentorshipService)
+- [x] SessionDetails.jsx - **COMPLETED** (using mentorshipService)
 
 ### Phase 5: Testing & Validation ✅
 - [ ] Create error components

@@ -10,13 +10,30 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { format, isPast, isFuture } from 'date-fns';
-import {
-  getSessionById,
-  getRequestById,
-  getMentorByUserId,
-  cancelSession,
-} from '@/services/mockMentorshipService';
-import mockData from '@/mockdata.json';
+import { mentorshipService } from '@/services';
+
+const LoadingSpinner = () => (
+  <div className="flex flex-col items-center justify-center py-12">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+    <p className="text-gray-600">Loading session details...</p>
+  </div>
+);
+
+const ErrorMessage = ({ message, onRetry }) => (
+  <div className="flex flex-col items-center justify-center py-12">
+    <div className="text-red-500 mb-4">
+      <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+    <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Session</h3>
+    <p className="text-gray-600 mb-4 text-center max-w-md">{message}</p>
+    {onRetry && (
+      <Button onClick={onRetry}>Try Again</Button>
+    )}
+  </div>
+);
 
 const SessionDetails = () => {
   const { sessionId } = useParams();
@@ -27,37 +44,59 @@ const SessionDetails = () => {
   const [student, setStudent] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadSessionData();
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     setCurrentUser(user);
+    loadSessionData();
   }, [sessionId]);
 
-  const loadSessionData = () => {
-    const sessionData = getSessionById(sessionId);
-    if (sessionData) {
+  const loadSessionData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const sessionResult = await mentorshipService.getSessionById(sessionId);
+      if (!sessionResult.success) {
+        setError(sessionResult.error || 'Session not found');
+        return;
+      }
+
+      const sessionData = sessionResult.data;
       setSession(sessionData);
 
       // Get request
-      const requestData = getRequestById(sessionData.mentorship_request_id);
-      if (requestData) {
+      const requestResult = await mentorshipService.getRequestById(sessionData.mentorship_request_id);
+      if (requestResult.success && requestResult.data) {
+        const requestData = requestResult.data;
         setRequest(requestData);
 
-        // Get mentor and student profiles
-        const mentorData = getMentorByUserId(requestData.mentor_id);
-        setMentor(mentorData);
+        // Get mentor and student profiles - service should provide enriched data
+        const mentorResult = await mentorshipService.getMentorByUserId(requestData.mentor_id);
+        if (mentorResult.success) {
+          setMentor(mentorResult.data);
+        }
 
-        const studentProfile = mockData.alumni_profiles.find(p => p.user_id === requestData.student_id);
-        const studentUser = mockData.users.find(u => u.id === requestData.student_id);
-        setStudent({ ...studentUser, profile: studentProfile });
+        // Student data should be included in request or session data from service
+        if (sessionData.student) {
+          setStudent(sessionData.student);
+        } else if (requestData.student) {
+          setStudent(requestData.student);
+        }
       }
+    } catch (err) {
+      console.error('Error loading session data:', err);
+      setError('Failed to load session details. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCancelSession = async () => {
     if (window.confirm('Are you sure you want to cancel this session?')) {
-      const result = await cancelSession(sessionId);
+      const result = await mentorshipService.cancelSession(sessionId);
       if (result.success) {
         toast.success('Session cancelled');
         loadSessionData();
@@ -83,9 +122,38 @@ const SessionDetails = () => {
       duration: session.duration,
       location: session.meeting_link || 'Virtual',
     };
-    
+
     toast.info('Calendar export coming soon!');
   };
+
+  const getInitials = (name) => {
+    return name
+      ?.split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || '??';
+  };
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <LoadingSpinner />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <ErrorMessage message={error} onRetry={loadSessionData} />
+        </div>
+      </MainLayout>
+    );
+  }
 
   if (!session || !request) {
     return (
@@ -96,15 +164,6 @@ const SessionDetails = () => {
       </MainLayout>
     );
   }
-
-  const getInitials = (name) => {
-    return name
-      ?.split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2) || '??';
-  };
 
   const sessionDate = new Date(session.scheduled_date);
   const isUpcoming = isFuture(sessionDate);
@@ -212,48 +271,52 @@ const SessionDetails = () => {
             <h2 className="text-xl font-bold text-gray-900 mb-4">Participants</h2>
             <div className="space-y-4">
               {/* Mentor */}
-              <div className="flex items-center gap-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={mentor?.profile?.photo_url} alt={mentor?.profile?.name} />
-                  <AvatarFallback>{getInitials(mentor?.profile?.name)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{mentor?.profile?.name}</h3>
-                  <p className="text-sm text-gray-600">{mentor?.profile?.headline}</p>
-                  <Badge variant="secondary" className="text-xs mt-1">Mentor</Badge>
+              {mentor && (
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={mentor?.profile?.photo_url} alt={mentor?.profile?.name} />
+                    <AvatarFallback>{getInitials(mentor?.profile?.name)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">{mentor?.profile?.name}</h3>
+                    <p className="text-sm text-gray-600">{mentor?.profile?.headline}</p>
+                    <Badge variant="secondary" className="text-xs mt-1">Mentor</Badge>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/profile/${mentor?.user_id}`)}
+                  >
+                    View Profile
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/profile/${mentor?.user_id}`)}
-                >
-                  View Profile
-                </Button>
-              </div>
+              )}
 
               <Separator />
 
               {/* Student */}
-              <div className="flex items-center gap-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={student?.profile?.photo_url} alt={student?.profile?.name} />
-                  <AvatarFallback>{getInitials(student?.profile?.name || student?.email)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{student?.profile?.name || student?.email}</h3>
-                  <p className="text-sm text-gray-600">{student?.profile?.headline || 'Student'}</p>
-                  <Badge variant="secondary" className="text-xs mt-1">Mentee</Badge>
+              {student && (
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={student?.profile?.photo_url} alt={student?.profile?.name} />
+                    <AvatarFallback>{getInitials(student?.profile?.name || student?.email)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">{student?.profile?.name || student?.email}</h3>
+                    <p className="text-sm text-gray-600">{student?.profile?.headline || 'Student'}</p>
+                    <Badge variant="secondary" className="text-xs mt-1">Mentee</Badge>
+                  </div>
+                  {student?.profile && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/profile/${student?.id}`)}
+                    >
+                      View Profile
+                    </Button>
+                  )}
                 </div>
-                {student?.profile && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/profile/${student?.id}`)}
-                  >
-                    View Profile
-                  </Button>
-                )}
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>
