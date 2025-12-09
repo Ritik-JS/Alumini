@@ -25,7 +25,6 @@ const KnowledgeCapsuleDetail = () => {
 
   useEffect(() => {
     loadCapsule();
-    checkUserInteractions();
     loadAIInsights();
   }, [capsuleId]);
 
@@ -39,8 +38,11 @@ const KnowledgeCapsuleDetail = () => {
         setLikesCount(res.data.likes_count || 0);
         setBookmarksCount(res.data.bookmarks_count || 0);
         
-        // Increment view count
-        incrementViewCount();
+        // Set user interaction status from backend response
+        setIsLiked(res.data.is_liked_by_user || false);
+        setIsBookmarked(res.data.is_bookmarked_by_user || false);
+        
+        // Note: View count is automatically incremented by backend when fetching capsule
       } else {
         toast.error('Knowledge capsule not found');
         navigate('/knowledge');
@@ -52,19 +54,6 @@ const KnowledgeCapsuleDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const checkUserInteractions = () => {
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-    if (!currentUser.id) return;
-
-    // Check if user has liked this capsule
-    const userLikes = JSON.parse(localStorage.getItem('user_capsule_likes') || '{}');
-    setIsLiked(userLikes[currentUser.id]?.includes(capsuleId) || false);
-
-    // Check if user has bookmarked this capsule
-    const userBookmarks = JSON.parse(localStorage.getItem('user_capsule_bookmarks') || '{}');
-    setIsBookmarked(userBookmarks[currentUser.id]?.includes(capsuleId) || false);
   };
 
   const loadAIInsights = async () => {
@@ -84,15 +73,6 @@ const KnowledgeCapsuleDetail = () => {
     }
   };
 
-  const incrementViewCount = () => {
-    // Increment view count in localStorage (for mockdata)
-    const viewedCapsules = JSON.parse(localStorage.getItem('viewed_capsules') || '{}');
-    if (!viewedCapsules[capsuleId]) {
-      viewedCapsules[capsuleId] = true;
-      localStorage.setItem('viewed_capsules', JSON.stringify(viewedCapsules));
-    }
-  };
-
   const handleLike = async () => {
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
     if (!currentUser.id) {
@@ -101,33 +81,31 @@ const KnowledgeCapsuleDetail = () => {
     }
 
     try {
-      if (isLiked) {
-        await knowledgeService.unlikeCapsule(capsuleId);
-        setIsLiked(false);
-        setLikesCount(prev => Math.max(0, prev - 1));
+      const res = await knowledgeService.likeCapsule(capsuleId);
+      
+      if (res.success) {
+        // Update state based on backend response
+        const newLikedStatus = res.data?.is_liked || !isLiked; // Toggle if not provided
+        setIsLiked(newLikedStatus);
         
-        // Update localStorage
-        const userLikes = JSON.parse(localStorage.getItem('user_capsule_likes') || '{}');
-        if (userLikes[currentUser.id]) {
-          userLikes[currentUser.id] = userLikes[currentUser.id].filter(id => id !== capsuleId);
-          localStorage.setItem('user_capsule_likes', JSON.stringify(userLikes));
+        // Update count
+        if (newLikedStatus) {
+          setLikesCount(prev => prev + 1);
+          toast.success('Capsule liked!');
+        } else {
+          setLikesCount(prev => Math.max(0, prev - 1));
+          toast.success('Like removed');
         }
         
-        toast.success('Like removed');
+        // Update counts from backend if provided
+        if (res.data?.likes_count !== undefined) {
+          setLikesCount(res.data.likes_count);
+        }
       } else {
-        await knowledgeService.likeCapsule(capsuleId);
-        setIsLiked(true);
-        setLikesCount(prev => prev + 1);
-        
-        // Update localStorage
-        const userLikes = JSON.parse(localStorage.getItem('user_capsule_likes') || '{}');
-        if (!userLikes[currentUser.id]) userLikes[currentUser.id] = [];
-        userLikes[currentUser.id].push(capsuleId);
-        localStorage.setItem('user_capsule_likes', JSON.stringify(userLikes));
-        
-        toast.success('Capsule liked!');
+        toast.error(res.message || 'Action failed');
       }
     } catch (error) {
+      console.error('Error toggling like:', error);
       toast.error('Action failed');
     }
   };
@@ -140,33 +118,31 @@ const KnowledgeCapsuleDetail = () => {
     }
 
     try {
-      await knowledgeService.bookmarkCapsule(capsuleId);
+      const res = await knowledgeService.bookmarkCapsule(capsuleId);
       
-      if (isBookmarked) {
-        setIsBookmarked(false);
-        setBookmarksCount(prev => Math.max(0, prev - 1));
+      if (res.success) {
+        // Update state based on backend response
+        const newBookmarkedStatus = res.data?.is_bookmarked || !isBookmarked; // Toggle if not provided
+        setIsBookmarked(newBookmarkedStatus);
         
-        // Update localStorage
-        const userBookmarks = JSON.parse(localStorage.getItem('user_capsule_bookmarks') || '{}');
-        if (userBookmarks[currentUser.id]) {
-          userBookmarks[currentUser.id] = userBookmarks[currentUser.id].filter(id => id !== capsuleId);
-          localStorage.setItem('user_capsule_bookmarks', JSON.stringify(userBookmarks));
+        // Update count
+        if (newBookmarkedStatus) {
+          setBookmarksCount(prev => prev + 1);
+          toast.success('Capsule bookmarked!');
+        } else {
+          setBookmarksCount(prev => Math.max(0, prev - 1));
+          toast.success('Bookmark removed');
         }
         
-        toast.success('Bookmark removed');
+        // Update counts from backend if provided
+        if (res.data?.bookmarks_count !== undefined) {
+          setBookmarksCount(res.data.bookmarks_count);
+        }
       } else {
-        setIsBookmarked(true);
-        setBookmarksCount(prev => prev + 1);
-        
-        // Update localStorage
-        const userBookmarks = JSON.parse(localStorage.getItem('user_capsule_bookmarks') || '{}');
-        if (!userBookmarks[currentUser.id]) userBookmarks[currentUser.id] = [];
-        userBookmarks[currentUser.id].push(capsuleId);
-        localStorage.setItem('user_capsule_bookmarks', JSON.stringify(userBookmarks));
-        
-        toast.success('Capsule bookmarked!');
+        toast.error(res.message || 'Action failed');
       }
     } catch (error) {
+      console.error('Error toggling bookmark:', error);
       toast.error('Action failed');
     }
   };
