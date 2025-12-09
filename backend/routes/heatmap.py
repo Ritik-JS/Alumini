@@ -444,3 +444,139 @@ async def get_location_details(
             status_code=500,
             detail=f"Failed to fetch location details: {str(e)}"
         )
+
+
+# ============================================================================
+# PHASE 10.5: TALENT CLUSTERING ENDPOINTS
+# ============================================================================
+
+@router.post("/clusters/generate")
+async def generate_talent_clusters(
+    eps_km: float = Query(50.0, ge=1.0, le=500.0, description="Maximum distance (km) between points in same cluster"),
+    min_samples: int = Query(5, ge=2, le=50, description="Minimum alumni to form a cluster"),
+    current_user: dict = Depends(require_role(['admin']))
+):
+    """
+    Generate talent clusters using DBSCAN algorithm
+    Admin only - Analyzes alumni geographic distribution and creates clusters
+    
+    Args:
+        eps_km: Maximum distance (in km) between alumni to be in same cluster
+        min_samples: Minimum number of alumni required to form a cluster
+        
+    Returns:
+        Clustering results with cluster statistics
+        
+    Note: This operation may take time for large datasets.
+    Existing clusters will be replaced with new analysis.
+    """
+    try:
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            # Clear existing clusters
+            async with conn.cursor() as cursor:
+                await cursor.execute("DELETE FROM talent_clusters")
+                await conn.commit()
+            
+            # Generate new clusters
+            result = await heatmap_service.cluster_alumni_by_location(
+                conn,
+                eps_km=eps_km,
+                min_samples=min_samples
+            )
+            
+            return {
+                "success": True,
+                "message": "Talent clustering completed successfully",
+                "data": result
+            }
+    
+    except Exception as e:
+        logger.error(f"Error generating talent clusters: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate talent clusters: {str(e)}"
+        )
+
+
+@router.get("/clusters")
+async def get_talent_clusters(
+    min_cluster_size: int = Query(1, ge=1, description="Minimum alumni count in cluster"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get all talent clusters
+    Returns geographic clusters of alumni with statistics
+    
+    Useful for:
+        - Identifying talent concentration areas
+        - Finding emerging tech hubs
+        - Planning events/meetups in high-density areas
+        - Understanding skill distribution by region
+    """
+    try:
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            clusters = await heatmap_service.get_talent_clusters(
+                conn,
+                min_cluster_size=min_cluster_size
+            )
+            
+            return {
+                "success": True,
+                "data": {
+                    "clusters": clusters,
+                    "total_clusters": len(clusters),
+                    "total_alumni_clustered": sum(c['alumni_count'] for c in clusters)
+                }
+            }
+    
+    except Exception as e:
+        logger.error(f"Error getting talent clusters: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch talent clusters: {str(e)}"
+        )
+
+
+@router.get("/clusters/{cluster_id}")
+async def get_cluster_details(
+    cluster_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get detailed information about a specific cluster
+    Returns cluster statistics and individual alumni profiles in the cluster
+    
+    Useful for:
+        - Viewing all alumni in a geographic area
+        - Understanding skill composition of a region
+        - Identifying potential connections within a cluster
+    """
+    try:
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            cluster_data = await heatmap_service.get_cluster_details(
+                conn,
+                cluster_id=cluster_id
+            )
+            
+            return {
+                "success": True,
+                "data": cluster_data
+            }
+    
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Error getting cluster details: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch cluster details: {str(e)}"
+        )
