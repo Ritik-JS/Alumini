@@ -56,6 +56,26 @@ export const jobService = {
     }
   },
 
+  // Filter jobs (utility function)
+  async filterJobs(filters = {}) {
+    return filterJobs(filters);
+  },
+
+  // Sort jobs (utility function)
+  async sortJobs(jobs, sortBy = 'recent') {
+    return sortJobs(jobs, sortBy);
+  },
+
+  // Paginate results (utility function)
+  async paginateResults(items, page = 1, perPage = 12) {
+    return paginateResults(items, page, perPage);
+  },
+
+  // Get filter options (utility function)
+  async getFilterOptions() {
+    return getFilterOptions();
+  },
+
   // Get job by ID
   async getJobById(jobId) {
     try {

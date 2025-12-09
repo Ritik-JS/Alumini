@@ -119,6 +119,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
+    isAuthenticated: !!user, // Boolean check if user exists
     login,
     register,
     logout,

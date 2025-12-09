@@ -268,6 +268,22 @@ class MockEventService {
       data: myEvents
     };
   }
+
+  // Get upcoming events
+  async getUpcomingEvents(limit = 10) {
+    await delay();
+    
+    const now = new Date();
+    const upcomingEvents = this.events
+      .filter(event => new Date(event.start_date) >= now && event.status === 'published')
+      .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
+      .slice(0, limit);
+    
+    return {
+      success: true,
+      data: upcomingEvents
+    };
+  }
 }
 
 export default new MockEventService();

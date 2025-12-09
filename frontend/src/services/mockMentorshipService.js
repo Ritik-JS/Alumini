@@ -611,10 +611,60 @@ export default {
   getAllMentors,
   getAvailableMentors,
   searchMentors,
-  filterMentors,
+  filterMentors: async (filters = {}) => {
+    // Wrap the synchronous filterMentors with async and proper response format
+    try {
+      let mentors = filterMentors(filters);
+      
+      // Apply sorting
+      if (filters.sortBy) {
+        mentors = sortMentors(mentors, filters.sortBy);
+      }
+      
+      // Apply pagination
+      const pageSize = filters.pageSize || 12;
+      const page = filters.page || 1;
+      const totalPages = Math.ceil(mentors.length / pageSize);
+      const startIndex = (page - 1) * pageSize;
+      const paginatedMentors = mentors.slice(startIndex, startIndex + pageSize);
+      
+      return {
+        success: true,
+        data: {
+          mentors: paginatedMentors,
+          totalPages,
+          currentPage: page,
+          total: mentors.length
+        }
+      };
+    } catch (error) {
+      console.error('Error filtering mentors:', error);
+      return {
+        success: false,
+        error: error.message,
+        data: { mentors: [], totalPages: 0 }
+      };
+    }
+  },
   sortMentors,
   getMentorByUserId,
-  getUniqueExpertiseAreas,
+  getUniqueExpertiseAreas: async () => {
+    // Wrap the synchronous getUniqueExpertiseAreas with async and proper response format
+    try {
+      const areas = getUniqueExpertiseAreas();
+      return {
+        success: true,
+        data: areas
+      };
+    } catch (error) {
+      console.error('Error getting expertise areas:', error);
+      return {
+        success: false,
+        error: error.message,
+        data: []
+      };
+    }
+  },
   getMentorStats,
   registerAsMentor,
   updateMentorProfile,
