@@ -9,6 +9,8 @@ import numpy as np
 from typing import Dict, List, Optional, Set
 from collections import Counter
 
+logger = logging.getLogger(__name__)
+
 # AI/ML imports for Phase 10.3
 try:
     from sentence_transformers import SentenceTransformer
@@ -18,7 +20,6 @@ except ImportError:
     EMBEDDINGS_AVAILABLE = False
     logger.warning("sentence-transformers or faiss-cpu not installed. AI features disabled.")
 
-logger = logging.getLogger(__name__)
 
 
 class SkillGraphService:

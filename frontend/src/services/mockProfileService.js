@@ -200,25 +200,58 @@ export const getUserById = async (userId) => {
 
 // Get current user's profile
 export const getMyProfile = async () => {
-  try {
-    // Get current user from localStorage
-    const userStr = localStorage.getItem('user');
-    if (!userStr) {
-      return { success: false, error: 'Not logged in' };
-    }
-    
-    const user = JSON.parse(userStr);
-    const profile = await getProfileByUserId(user.id);
-    
-    if (profile) {
-      return { success: true, data: profile };
-    } else {
-      return { success: false, error: 'Profile not found' };
-    }
-  } catch (error) {
-    console.error('Error getting my profile:', error);
-    return { success: false, error: error.message };
-  }
+  return new Promise((resolve) => {
+    setTimeout(async () => {
+      try {
+        // Get current user from localStorage
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+          resolve({ success: false, error: 'Not logged in' });
+          return;
+        }
+        
+        const user = JSON.parse(userStr);
+        const profile = await getProfileByUserId(user.id);
+        
+        if (profile) {
+          resolve({ success: true, data: profile });
+        } else {
+          // If no profile exists, return a default structure
+          resolve({ 
+            success: true, 
+            data: {
+              id: `profile-${user.id}`,
+              user_id: user.id,
+              name: user.email?.split('@')[0] || 'User',
+              email: user.email,
+              photo_url: '',
+              bio: '',
+              headline: '',
+              current_company: '',
+              current_role: '',
+              location: '',
+              batch_year: new Date().getFullYear(),
+              experience_timeline: [],
+              education_details: [],
+              skills: [],
+              achievements: [],
+              social_links: {},
+              industry: '',
+              years_of_experience: 0,
+              willing_to_mentor: false,
+              willing_to_hire: false,
+              profile_completion_percentage: 10,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error getting my profile:', error);
+        resolve({ success: false, error: error.message });
+      }
+    }, 200);
+  });
 };
 
 // Export the entire service as a named export
@@ -226,7 +259,32 @@ export const mockProfileService = {
   getProfileByUserId,
   getProfileById,
   getMyProfile,
-  updateProfile,
+  updateProfile: async (userId, updatedData) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
+        const index = profiles.findIndex(p => p.user_id === userId || p.id === userId);
+        
+        if (index !== -1) {
+          profiles[index] = { ...profiles[index], ...updatedData, updated_at: new Date().toISOString() };
+          saveData(PROFILES_KEY, profiles);
+          resolve({ success: true, data: profiles[index] });
+        } else {
+          // Create new profile if doesn't exist
+          const newProfile = {
+            id: `profile-${Date.now()}`,
+            user_id: userId,
+            ...updatedData,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          profiles.push(newProfile);
+          saveData(PROFILES_KEY, profiles);
+          resolve({ success: true, data: newProfile });
+        }
+      }, 300);
+    });
+  },
   createProfile,
   getAllJobs,
   getJobsByPostedBy,

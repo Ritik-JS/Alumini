@@ -670,7 +670,6 @@ export default {
   updateMentorProfile,
 
   // Requests
-  getAllMentorshipRequests,
   getStudentRequests,
   getMentorRequests,
   getRequestById,
@@ -682,7 +681,6 @@ export default {
   getActiveMentees,
 
   // Sessions
-  getAllSessions,
   getSessionsByRequestId,
   getSessionById,
   getUpcomingSessions,
@@ -695,7 +693,7 @@ export default {
   // Utilities
   paginateResults,
 
-  // ========== ADMIN METHODS ==========
+  // ========== ADMIN METHODS (Override duplicates above) ==========
 
   getAllMentorshipRequests: async (filters = {}) => {
     return new Promise((resolve) => {
@@ -711,8 +709,9 @@ export default {
           const studentProfile = profiles.find(p => p.user_id === req.student_id);
           const mentorProfile = profiles.find(p => p.user_id === req.mentor_id);
           
-          // Get sessions for this mentorship
-          const sessions = getAllSessions().filter(s => s.mentorship_request_id === req.id);
+          // Get sessions for this mentorship (need to use the full array access)
+          const allSessions = getStoredData(STORAGE_KEYS.MENTORSHIP_SESSIONS, mockData.mentorship_sessions || []);
+          const sessions = allSessions.filter(s => s.mentorship_request_id === req.id);
           
           return {
             ...req,
