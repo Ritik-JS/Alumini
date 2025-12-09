@@ -134,6 +134,233 @@ class CareerPredictionService:
             logger.error(f"Error predicting career path: {str(e)}")
             raise
     
+    async def _get_ml_predictions(
+        self,
+        current_role: str,
+        user_skills: List[str],
+        years_exp: int,
+        industry: str
+    ) -> Optional[List[Dict]]:
+        """
+        Get predictions from trained ML model
+        
+        Args:
+            current_role: User's current job role
+            user_skills: List of user's skills
+            years_exp: Years of experience
+            industry: User's industry
+        
+        Returns:
+            List of ML predictions or None if model unavailable
+        """
+        try:
+            # Get the model loader singleton
+            model_loader = get_model_loader()
+            
+            if not model_loader.is_loaded():
+                logger.info("ML model not loaded, will use rule-based predictions")
+                return None
+            
+            # Prepare user profile for prediction
+            user_profile = {
+                "current_role": current_role,
+                "skills": user_skills,
+                "years_of_experience": years_exp,
+                "industry": industry,
+                "transition_duration": 24,  # Default estimate
+                "success_rating": 3  # Neutral default
+            }
+            
+            # Get ML predictions
+            predictions = model_loader.predict(user_profile)
+            
+            if predictions and len(predictions) > 0:
+                logger.info(f"ML model returned {len(predictions)} predictions")
+                return predictions
+            else:
+                logger.info("ML model returned no predictions")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error getting ML predictions: {str(e)}")
+            return None
+    
+    async def _enhance_ml_predictions_with_db(
+        self,
+        db_conn,
+        ml_predictions: List[Dict],
+        user_skills: List[str]
+    ) -> List[Dict]:
+        """
+        Enhance ML predictions with database information (skills, timeframes, success rates)
+        
+        Args:
+            db_conn: Database connection
+            ml_predictions: Raw predictions from ML model
+            user_skills: User's current skills
+        
+        Returns:
+            Enhanced predictions with additional metadata
+        """
+        enhanced_predictions = []
+        
+        try:
+            for pred in ml_predictions[:5]:  # Top 5 predictions
+                role = pred.get('role', '')
+                probability = pred.get('probability', 0.5)
+                
+                # Try to get additional info from career transition matrix
+                async with db_conn.cursor() as cursor:
+                    await cursor.execute("""
+                        SELECT 
+                            avg_duration_months,
+                            required_skills,
+                            success_rate
+                        FROM career_transition_matrix
+                        WHERE to_role = %s
+                        ORDER BY transition_probability DESC
+                        LIMIT 1
+                    """, (role,))
+                    db_info = await cursor.fetchone()
+                
+                # Extract database info or use defaults
+                if db_info:
+                    duration_months = db_info[0] or 24
+                    required_skills_raw = db_info[1]
+                    success_rate = float(db_info[2]) if db_info[2] else 0.7
+                    
+                    # Parse required skills
+                    required_skills = []
+                    if required_skills_raw:
+                        try:
+                            required_skills = json.loads(required_skills_raw) if isinstance(required_skills_raw, str) else required_skills_raw
+                            if not isinstance(required_skills, list):
+                                required_skills = []
+                        except (json.JSONDecodeError, TypeError):
+                            required_skills = []
+                else:
+                    duration_months = 24
+                    required_skills = []
+                    success_rate = 0.7
+                
+                # Calculate skill match percentage
+                if required_skills and user_skills:
+                    matching_skills = set(required_skills) & set(user_skills)
+                    skill_match_ratio = len(matching_skills) / len(required_skills) if required_skills else 0.5
+                else:
+                    skill_match_ratio = 0.5
+                
+                # Build enhanced prediction
+                enhanced_predictions.append({
+                    "role": role,
+                    "probability": round(probability, 3),
+                    "timeframe_months": duration_months,
+                    "required_skills": required_skills,
+                    "skill_match_percentage": round(skill_match_ratio * 100, 1),
+                    "success_rate": round(success_rate, 3),
+                    "confidence": pred.get('confidence', 'medium'),
+                    "source": "ml_model"
+                })
+            
+            # Sort by probability
+            enhanced_predictions.sort(key=lambda x: x['probability'], reverse=True)
+            
+            return enhanced_predictions
+            
+        except Exception as e:
+            logger.error(f"Error enhancing ML predictions: {str(e)}")
+            # Return basic predictions if enhancement fails
+            return [
+                {
+                    "role": p.get('role', 'Unknown'),
+                    "probability": p.get('probability', 0.5),
+                    "timeframe_months": 24,
+                    "required_skills": [],
+                    "skill_match_percentage": 50.0,
+                    "success_rate": 0.7,
+                    "source": "ml_model"
+                }
+                for p in ml_predictions[:5]
+            ]
+    
+    async def _generate_personalized_advice(
+        self,
+        user_profile: Dict,
+        predicted_roles: List[Dict],
+        similar_alumni: List[Dict]
+    ) -> str:
+        """
+        Generate personalized career advice using LLM
+        
+        Args:
+            user_profile: User's profile information
+            predicted_roles: List of predicted career paths
+            similar_alumni: List of similar alumni for reference
+        
+        Returns:
+            Personalized advice string
+        """
+        try:
+            # Get LLM advisor
+            llm_advisor = get_llm_advisor()
+            
+            # Generate advice using LLM
+            advice = await llm_advisor.generate_career_advice(
+                user_profile=user_profile,
+                predictions=predicted_roles,
+                similar_alumni=similar_alumni
+            )
+            
+            if advice:
+                return advice
+            else:
+                # Return fallback advice if LLM fails
+                return self._generate_fallback_advice(user_profile, predicted_roles)
+                
+        except Exception as e:
+            logger.error(f"Error generating personalized advice: {str(e)}")
+            return self._generate_fallback_advice(user_profile, predicted_roles)
+    
+    def _generate_fallback_advice(
+        self,
+        user_profile: Dict,
+        predicted_roles: List[Dict]
+    ) -> str:
+        """
+        Generate basic advice when LLM is unavailable
+        """
+        current_role = user_profile.get('current_role', 'your current role')
+        years_exp = user_profile.get('years_of_experience', 0)
+        skills = user_profile.get('skills', [])
+        
+        advice_parts = []
+        
+        # Introduction
+        advice_parts.append(f"Based on your profile as a {current_role} with {years_exp} years of experience, here are your career insights:")
+        
+        # Top prediction advice
+        if predicted_roles:
+            top_role = predicted_roles[0]
+            advice_parts.append(f"\n\n**Top Career Path:** {top_role.get('role', 'N/A')}")
+            advice_parts.append(f"- Probability: {top_role.get('probability', 0)*100:.1f}%")
+            advice_parts.append(f"- Typical timeframe: {top_role.get('timeframe_months', 24)} months")
+            
+            # Skills gap analysis
+            required_skills = top_role.get('required_skills', [])
+            if required_skills and skills:
+                missing_skills = set(required_skills) - set(skills)
+                if missing_skills:
+                    advice_parts.append(f"\n**Skills to develop:** {', '.join(list(missing_skills)[:5])}")
+        
+        # General recommendations
+        advice_parts.append("\n\n**Recommendations:**")
+        advice_parts.append("1. Focus on building leadership and communication skills")
+        advice_parts.append("2. Seek mentorship from senior professionals in your target role")
+        advice_parts.append("3. Take on stretch projects that align with your career goals")
+        advice_parts.append("4. Network with alumni who have made similar transitions")
+        
+        return "\n".join(advice_parts)
+    
     async def _get_predicted_roles(
         self,
         db_conn,
