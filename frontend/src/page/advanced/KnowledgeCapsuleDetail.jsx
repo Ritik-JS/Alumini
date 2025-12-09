@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { mockKnowledgeService } from '@/services/mockKnowledgeService';
+import { knowledgeService } from '@/services';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ const KnowledgeCapsuleDetail = () => {
   const loadCapsule = async () => {
     try {
       setLoading(true);
-      const res = await mockKnowledgeService.getCapsule(capsuleId);
+      const res = await knowledgeService.getCapsule(capsuleId);
       
       if (res.success && res.data) {
         setCapsule(res.data);
@@ -73,7 +73,7 @@ const KnowledgeCapsuleDetail = () => {
 
     try {
       setLoadingInsights(true);
-      const res = await mockKnowledgeService.getCapsuleAIInsights(capsuleId, currentUser.id);
+      const res = await knowledgeService.getCapsuleAIInsights(capsuleId, currentUser.id);
       if (res.success) {
         setAiInsights(res.data);
       }
@@ -102,7 +102,7 @@ const KnowledgeCapsuleDetail = () => {
 
     try {
       if (isLiked) {
-        await mockKnowledgeService.unlikeCapsule(capsuleId);
+        await knowledgeService.unlikeCapsule(capsuleId);
         setIsLiked(false);
         setLikesCount(prev => Math.max(0, prev - 1));
         
@@ -115,7 +115,7 @@ const KnowledgeCapsuleDetail = () => {
         
         toast.success('Like removed');
       } else {
-        await mockKnowledgeService.likeCapsule(capsuleId);
+        await knowledgeService.likeCapsule(capsuleId);
         setIsLiked(true);
         setLikesCount(prev => prev + 1);
         
@@ -140,7 +140,7 @@ const KnowledgeCapsuleDetail = () => {
     }
 
     try {
-      await mockKnowledgeService.bookmarkCapsule(capsuleId);
+      await knowledgeService.bookmarkCapsule(capsuleId);
       
       if (isBookmarked) {
         setIsBookmarked(false);

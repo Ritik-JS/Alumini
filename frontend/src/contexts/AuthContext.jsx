@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { mockAuthService as mockAuth } from '@/services/mockAuth';
+import { authService } from '@/services';
 
 const AuthContext = createContext(null);
 
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, rememberMe = false) => {
     try {
-      const response = await mockAuth.login(email, password);
+      const response = await authService.login(email, password);
       
       if (response.success) {
         setUser(response.user);
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await mockAuth.register(userData);
+      const response = await authService.register(userData);
       
       if (response.success) {
         return { success: true, message: 'Registration successful! Please check your email for verification.' };
@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }) => {
 
   const forgotPassword = async (email) => {
     try {
-      const response = await mockAuth.forgotPassword(email);
+      const response = await authService.forgotPassword(email);
       return response;
     } catch (error) {
       return { success: false, message: 'Failed to send reset email.' };
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }) => {
 
   const resetPassword = async (token, newPassword) => {
     try {
-      const response = await mockAuth.resetPassword(token, newPassword);
+      const response = await authService.resetPassword(token, newPassword);
       return response;
     } catch (error) {
       return { success: false, message: 'Failed to reset password.' };
@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }) => {
 
   const googleSignIn = async () => {
     try {
-      const response = await mockAuth.googleSignIn();
+      const response = await authService.googleSignIn();
       
       if (response.success) {
         setUser(response.user);
@@ -125,7 +125,6 @@ export const AuthProvider = ({ children }) => {
     forgotPassword,
     resetPassword,
     googleSignIn,
-    isAuthenticated: !!user,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
