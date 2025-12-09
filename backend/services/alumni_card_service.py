@@ -6,8 +6,10 @@ import logging
 import json
 import hashlib
 import base64
+import os
+import uuid
 from typing import Dict, Optional, List, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import secrets
 
 logger = logging.getLogger(__name__)
@@ -15,6 +17,14 @@ logger = logging.getLogger(__name__)
 
 class AlumniCardService:
     """Service for alumni digital ID cards"""
+    
+    def __init__(self):
+        """Initialize service with configuration"""
+        # Load secret key from environment variable
+        self.secret_key = os.getenv(
+            'ALUMNI_CARD_SECRET_KEY',
+            'alumni_portal_secret_key_2025_change_in_production'
+        )
     
     async def generate_alumni_card(
         self,
@@ -65,37 +75,44 @@ class AlumniCardService:
             # Generate encrypted QR code data
             qr_code_data = self._generate_qr_code_data(user_id, card_number, email)
             
-            # Set expiry date (5 years from now)
-            issue_date = datetime.now()
+            # Check for duplicate names (AI validation)
+            if name and batch_year:
+                duplicate_check = await self.check_duplicate_by_name(db_conn, name, batch_year)
+                if duplicate_check.get("duplicate_found"):
+                    logger.warning(
+                        f"Potential duplicate detected for {name} (batch {batch_year}): "
+                        f"Similar to {duplicate_check.get('similar_name')} "
+                        f"(similarity: {duplicate_check.get('similarity_score')})"
+                    )
+                    # Log warning but continue - admin can review later
+            
+            # Set expiry date (5 years from now) - Use date objects for DATE columns
+            issue_date = datetime.now().date()
             expiry_date = issue_date + timedelta(days=5*365)
             
             # Insert or update card
             if existing_card:
                 # Update existing inactive card
+                card_id = existing_card[0]
                 async with db_conn.cursor() as cursor:
                     await cursor.execute("""
                         UPDATE alumni_cards
                         SET card_number = %s, qr_code_data = %s,
                             issue_date = %s, expiry_date = %s, is_active = TRUE,
                             updated_at = NOW()
-                        WHERE user_id = %s
-                    """, (card_number, qr_code_data, issue_date, expiry_date, user_id))
+                        WHERE id = %s
+                    """, (card_number, qr_code_data, issue_date, expiry_date, card_id))
                     await db_conn.commit()
-                
-                card_id = existing_card[0]
             else:
-                # Create new card
+                # Create new card with explicit UUID (MySQL UUID() generates VARCHAR(36))
+                card_id = str(uuid.uuid4())
                 async with db_conn.cursor() as cursor:
                     await cursor.execute("""
                         INSERT INTO alumni_cards
-                        (user_id, card_number, qr_code_data, issue_date, expiry_date, is_active)
-                        VALUES (%s, %s, %s, %s, %s, TRUE)
-                    """, (user_id, card_number, qr_code_data, issue_date, expiry_date))
+                        (id, user_id, card_number, qr_code_data, issue_date, expiry_date, is_active)
+                        VALUES (%s, %s, %s, %s, %s, %s, TRUE)
+                    """, (card_id, user_id, card_number, qr_code_data, issue_date, expiry_date))
                     await db_conn.commit()
-                    
-                    await cursor.execute("SELECT LAST_INSERT_ID()")
-                    result = await cursor.fetchone()
-                    card_id = result[0] if result else None
             
             return {
                 "card_id": str(card_id),
@@ -164,11 +181,8 @@ class AlumniCardService:
         Generate encrypted QR code data
         Format: base64(sha256(user_id|card_number|email|secret))
         """
-        # Secret key for hashing (should be from environment in production)
-        secret_key = "alumni_portal_secret_key_2025"  # TODO: Move to env
-        
-        # Create verification string
-        verification_string = f"{user_id}|{card_number}|{email}|{secret_key}"
+        # Create verification string using instance secret key
+        verification_string = f"{user_id}|{card_number}|{email}|{self.secret_key}"
         
         # Hash the string
         hash_object = hashlib.sha256(verification_string.encode())
@@ -282,9 +296,8 @@ class AlumniCardService:
                     "expiry_date": expiry_date.isoformat()
                 }
             
-            # Verify hash
-            secret_key = "alumni_portal_secret_key_2025"  # TODO: Move to env
-            verification_string = f"{user_id}|{card_number}|{email}|{secret_key}"
+            # Verify hash using instance secret key
+            verification_string = f"{user_id}|{card_number}|{email}|{self.secret_key}"
             expected_hash = hashlib.sha256(verification_string.encode()).hexdigest()
             
             if verification_hash != expected_hash:
@@ -335,7 +348,8 @@ class AlumniCardService:
         card_id: str,
         is_valid: bool,
         failure_reason: Optional[str],
-        location: Optional[str]
+        location: Optional[str],
+        duplicate_check_passed: bool = True
     ):
         """Log verification attempt"""
         try:
@@ -343,18 +357,89 @@ class AlumniCardService:
                 await cursor.execute("""
                     INSERT INTO alumni_id_verifications
                     (card_id, verification_method, verification_location, 
-                     is_valid, rule_validations)
-                    VALUES (%s, %s, %s, %s, %s)
+                     is_valid, duplicate_check_passed, rule_validations)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                 """, (
                     card_id,
                     'qr_scan',
                     location,
                     is_valid,
+                    duplicate_check_passed,
                     json.dumps({"valid": is_valid, "reason": failure_reason})
                 ))
                 await db_conn.commit()
         except Exception as e:
             logger.error(f"Error logging verification: {str(e)}")
+    
+    async def check_duplicate_by_name(
+        self,
+        db_conn,
+        name: str,
+        batch_year: int
+    ) -> Dict:
+        """
+        Fuzzy name matching to detect duplicates using Levenshtein distance
+        Part of AI-Validated Digital Alumni ID system (Phase 10.6)
+        
+        Returns:
+            Dict with duplicate_found, similar_name, similarity_score, existing_user_id
+        """
+        try:
+            # Import Levenshtein distance (requires python-Levenshtein package)
+            try:
+                from Levenshtein import distance as levenshtein_distance
+            except ImportError:
+                logger.warning("python-Levenshtein not installed. Duplicate check disabled.")
+                return {"duplicate_found": False, "error": "Levenshtein library not available"}
+            
+            # Get existing alumni with same batch year
+            async with db_conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT ap.name, ap.user_id
+                    FROM alumni_profiles ap
+                    WHERE ap.batch_year = %s AND ap.name IS NOT NULL
+                """, (batch_year,))
+                existing_alumni = await cursor.fetchall()
+            
+            if not existing_alumni:
+                return {"duplicate_found": False}
+            
+            # Check similarity with each existing name
+            for existing_name, existing_user_id in existing_alumni:
+                if not existing_name:
+                    continue
+                
+                # Calculate Levenshtein similarity
+                # Similarity = 1 - (distance / max_length)
+                max_len = max(len(name), len(existing_name))
+                if max_len == 0:
+                    continue
+                    
+                lev_dist = levenshtein_distance(name.lower(), existing_name.lower())
+                similarity = 1 - (lev_dist / max_len)
+                
+                # If similarity > 85%, flag as potential duplicate
+                if similarity > 0.85:
+                    logger.info(
+                        f"Potential duplicate detected: '{name}' similar to '{existing_name}' "
+                        f"(similarity: {similarity:.2f})"
+                    )
+                    return {
+                        "duplicate_found": True,
+                        "similar_name": existing_name,
+                        "similarity_score": round(similarity, 2),
+                        "existing_user_id": existing_user_id,
+                        "batch_year": batch_year
+                    }
+            
+            return {"duplicate_found": False}
+        
+        except Exception as e:
+            logger.error(f"Error in duplicate check: {str(e)}")
+            return {
+                "duplicate_found": False,
+                "error": str(e)
+            }
     
     async def get_alumni_card(
         self,

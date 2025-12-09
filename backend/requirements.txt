@@ -64,6 +64,9 @@ google-generativeai>=0.3.2
 nltk>=3.8.1
 spacy>=3.7.0
 
+# Fuzzy Matching (Phase 10.6: AI-Validated Digital Alumni ID)
+python-Levenshtein>=0.21.1
+
 # ============================================================================
 # ADVANCED FEATURES DEPENDENCIES
 # ============================================================================
