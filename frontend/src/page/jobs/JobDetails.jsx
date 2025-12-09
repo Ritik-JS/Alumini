@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Footer from '@/components/layout/Footer';
 import ApplicationModal from '@/components/jobs/ApplicationModal';
-import { getJobById, hasUserApplied, filterJobs } from '@/services/mockJobService';
+import { jobService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -26,18 +26,18 @@ const JobDetails = () => {
     const loadJob = async () => {
       setLoading(true);
       try {
-        const response = await getJobById(jobId);
+        const response = await jobService.getJobById(jobId);
         if (response.success && response.data) {
           setJob(response.data);
           
           // Check if user has applied
           if (user) {
-            const applied = hasUserApplied(jobId, user.id);
+            const applied = await jobService.hasUserApplied(jobId, user.id);
             setHasApplied(applied);
           }
 
           // Load similar jobs
-          const filtered = filterJobs({
+          const filtered = await jobService.filterJobs({
             skills: response.data.skills_required.slice(0, 2),
           });
           setSimilarJobs(filtered.filter(j => j.id !== jobId).slice(0, 3));

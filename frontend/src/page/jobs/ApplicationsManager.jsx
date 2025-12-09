@@ -15,7 +15,7 @@ import {
 import MainNavbar from '@/components/layout/MainNavbar';
 import Footer from '@/components/layout/Footer';
 import ApplicationStatusBadge from '@/components/jobs/ApplicationStatusBadge';
-import { getJobById, getApplicationsForJob, updateApplicationStatus } from '@/services/mockJobService';
+import { jobService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -40,12 +40,14 @@ const ApplicationsManager = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const jobData = await getJobById(jobId);
-      if (!jobData) {
+      const jobResult = await jobService.getJobById(jobId);
+      if (!jobResult.success || !jobResult.data) {
         toast.error('Job not found');
         navigate('/jobs/manage');
         return;
       }
+
+      const jobData = jobResult.data;
 
       // Check if user owns this job
       if (jobData.posted_by !== user.id) {
@@ -57,7 +59,7 @@ const ApplicationsManager = () => {
       setJob(jobData);
 
       // Load applications
-      const apps = getApplicationsForJob(jobId);
+      const apps = await jobService.getApplicationsForJob(jobId);
       setApplications(apps);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -69,7 +71,7 @@ const ApplicationsManager = () => {
 
   const handleStatusChange = async (applicationId, newStatus) => {
     try {
-      const result = await updateApplicationStatus(applicationId, newStatus, 
+      const result = await jobService.updateApplicationStatus(applicationId, newStatus, 
         newStatus === 'shortlisted' ? 'Congratulations! We would like to move forward with your application.' :
         newStatus === 'rejected' ? 'Thank you for your interest. Unfortunately, we have decided to move forward with other candidates.' :
         null

@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Footer from '@/components/layout/Footer';
-import { postJob } from '@/services/mockJobService';
+import { jobService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -62,7 +62,7 @@ const PostJob = () => {
         skills_required: formData.skills_required.split(',').map(s => s.trim()).filter(s => s),
       };
 
-      const result = await postJob(jobData);
+      const result = await jobService.postJob(jobData);
 
       if (result.success) {
         toast.success(result.message);

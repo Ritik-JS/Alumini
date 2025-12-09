@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { getFilterOptions } from '@/services/mockJobService';
+import { jobService } from '@/services';
 
 const JobFilterSidebar = ({ filters, onFilterChange, onClearAll }) => {
   const [filterOptions, setFilterOptions] = useState({
@@ -16,8 +16,11 @@ const JobFilterSidebar = ({ filters, onFilterChange, onClearAll }) => {
   });
 
   useEffect(() => {
-    const options = getFilterOptions();
-    setFilterOptions(options);
+    const loadFilterOptions = async () => {
+      const options = await jobService.getFilterOptions();
+      setFilterOptions(options);
+    };
+    loadFilterOptions();
   }, []);
 
   const handleCheckboxChange = (category, value) => {

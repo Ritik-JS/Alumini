@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { submitApplication } from '@/services/mockJobService';
+import { jobService } from '@/services';
 
 const ApplicationModal = ({ isOpen, onClose, job, userId }) => {
   const [loading, setLoading] = useState(false);
@@ -56,7 +56,7 @@ const ApplicationModal = ({ isOpen, onClose, job, userId }) => {
         cover_letter: coverLetter,
       };
 
-      const result = await submitApplication(applicationData);
+      const result = await jobService.submitApplication(applicationData);
       
       if (result.success) {
         toast.success(result.message);

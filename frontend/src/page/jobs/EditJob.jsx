@@ -16,7 +16,7 @@ import {
 import MainNavbar from '@/components/layout/MainNavbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
-import { getJobById, updateJob } from '@/services/mockJobService';
+import { jobService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -47,7 +47,7 @@ const EditJob = () => {
   const loadJobData = async () => {
     try {
       setLoadingJob(true);
-      const result = await getJobById(jobId);
+      const result = await jobService.getJobById(jobId);
       
       if (result.success && result.data) {
         const job = result.data;
@@ -110,7 +110,7 @@ const EditJob = () => {
         skills_required: formData.skills_required.split(',').map(s => s.trim()).filter(s => s),
       };
 
-      const result = await updateJob(jobId, jobData);
+      const result = await jobService.updateJob(jobId, jobData);
 
       if (result.success) {
         toast.success('Job updated successfully!');

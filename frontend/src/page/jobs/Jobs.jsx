@@ -17,7 +17,7 @@ import JobCard from '@/components/jobs/JobCard';
 import JobSearchBar from '@/components/jobs/JobSearchBar';
 import JobFilterSidebar from '@/components/jobs/JobFilterSidebar';
 import JobSortDropdown from '@/components/jobs/JobSortDropdown';
-import { filterJobs, sortJobs, paginateResults } from '@/services/mockJobService';
+import { jobService } from '@/services';
 
 const Jobs = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -51,12 +51,12 @@ const Jobs = () => {
   });
 
   // Load results
-  const loadResults = useCallback(() => {
+  const loadResults = useCallback(async () => {
     setLoading(true);
     try {
-      let filtered = filterJobs(filters);
-      filtered = sortJobs(filtered, sortBy);
-      const paginated = paginateResults(filtered, currentPage, pageSize);
+      let filtered = await jobService.filterJobs(filters);
+      filtered = await jobService.sortJobs(filtered, sortBy);
+      const paginated = await jobService.paginateResults(filtered, currentPage, pageSize);
       setResults(paginated);
     } catch (error) {
       console.error('Error loading results:', error);
