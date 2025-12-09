@@ -1,15 +1,17 @@
 """
-Engagement Service - Calculate and track user engagement scores
+Engagement Service - Calculate and track user engagement scores with AI-powered analysis
+Phase 10.8: Enhanced Engagement Scoring
 """
 import logging
 from typing import Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
+import json
 
 logger = logging.getLogger(__name__)
 
 
 class EngagementService:
-    """Service for engagement scoring and leaderboard"""
+    """Service for engagement scoring and leaderboard with AI-powered enhancements"""
     
     async def calculate_engagement_score(
         self,
@@ -18,6 +20,7 @@ class EngagementService:
     ) -> Dict:
         """
         Calculate engagement score for a user using stored procedure
+        Enhanced with AI-powered activity pattern analysis
         """
         try:
             # Call stored procedure to calculate engagement score
@@ -37,14 +40,20 @@ class EngagementService:
                 score = await cursor.fetchone()
             
             if score:
+                # Enhanced: Apply AI-powered activity pattern analysis
+                ai_boost = await self._calculate_ai_activity_boost(db_conn, user_id)
+                
                 return {
                     'id': score[0],
                     'user_id': score[1],
-                    'total_score': score[2],
+                    'total_score': score[2] + ai_boost,  # Apply AI boost
+                    'base_score': score[2],
+                    'ai_boost': ai_boost,
                     'contributions': score[3] if score[3] else {},
                     'rank_position': score[4],
-                    'level': self._determine_level(score[2]) if not score[5] else score[5],
-                    'last_calculated': score[6]
+                    'level': self._determine_level(score[2] + ai_boost) if not score[5] else score[5],
+                    'last_calculated': score[6],
+                    'activity_pattern': await self._analyze_activity_pattern(db_conn, user_id)
                 }
             else:
                 # Create initial engagement score
@@ -59,14 +68,286 @@ class EngagementService:
                 return {
                     'user_id': user_id,
                     'total_score': 0,
+                    'base_score': 0,
+                    'ai_boost': 0,
                     'contributions': {},
                     'rank_position': None,
                     'level': 'Beginner',
-                    'last_calculated': datetime.now()
+                    'last_calculated': datetime.now(),
+                    'activity_pattern': 'new_user'
                 }
                 
         except Exception as e:
             logger.error(f"Error calculating engagement score: {str(e)}")
+            raise
+    
+    async def _calculate_ai_activity_boost(
+        self,
+        db_conn,
+        user_id: str
+    ) -> int:
+        """
+        AI-powered activity pattern analysis for bonus points
+        Phase 10.8: Enhanced scoring with predictive analysis
+        
+        Analyzes:
+        - Consistency of activity (daily/weekly patterns)
+        - Quality of contributions (engagement received)
+        - Recent activity trend (increasing/decreasing)
+        - Time investment patterns
+        """
+        try:
+            boost_points = 0
+            
+            # 1. Consistency Bonus: Reward regular activity
+            async with db_conn.cursor() as cursor:
+                # Check activity in last 30 days
+                await cursor.execute("""
+                    SELECT DATE(created_at) as activity_date, COUNT(*) as count
+                    FROM contribution_history
+                    WHERE user_id = %s
+                        AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                    GROUP BY DATE(created_at)
+                """, (user_id,))
+                daily_activities = await cursor.fetchall()
+                
+                # Calculate consistency score
+                if len(daily_activities) >= 20:  # Active 20+ days in last month
+                    boost_points += 50  # High consistency bonus
+                elif len(daily_activities) >= 10:  # Active 10-19 days
+                    boost_points += 25  # Medium consistency bonus
+                elif len(daily_activities) >= 5:  # Active 5-9 days
+                    boost_points += 10  # Basic consistency bonus
+            
+            # 2. Quality Bonus: Reward high-engagement contributions
+            async with db_conn.cursor() as cursor:
+                # Check forum post engagement
+                await cursor.execute("""
+                    SELECT AVG(likes_count) as avg_likes, AVG(comments_count) as avg_comments
+                    FROM forum_posts
+                    WHERE author_id = %s
+                        AND created_at >= DATE_SUB(NOW(), INTERVAL 90 DAY)
+                        AND is_deleted = FALSE
+                """, (user_id,))
+                post_engagement = await cursor.fetchone()
+                
+                if post_engagement and post_engagement[0]:
+                    avg_likes = float(post_engagement[0] or 0)
+                    avg_comments = float(post_engagement[1] or 0)
+                    
+                    # High-quality content bonus
+                    if avg_likes >= 10 and avg_comments >= 5:
+                        boost_points += 40  # Highly engaging content
+                    elif avg_likes >= 5 or avg_comments >= 3:
+                        boost_points += 20  # Good engagement
+            
+            # 3. Trend Bonus: Reward increasing activity
+            async with db_conn.cursor() as cursor:
+                # Compare last 7 days vs previous 7 days
+                await cursor.execute("""
+                    SELECT 
+                        SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as recent,
+                        SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY) 
+                                  AND created_at < DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as previous
+                    FROM contribution_history
+                    WHERE user_id = %s
+                        AND created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)
+                """, (user_id,))
+                trend = await cursor.fetchone()
+                
+                if trend:
+                    recent_activity = trend[0] or 0
+                    previous_activity = trend[1] or 0
+                    
+                    # Increasing trend bonus
+                    if recent_activity > previous_activity and previous_activity > 0:
+                        growth_rate = (recent_activity - previous_activity) / previous_activity
+                        if growth_rate >= 0.5:  # 50%+ growth
+                            boost_points += 30  # Strong growth
+                        elif growth_rate >= 0.2:  # 20%+ growth
+                            boost_points += 15  # Moderate growth
+            
+            # 4. Mentorship Impact Bonus
+            async with db_conn.cursor() as cursor:
+                # Check mentor rating and completed sessions
+                await cursor.execute("""
+                    SELECT mp.rating, mp.total_sessions
+                    FROM mentor_profiles mp
+                    WHERE mp.user_id = %s
+                """, (user_id,))
+                mentor_stats = await cursor.fetchone()
+                
+                if mentor_stats and mentor_stats[0]:
+                    rating = float(mentor_stats[0] or 0)
+                    sessions = int(mentor_stats[1] or 0)
+                    
+                    # High-impact mentorship bonus
+                    if rating >= 4.5 and sessions >= 5:
+                        boost_points += 35  # Excellent mentor
+                    elif rating >= 4.0 and sessions >= 3:
+                        boost_points += 20  # Good mentor
+            
+            # 5. Diversity Bonus: Reward activity across different areas
+            async with db_conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT COUNT(DISTINCT contribution_type) as diversity
+                    FROM contribution_history
+                    WHERE user_id = %s
+                        AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                """, (user_id,))
+                diversity_result = await cursor.fetchone()
+                
+                if diversity_result:
+                    diversity_count = diversity_result[0] or 0
+                    if diversity_count >= 5:  # Active in 5+ areas
+                        boost_points += 25  # Well-rounded contributor
+                    elif diversity_count >= 3:  # Active in 3-4 areas
+                        boost_points += 12  # Good diversity
+            
+            logger.info(f"AI boost calculated for user {user_id}: +{boost_points} points")
+            return boost_points
+            
+        except Exception as e:
+            logger.error(f"Error calculating AI activity boost: {str(e)}")
+            return 0  # Return 0 on error, don't fail the main calculation
+    
+    async def _analyze_activity_pattern(
+        self,
+        db_conn,
+        user_id: str
+    ) -> str:
+        """
+        Analyze and classify user's activity pattern
+        Returns: 'consistent', 'growing', 'declining', 'sporadic', 'new_user', 'inactive'
+        """
+        try:
+            async with db_conn.cursor() as cursor:
+                # Get activity distribution over last 60 days
+                await cursor.execute("""
+                    SELECT 
+                        SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as week1,
+                        SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY) 
+                                  AND created_at < DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as week2,
+                        SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) 
+                                  AND created_at < DATE_SUB(NOW(), INTERVAL 14 DAY) THEN 1 ELSE 0 END) as weeks3_4,
+                        SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 60 DAY) 
+                                  AND created_at < DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as older,
+                        COUNT(*) as total
+                    FROM contribution_history
+                    WHERE user_id = %s
+                        AND created_at >= DATE_SUB(NOW(), INTERVAL 60 DAY)
+                """, (user_id,))
+                pattern = await cursor.fetchone()
+            
+            if not pattern or pattern[4] == 0:
+                return 'new_user'
+            
+            week1, week2, weeks3_4, older, total = pattern
+            
+            # No activity in last 30 days
+            if week1 == 0 and week2 == 0 and weeks3_4 == 0:
+                return 'inactive'
+            
+            # New user with limited history
+            if total < 5:
+                return 'new_user'
+            
+            # Consistent activity (evenly distributed)
+            if week1 > 0 and week2 > 0 and weeks3_4 > 0:
+                variance = max(week1, week2, weeks3_4 // 2) - min(week1, week2, weeks3_4 // 2)
+                if variance < 3:
+                    return 'consistent'
+            
+            # Growing pattern (increasing activity)
+            if week1 > week2 and week2 >= weeks3_4 // 2:
+                return 'growing'
+            
+            # Declining pattern (decreasing activity)
+            if week1 < week2 and week2 > weeks3_4 // 2:
+                return 'declining'
+            
+            # Sporadic activity
+            return 'sporadic'
+            
+        except Exception as e:
+            logger.error(f"Error analyzing activity pattern: {str(e)}")
+            return 'unknown'
+    
+    async def predict_future_engagement(
+        self,
+        db_conn,
+        user_id: str
+    ) -> Dict:
+        """
+        Predictive engagement scoring - forecast user's future activity
+        Phase 10.8: AI-powered prediction
+        """
+        try:
+            # Get current pattern
+            pattern = await self._analyze_activity_pattern(db_conn, user_id)
+            
+            # Get current score
+            current_score = await self.get_user_score(db_conn, user_id)
+            if not current_score:
+                return {
+                    'predicted_score_30d': 0,
+                    'predicted_level': 'Beginner',
+                    'confidence': 'low',
+                    'recommendation': 'Start engaging with the platform'
+                }
+            
+            score = current_score['total_score']
+            
+            # Prediction logic based on pattern
+            predictions = {
+                'consistent': {
+                    'growth_rate': 1.2,  # 20% growth
+                    'confidence': 'high',
+                    'recommendation': 'Maintain your excellent engagement!'
+                },
+                'growing': {
+                    'growth_rate': 1.5,  # 50% growth
+                    'confidence': 'high',
+                    'recommendation': 'Keep up the momentum!'
+                },
+                'declining': {
+                    'growth_rate': 0.8,  # 20% decline
+                    'confidence': 'medium',
+                    'recommendation': 'Try to increase your activity frequency'
+                },
+                'sporadic': {
+                    'growth_rate': 1.0,  # No change
+                    'confidence': 'low',
+                    'recommendation': 'Establish a consistent engagement routine'
+                },
+                'inactive': {
+                    'growth_rate': 0.5,  # 50% decline
+                    'confidence': 'high',
+                    'recommendation': 'Re-engage with the community to maintain your score'
+                },
+                'new_user': {
+                    'growth_rate': 2.0,  # 100% growth (typical for new users)
+                    'confidence': 'low',
+                    'recommendation': 'Complete your profile and start contributing'
+                }
+            }
+            
+            pred = predictions.get(pattern, predictions['sporadic'])
+            predicted_score = int(score * pred['growth_rate'])
+            predicted_level = self._determine_level(predicted_score)
+            
+            return {
+                'current_score': score,
+                'current_level': current_score['level'],
+                'current_pattern': pattern,
+                'predicted_score_30d': predicted_score,
+                'predicted_level': predicted_level,
+                'confidence': pred['confidence'],
+                'recommendation': pred['recommendation']
+            }
+            
+        except Exception as e:
+            logger.error(f"Error predicting future engagement: {str(e)}")
             raise
     
     def _determine_level(self, score: int) -> str:

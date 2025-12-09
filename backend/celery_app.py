@@ -19,6 +19,7 @@ app = Celery(
         'tasks.upload_tasks',
         'tasks.ai_tasks',
         'tasks.notification_tasks',
+        'tasks.engagement_tasks',  # Phase 10.8: Enhanced engagement scoring
     ]
 )
 
@@ -29,6 +30,7 @@ app.conf.update(
         'tasks.upload_tasks.*': {'queue': 'file_processing'},
         'tasks.ai_tasks.*': {'queue': 'ai_processing'},
         'tasks.notification_tasks.*': {'queue': 'default'},
+        'tasks.engagement_tasks.*': {'queue': 'ai_processing'},  # Phase 10.8
     },
     
     # Serialization
@@ -64,10 +66,20 @@ app.conf.update(
             'task': 'tasks.notification_tasks.cleanup_old_notifications',
             'schedule': crontab(hour=2, minute=0),
         },
-        # Recalculate engagement scores daily at 3 AM
+        # Recalculate engagement scores daily at 3 AM (Phase 10.8: Enhanced with AI)
         'recalculate-engagement-scores': {
-            'task': 'tasks.ai_tasks.recalculate_all_engagement_scores',
+            'task': 'tasks.engagement_tasks.recalculate_all_engagement_scores',
             'schedule': crontab(hour=3, minute=0),
+        },
+        # Analyze engagement trends weekly on Monday at 5 AM
+        'analyze-engagement-trends': {
+            'task': 'tasks.engagement_tasks.analyze_engagement_trends',
+            'schedule': crontab(hour=5, minute=0, day_of_week=1),
+        },
+        # Send engagement notifications weekly on Friday at 10 AM
+        'send-engagement-notifications': {
+            'task': 'tasks.engagement_tasks.send_engagement_notifications',
+            'schedule': crontab(hour=10, minute=0, day_of_week=5),
         },
         # Update skill graph weekly on Sunday at 4 AM
         'update-skill-graph': {
