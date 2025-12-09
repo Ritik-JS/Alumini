@@ -71,4 +71,31 @@ export const apiAuth = {
       };
     }
   },
+
+  changePassword: async (currentPassword, newPassword) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${BACKEND_URL}/api/auth/change-password`,
+        {
+          current_password: currentPassword,
+          new_password: newPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return {
+        success: true,
+        message: response.data?.message || 'Password changed successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.detail || error.response?.data?.message || 'Password change failed',
+      };
+    }
+  },
 };

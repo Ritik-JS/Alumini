@@ -175,6 +175,73 @@ async def reset_password(
         )
 
 
+
+@router.post("/change-password", response_model=Dict)
+async def change_password(
+    password_data: Dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Change user password (requires authentication)
+    
+    - Requires current password verification
+    - Updates to new password
+    - Requires valid JWT token
+    """
+    try:
+        import bcrypt
+        
+        current_password = password_data.get('current_password')
+        new_password = password_data.get('new_password')
+        
+        if not current_password or not new_password:
+            raise ValueError("Current password and new password are required")
+        
+        if len(new_password) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                # Get current password hash
+                await cursor.execute("""
+                    SELECT password_hash FROM users WHERE id = %s
+                """, (current_user['id'],))
+                
+                result = await cursor.fetchone()
+                if not result:
+                    raise ValueError("User not found")
+                
+                stored_hash = result[0]
+                
+                # Verify current password
+                if not bcrypt.checkpw(current_password.encode('utf-8'), stored_hash.encode('utf-8')):
+                    raise ValueError("Current password is incorrect")
+                
+                # Hash new password
+                new_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+                
+                # Update password
+                await cursor.execute("""
+                    UPDATE users SET password_hash = %s WHERE id = %s
+                """, (new_hash.decode('utf-8'), current_user['id']))
+                
+                await conn.commit()
+                
+                return {
+                    "success": True,
+                    "message": "Password changed successfully"
+                }
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        logger.error(f"Change password error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to change password. Please try again."
+        )
+
+
 @router.get("/me", response_model=UserResponse)
 async def get_me(
     current_user: dict = Depends(get_current_user)

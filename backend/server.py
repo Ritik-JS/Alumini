@@ -39,6 +39,7 @@ from routes.mentorship import router as mentorship_router
 from routes.events import router as events_router
 from routes.forum import router as forum_router
 from routes.notifications import router as notifications_router
+from routes.privacy import router as privacy_router
 
 # Import Phase 7 routes - Admin Dashboard & Analytics
 from routes.admin_dashboard import router as admin_dashboard_router
@@ -144,6 +145,9 @@ app.include_router(forum_router)
 
 # Include notification routes (Phase 6)
 app.include_router(notifications_router)
+
+# Include privacy settings routes
+app.include_router(privacy_router)
 
 # Include Phase 7 routes - Admin Dashboard & Analytics
 app.include_router(admin_dashboard_router)

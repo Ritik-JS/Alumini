@@ -266,6 +266,42 @@ class ApiProfileService {
       return { success: false, error: error.message };
     }
   }
+
+  // Get privacy settings
+  async getPrivacySettings() {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/api/privacy/settings`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('Error getting privacy settings:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.detail || 'Failed to load privacy settings' 
+      };
+    }
+  }
+
+  // Update privacy settings
+  async updatePrivacySettings(privacyData) {
+    try {
+      const response = await axios.put(
+        `${BACKEND_URL}/api/privacy/settings`,
+        privacyData,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }
+      );
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('Error updating privacy settings:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.detail || 'Failed to update privacy settings' 
+      };
+    }
+  }
 }
 
 export default new ApiProfileService();
