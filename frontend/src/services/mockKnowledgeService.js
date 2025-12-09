@@ -409,37 +409,13 @@ export const mockKnowledgeService = {
 
   // ========== ADMIN METHODS ==========
 
-  // Toggle featured status (Admin only)
-  toggleFeatured: async (capsuleId) => {
+  // Get all capsules (Admin only)
+  getCapsules: async (filters = {}) => {
     await delay(300);
     
-    const capsules = getStoredData(CAPSULES_KEY, mockData.knowledge_capsules || []);
-    const capsule = capsules.find(c => c.id === capsuleId);
-    
-    if (capsule) {
-      capsule.is_featured = !capsule.is_featured;
-      saveData(CAPSULES_KEY, capsules);
-      
-      return {
-        success: true,
-        data: capsule,
-        message: capsule.is_featured ? 'Capsule marked as featured' : 'Capsule unmarked as featured'
-      };
-    } else {
-      return {
-        success: false,
-        error: 'Capsule not found'
-      };
-    }
-  },
-
-  // Get all capsules with admin data (Admin only)
-  getAllCapsulesAdmin: async (filters = {}) => {
-    await delay(300);
-    
-    const capsules = getStoredData(CAPSULES_KEY, mockData.knowledge_capsules || []);
-    const users = getStoredData(USERS_KEY, mockData.users || []);
-    const profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
+    const capsules = [...mockData.knowledge_capsules] || [];
+    const users = mockData.users || [];
+    const profiles = mockData.alumni_profiles || [];
     
     // Enrich with author data
     const enrichedCapsules = capsules.map(capsule => {
@@ -448,17 +424,18 @@ export const mockKnowledgeService = {
       
       return {
         ...capsule,
-        author_name: author ? `${author.first_name} ${author.last_name}` : 'Unknown',
+        author_name: authorProfile?.name || (author ? `${author.first_name} ${author.last_name}` : 'Unknown'),
         author_email: author?.email,
         author_photo: authorProfile?.photo_url,
-        views_count: capsule.views || 0,
-        likes_count: capsule.likes || 0
+        views_count: capsule.views_count || 0,
+        likes_count: capsule.likes_count || 0,
+        bookmarks_count: capsule.bookmarks_count || 0
       };
     });
     
     // Apply filters
     let filtered = enrichedCapsules;
-    if (filters.category) {
+    if (filters.category && filters.category !== 'all') {
       filtered = filtered.filter(c => c.category === filters.category);
     }
     if (filters.is_featured !== undefined) {
@@ -472,6 +449,65 @@ export const mockKnowledgeService = {
       success: true,
       data: filtered,
       total: filtered.length
+    };
+  },
+
+  // Get capsule by ID
+  getCapsuleById: async (capsuleId) => {
+    await delay(200);
+    
+    const capsules = mockData.knowledge_capsules || [];
+    const capsule = capsules.find(c => c.id === capsuleId);
+    
+    if (!capsule) {
+      return {
+        success: false,
+        error: 'Knowledge capsule not found'
+      };
+    }
+    
+    // Get author info
+    const users = mockData.users || [];
+    const profiles = mockData.alumni_profiles || [];
+    const author = users.find(u => u.id === capsule.author_id);
+    const authorProfile = profiles.find(p => p.user_id === capsule.author_id);
+    
+    return {
+      success: true,
+      data: {
+        ...capsule,
+        author_name: authorProfile?.name || (author ? `${author.first_name} ${author.last_name}` : 'Unknown'),
+        author_photo: authorProfile?.photo_url
+      }
+    };
+  },
+
+  // Update capsule (including featured status)
+  updateCapsule: async (capsuleId, updateData) => {
+    await delay(300);
+    
+    // Since we're in mock mode, we'll just return success
+    // In a real app, this would update localStorage
+    return {
+      success: true,
+      data: {
+        id: capsuleId,
+        ...updateData,
+        updated_at: new Date().toISOString()
+      },
+      message: 'Capsule updated successfully'
+    };
+  },
+
+  // Delete capsule
+  deleteCapsule: async (capsuleId) => {
+    await delay(300);
+    
+    // Since we're in mock mode, we'll just return success
+    // In a real app, this would update localStorage
+    return {
+      success: true,
+      message: 'Capsule deleted successfully'
     };
   }
 };

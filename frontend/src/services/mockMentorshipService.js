@@ -697,12 +697,12 @@ export default {
 
   // ========== ADMIN METHODS ==========
 
-  getAllMentorshipRequestsAdmin: async (filters = {}) => {
+  getAllMentorshipRequests: async (filters = {}) => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const requests = getStoredData(REQUESTS_KEY, mockData.mentorship_requests || []);
-        const users = getStoredData(USERS_KEY, mockData.users || []);
-        const profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
+        const requests = getStoredData(STORAGE_KEYS.MENTORSHIP_REQUESTS, mockData.mentorship_requests || []);
+        const users = mockData.users || [];
+        const profiles = mockData.alumni_profiles || [];
         
         // Enrich with user data
         const enrichedRequests = requests.map(req => {
@@ -711,14 +711,26 @@ export default {
           const studentProfile = profiles.find(p => p.user_id === req.student_id);
           const mentorProfile = profiles.find(p => p.user_id === req.mentor_id);
           
+          // Get sessions for this mentorship
+          const sessions = getAllSessions().filter(s => s.mentorship_request_id === req.id);
+          
           return {
             ...req,
-            student_name: student ? `${student.first_name} ${student.last_name}` : 'Unknown',
-            mentor_name: mentor ? `${mentor.first_name} ${mentor.last_name}` : 'Unknown',
-            student_email: student?.email,
-            mentor_email: mentor?.email,
-            student_photo: studentProfile?.photo_url,
-            mentor_photo: mentorProfile?.photo_url
+            student: {
+              id: student?.id,
+              email: student?.email,
+              first_name: student?.first_name,
+              last_name: student?.last_name
+            },
+            mentor: {
+              id: mentor?.id,
+              email: mentor?.email,
+              first_name: mentor?.first_name,
+              last_name: mentor?.last_name
+            },
+            studentProfile: studentProfile || null,
+            mentorProfile: mentorProfile || null,
+            sessions: sessions
           };
         });
         
@@ -737,16 +749,16 @@ export default {
     });
   },
 
-  getAllSessionsAdmin: async (filters = {}) => {
+  getAllSessions: async (filters = {}) => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const sessions = getStoredData(SESSIONS_KEY, mockData.mentorship_sessions || []);
-        const requests = getStoredData(REQUESTS_KEY, mockData.mentorship_requests || []);
-        const users = getStoredData(USERS_KEY, mockData.users || []);
+        const sessions = getStoredData(STORAGE_KEYS.MENTORSHIP_SESSIONS, mockData.mentorship_sessions || []);
+        const requests = getStoredData(STORAGE_KEYS.MENTORSHIP_REQUESTS, mockData.mentorship_requests || []);
+        const users = mockData.users || [];
         
         // Enrich with request and user data
         const enrichedSessions = sessions.map(session => {
-          const request = requests.find(r => r.id === session.request_id);
+          const request = requests.find(r => r.id === session.mentorship_request_id);
           const mentor = users.find(u => u.id === request?.mentor_id);
           const student = users.find(u => u.id === request?.student_id);
           
@@ -754,7 +766,7 @@ export default {
             ...session,
             mentor_name: mentor ? `${mentor.first_name} ${mentor.last_name}` : 'Unknown',
             student_name: student ? `${student.first_name} ${student.last_name}` : 'Unknown',
-            topic: request?.topic || 'N/A'
+            agenda: session.agenda || 'No agenda set'
           };
         });
         
@@ -773,27 +785,33 @@ export default {
     });
   },
 
-  getAllMentorProfilesAdmin: async (filters = {}) => {
+  getMentors: async (filters = {}) => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const mentorProfiles = getStoredData(MENTORS_KEY, mockData.mentor_profiles || []);
-        const users = getStoredData(USERS_KEY, mockData.users || []);
+        const mentorProfiles = getStoredData(STORAGE_KEYS.MENTOR_PROFILES, mockData.mentor_profiles || []);
+        const users = mockData.users || [];
+        const profiles = mockData.alumni_profiles || [];
         
-        // Enrich with user data
+        // Enrich with user and profile data
         const enrichedMentors = mentorProfiles.map(mentor => {
           const user = users.find(u => u.id === mentor.user_id);
+          const profile = profiles.find(p => p.user_id === mentor.user_id);
+          
           return {
             ...mentor,
-            name: user ? `${user.first_name} ${user.last_name}` : 'Unknown',
+            id: mentor.user_id,
+            name: profile?.name || (user ? `${user.first_name} ${user.last_name}` : 'Unknown'),
             email: user?.email,
-            role: user?.role
+            current_role: profile?.current_role || 'Mentor',
+            photo_url: profile?.photo_url,
+            expertise_areas: mentor.expertise_areas || []
           };
         });
         
         // Apply filters
         let filtered = enrichedMentors;
-        if (filters.is_active !== undefined) {
-          filtered = filtered.filter(m => m.is_active === filters.is_active);
+        if (filters.is_available !== undefined) {
+          filtered = filtered.filter(m => m.is_available === filters.is_available);
         }
         
         resolve({

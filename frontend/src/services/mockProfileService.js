@@ -187,10 +187,34 @@ export const getUserById = async (userId) => {
   return users.find(u => u.id === userId);
 };
 
+// Get current user's profile
+export const getMyProfile = async () => {
+  try {
+    // Get current user from localStorage
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+      return { success: false, error: 'Not logged in' };
+    }
+    
+    const user = JSON.parse(userStr);
+    const profile = await getProfileByUserId(user.id);
+    
+    if (profile) {
+      return { success: true, data: profile };
+    } else {
+      return { success: false, error: 'Profile not found' };
+    }
+  } catch (error) {
+    console.error('Error getting my profile:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Export the entire service as a named export
 export const mockProfileService = {
   getProfileByUserId,
   getProfileById,
+  getMyProfile,
   updateProfile,
   createProfile,
   getAllJobs,
