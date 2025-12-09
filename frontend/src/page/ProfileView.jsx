@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Footer from '@/components/layout/Footer';
-import { getProfileByUserId } from '@/services/mockDirectoryService';
+import { directoryService } from '@/services';
 
 const ProfileView = () => {
   const { userId } = useParams();
@@ -20,7 +20,7 @@ const ProfileView = () => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        const data = await getProfileByUserId(userId);
+        const data = await directoryService.getProfileByUserId(userId);
         setProfile(data);
       } catch (error) {
         console.error('Error fetching profile:', error);

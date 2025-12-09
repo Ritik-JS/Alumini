@@ -7,13 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  getUniqueCompanies,
-  getUniqueSkills,
-  getUniqueLocations,
-  getUniqueRoles,
-  getBatchYearRange
-} from '@/services/mockDirectoryService';
+import { directoryService } from '@/services';
 
 const FilterSection = ({ title, isOpen, onToggle, children }) => (
   <div className="border-b border-gray-200 pb-4">
@@ -42,11 +36,11 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters }) => {
     verified: true
   });
 
-  const companies = getUniqueCompanies();
-  const skills = getUniqueSkills();
-  const locations = getUniqueLocations();
-  const roles = getUniqueRoles();
-  const [minYear, maxYear] = getBatchYearRange();
+  const companies = directoryService.getUniqueCompanies();
+  const skills = directoryService.getUniqueSkills();
+  const locations = directoryService.getUniqueLocations();
+  const roles = directoryService.getUniqueRoles();
+  const [minYear, maxYear] = directoryService.getBatchYearRange();
 
   const toggleSection = (section) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));

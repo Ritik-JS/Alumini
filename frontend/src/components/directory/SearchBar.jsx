@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { getSearchSuggestions } from '@/services/mockDirectoryService';
+import { directoryService } from '@/services';
 
 const SearchBar = ({ value, onChange, onSearch }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -38,7 +38,7 @@ const SearchBar = ({ value, onChange, onSearch }) => {
 
     // Get suggestions immediately for UI feedback
     if (newValue.trim()) {
-      const newSuggestions = getSearchSuggestions(newValue);
+      const newSuggestions = directoryService.getSearchSuggestions(newValue);
       setSuggestions(newSuggestions);
       setShowSuggestions(newSuggestions.length > 0);
     } else {

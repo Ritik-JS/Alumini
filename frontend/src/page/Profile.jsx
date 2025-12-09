@@ -46,15 +46,15 @@ const Profile = () => {
     try {
       if (!user?.id) return;
       
-      // Try to get from localStorage first (for real-time updates)
-      const storedProfiles = localStorage.getItem('alumni_profiles');
-      let profiles = storedProfiles ? JSON.parse(storedProfiles) : [];
+      // Load profile from service layer (respects toggle)
+      const result = await profileService.getMyProfile();
       
-      let alumniProfile = profiles.find(p => p.user_id === user.id);
-      
-      if (!alumniProfile) {
-        // Create default profile structure
-        alumniProfile = {
+      if (result.success && result.data) {
+        setProfileData(result.data);
+        setOriginalData(JSON.parse(JSON.stringify(result.data)));
+      } else {
+        // If profile doesn't exist, create default profile structure
+        const defaultProfile = {
           id: `profile-${user.id}-${Date.now()}`,
           user_id: user.id,
           name: user.email?.split('@')[0] || (user.role === 'alumni' ? 'Alumni' : 'Student'),
@@ -81,13 +81,9 @@ const Profile = () => {
           updated_at: new Date().toISOString()
         };
         
-        // Save new profile to localStorage
-        profiles.push(alumniProfile);
-        localStorage.setItem('alumni_profiles', JSON.stringify(profiles));
+        setProfileData(defaultProfile);
+        setOriginalData(JSON.parse(JSON.stringify(defaultProfile)));
       }
-      
-      setProfileData(alumniProfile);
-      setOriginalData(JSON.parse(JSON.stringify(alumniProfile)));
     } catch (error) {
       console.error('Error loading profile data:', error);
       toast.error('Failed to load profile');
@@ -128,23 +124,17 @@ const Profile = () => {
         updated_at: new Date().toISOString()
       };
 
-      // Update in localStorage
-      const storedProfiles = localStorage.getItem('alumni_profiles');
-      let profiles = storedProfiles ? JSON.parse(storedProfiles) : [];
-      const index = profiles.findIndex(p => p.user_id === user.id);
+      // Update via service layer (respects toggle)
+      const result = await profileService.updateProfile(user.id, updatedData);
       
-      if (index !== -1) {
-        profiles[index] = updatedData;
+      if (result.success) {
+        setProfileData(result.data || updatedData);
+        setOriginalData(JSON.parse(JSON.stringify(result.data || updatedData)));
+        setIsEditing(false);
+        toast.success('Profile updated successfully!');
       } else {
-        profiles.push(updatedData);
+        toast.error(result.error || 'Failed to save profile');
       }
-      
-      localStorage.setItem('alumni_profiles', JSON.stringify(profiles));
-      
-      setProfileData(updatedData);
-      setOriginalData(JSON.parse(JSON.stringify(updatedData)));
-      setIsEditing(false);
-      toast.success('Profile updated successfully! Changes will be reflected in real-time when backend is connected.');
     } catch (error) {
       console.error('Error saving profile:', error);
       toast.error('Failed to save profile');

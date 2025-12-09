@@ -22,12 +22,7 @@ import ViewToggle from '@/components/directory/ViewToggle';
 import SortDropdown from '@/components/directory/SortDropdown';
 import SkeletonLoader from '@/components/directory/SkeletonLoader';
 import ProfileModal from '@/components/directory/ProfileModal';
-import {
-  filterAlumni,
-  sortAlumni,
-  paginateResults,
-  saveSearchHistory,
-} from '@/services/mockDirectoryService';
+import { directoryService } from '@/services';
 
 const AlumniDirectory = () => {
   const navigate = useNavigate();
@@ -67,13 +62,13 @@ const AlumniDirectory = () => {
     setLoading(true);
     try {
       // Filter alumni
-      let filtered = filterAlumni(filters);
+      let filtered = directoryService.filterAlumni(filters);
       
       // Sort alumni
-      filtered = sortAlumni(filtered, sortBy);
+      filtered = directoryService.sortAlumni(filtered, sortBy);
       
       // Paginate
-      const paginated = paginateResults(filtered, currentPage, pageSize);
+      const paginated = directoryService.paginateResults(filtered, currentPage, pageSize);
       
       setResults(paginated);
     } catch (error) {
@@ -110,7 +105,7 @@ const AlumniDirectory = () => {
     setFilters(prev => ({ ...prev, search: query }));
     setCurrentPage(1);
     if (query) {
-      saveSearchHistory(query);
+      directoryService.saveSearchHistory(query);
     }
   };
 

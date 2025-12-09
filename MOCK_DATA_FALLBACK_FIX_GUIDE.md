@@ -1426,7 +1426,7 @@ The service switcher in `/app/frontend/src/services/index.js` is properly config
 
 **Objective**: Fix all 44 files to use service layer switcher instead of direct mock imports
 
-**Status**: 🚧 **IN PROGRESS** - 5/9 Modules Complete (25/44 files done)
+**Status**: 🚧 **IN PROGRESS** - 7/9 Modules Complete (33/44 files done)
 
 **Priority**: 🔴 **CRITICAL** - This affects majority of the application
 
@@ -1436,10 +1436,9 @@ The service switcher in `/app/frontend/src/services/index.js` is properly config
 - ✅ Forum Module (6 files) - COMPLETED
 - ✅ Mentorship Module (4 files) - COMPLETED
 - ✅ Knowledge Capsule Module (3 files) - COMPLETED
-- ⏳ Directory & Profile Module (5 files) - NEXT
-- ⏳ Directory & Profile Module (5 files)
-- ⏳ Notification Module (3 files)
-- ⏳ Advanced Features Module (8 files)
+- ✅ Directory & Profile Module (5 files) - COMPLETED
+- ✅ Notification Module (3 files) - COMPLETED
+- ⏳ Advanced Features Module (8 files) - NEXT
 - ⏳ Career & Admin Module (2 files)
 
 ### **Implementation Strategy:**
@@ -1639,42 +1638,76 @@ import { knowledgeService } from '@/services';
 
 ---
 
-### **6. Directory & Profile Module (5 files) - Priority: MEDIUM**
+### **6. Directory & Profile Module (5 files) - Priority: MEDIUM** ✅ **COMPLETED**
 
 **Files:**
-- `/app/frontend/src/page/Profile.jsx`
-- `/app/frontend/src/page/AlumniDirectory.jsx`
-- `/app/frontend/src/page/ProfileView.jsx`
-- `/app/frontend/src/components/directory/SearchBar.jsx`
-- `/app/frontend/src/components/directory/FilterSidebar.jsx`
+- ✅ `/app/frontend/src/page/Profile.jsx` - MIGRATED
+- ✅ `/app/frontend/src/page/AlumniDirectory.jsx` - MIGRATED
+- ✅ `/app/frontend/src/page/ProfileView.jsx` - MIGRATED
+- ✅ `/app/frontend/src/components/directory/SearchBar.jsx` - MIGRATED
+- ✅ `/app/frontend/src/components/directory/FilterSidebar.jsx` - MIGRATED
 
-**Change:**
+**Change Applied:**
 ```javascript
-// OLD
-import { mockProfileService } from '@/services/mockProfileService';
-import { getSearchSuggestions, getFilterOptions } from '@/services/mockDirectoryService';
+// OLD (REMOVED)
+import { getProfileByUserId, getSearchSuggestions, filterAlumni, sortAlumni, paginateResults, saveSearchHistory } from '@/services/mockDirectoryService';
+// Profile.jsx was using localStorage directly
 
-// NEW
+// NEW (IMPLEMENTED)
 import { profileService, directoryService } from '@/services';
 ```
 
+**Service Methods Used:**
+- `profileService.getMyProfile()` ✅
+- `profileService.updateProfile(userId, data)` ✅
+- `directoryService.filterAlumni(filters)` ✅
+- `directoryService.sortAlumni(alumni, sortBy)` ✅
+- `directoryService.paginateResults(alumni, page, pageSize)` ✅
+- `directoryService.saveSearchHistory(query)` ✅
+- `directoryService.getProfileByUserId(userId)` ✅
+- `directoryService.getSearchSuggestions(query)` ✅
+- `directoryService.getUniqueCompanies()` ✅
+- `directoryService.getUniqueSkills()` ✅
+- `directoryService.getUniqueLocations()` ✅
+- `directoryService.getUniqueRoles()` ✅
+- `directoryService.getBatchYearRange()` ✅
+
+**Status**: All 5 Directory & Profile Module files successfully migrated to service layer ✅
+
+**Special Notes:**
+- Profile.jsx was using localStorage directly - now uses profileService.getMyProfile() and profileService.updateProfile()
+- All directory components now use directoryService instead of direct mockDirectoryService imports
+
 ---
 
-### **7. Notification Module (3 files) - Priority: MEDIUM**
+### **7. Notification Module (3 files) - Priority: MEDIUM** ✅ **COMPLETED**
 
 **Files:**
-- `/app/frontend/src/page/notifications/Notifications.jsx`
-- `/app/frontend/src/page/notifications/NotificationPreferences.jsx`
-- `/app/frontend/src/components/notifications/NotificationBell.jsx`
+- ✅ `/app/frontend/src/page/notifications/Notifications.jsx` - MIGRATED
+- ✅ `/app/frontend/src/page/notifications/NotificationPreferences.jsx` - MIGRATED
+- ✅ `/app/frontend/src/components/notifications/NotificationBell.jsx` - MIGRATED
 
-**Change:**
+**Change Applied:**
 ```javascript
-// OLD
+// OLD (REMOVED)
 import { notificationService } from '@/services/mockNotificationService';
 
-// NEW
+// NEW (IMPLEMENTED)
 import { notificationService } from '@/services';
 ```
+
+**Service Methods Used:**
+- `notificationService.getNotifications(filters)` ✅
+- `notificationService.getUnreadCount()` ✅
+- `notificationService.markAsRead(id)` ✅
+- `notificationService.markAsUnread(id)` ✅
+- `notificationService.deleteNotification(id)` ✅
+- `notificationService.markAllAsRead()` ✅
+- `notificationService.getPreferences()` ✅
+- `notificationService.savePreferences(prefs)` ✅
+- `notificationService.getRecentNotifications(limit)` ✅
+
+**Status**: All 3 Notification Module files successfully migrated to service layer ✅
 
 ---
 
