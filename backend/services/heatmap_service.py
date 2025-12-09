@@ -6,6 +6,9 @@ import logging
 import json
 from typing import Dict, List, Optional
 from collections import Counter
+import numpy as np
+from sklearn.cluster import DBSCAN
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -426,3 +429,366 @@ class HeatmapService:
         # TODO: Integrate with geocoding API (Google Maps, Mapbox, etc.)
         # For now, return None
         return None, None
+    
+    # ========================================================================
+    # PHASE 10.5: TALENT CLUSTERING FUNCTIONALITY
+    # ========================================================================
+    
+    async def cluster_alumni_by_location(
+        self,
+        db_conn,
+        eps_km: float = 50.0,
+        min_samples: int = 5
+    ) -> Dict:
+        """
+        Cluster alumni based on geographic proximity using DBSCAN algorithm
+        
+        Args:
+            db_conn: Database connection
+            eps_km: Maximum distance (in km) between points in same cluster
+            min_samples: Minimum number of alumni to form a cluster
+            
+        Returns:
+            Dictionary with clustering results and statistics
+        """
+        try:
+            # Get all alumni with valid coordinates
+            async with db_conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT 
+                        user_id, location, latitude, longitude,
+                        name, current_company, industry, skills
+                    FROM alumni_profiles
+                    WHERE latitude IS NOT NULL 
+                    AND longitude IS NOT NULL
+                    AND is_verified = TRUE
+                """)
+                alumni_data = await cursor.fetchall()
+            
+            if not alumni_data or len(alumni_data) < min_samples:
+                return {
+                    "success": False,
+                    "message": f"Insufficient data for clustering. Need at least {min_samples} alumni with coordinates.",
+                    "alumni_count": len(alumni_data) if alumni_data else 0
+                }
+            
+            # Extract coordinates and metadata
+            alumni_list = []
+            coords = []
+            
+            for alum in alumni_data:
+                alumni_list.append({
+                    'user_id': alum[0],
+                    'location': alum[1],
+                    'latitude': float(alum[2]),
+                    'longitude': float(alum[3]),
+                    'name': alum[4],
+                    'current_company': alum[5],
+                    'industry': alum[6],
+                    'skills': self._parse_json(alum[7])
+                })
+                coords.append([float(alum[2]), float(alum[3])])
+            
+            coords_array = np.array(coords)
+            
+            # Convert km to degrees (approximate)
+            # 1 degree latitude ≈ 111 km
+            eps_degrees = eps_km / 111.0
+            
+            # Convert coordinates to radians for haversine distance
+            coords_rad = np.radians(coords_array)
+            
+            # Perform DBSCAN clustering
+            clustering = DBSCAN(
+                eps=eps_degrees,
+                min_samples=min_samples,
+                metric='haversine'
+            )
+            
+            labels = clustering.fit_predict(coords_rad)
+            
+            # Process clustering results
+            clusters = {}
+            noise_points = []
+            
+            for idx, label in enumerate(labels):
+                if label == -1:
+                    # Noise point (doesn't belong to any cluster)
+                    noise_points.append(alumni_list[idx])
+                else:
+                    # Add to cluster
+                    if label not in clusters:
+                        clusters[label] = []
+                    clusters[label].append(alumni_list[idx])
+            
+            # Calculate cluster statistics and store in database
+            cluster_records = []
+            
+            for cluster_id, cluster_alumni in clusters.items():
+                # Calculate cluster center
+                cluster_coords = [
+                    [a['latitude'], a['longitude']] 
+                    for a in cluster_alumni
+                ]
+                center_lat = np.mean([c[0] for c in cluster_coords])
+                center_lng = np.mean([c[1] for c in cluster_coords])
+                
+                # Calculate radius (max distance from center)
+                max_distance = 0
+                for coord in cluster_coords:
+                    distance = self._haversine_distance(
+                        center_lat, center_lng,
+                        coord[0], coord[1]
+                    )
+                    max_distance = max(max_distance, distance)
+                
+                # Aggregate skills and industries
+                all_skills = []
+                all_industries = []
+                companies = []
+                
+                for alum in cluster_alumni:
+                    if alum['skills']:
+                        all_skills.extend(alum['skills'])
+                    if alum['industry']:
+                        all_industries.append(alum['industry'])
+                    if alum['current_company']:
+                        companies.append(alum['current_company'])
+                
+                # Get top skills and industries
+                top_skills = [s for s, _ in Counter(all_skills).most_common(10)]
+                top_industries = [i for i, _ in Counter(all_industries).most_common(5)]
+                
+                # Calculate density (alumni per sq km)
+                cluster_area = np.pi * (max_distance ** 2) if max_distance > 0 else 1
+                density = len(cluster_alumni) / cluster_area
+                
+                # Generate cluster name
+                primary_location = cluster_alumni[0]['location']
+                cluster_name = f"Cluster {cluster_id + 1}: {primary_location}"
+                
+                cluster_record = {
+                    'cluster_id': cluster_id,
+                    'cluster_name': cluster_name,
+                    'center_latitude': center_lat,
+                    'center_longitude': center_lng,
+                    'radius_km': round(max_distance, 2),
+                    'alumni_count': len(cluster_alumni),
+                    'density': round(density, 2),
+                    'dominant_skills': top_skills,
+                    'dominant_industries': top_industries,
+                    'alumni_ids': [a['user_id'] for a in cluster_alumni]
+                }
+                
+                cluster_records.append(cluster_record)
+                
+                # Store in database
+                await self._store_cluster(db_conn, cluster_record)
+            
+            await db_conn.commit()
+            
+            # Return clustering results
+            return {
+                "success": True,
+                "total_alumni": len(alumni_data),
+                "clusters_found": len(clusters),
+                "noise_points": len(noise_points),
+                "clusters": cluster_records,
+                "parameters": {
+                    "eps_km": eps_km,
+                    "min_samples": min_samples
+                },
+                "message": f"Successfully clustered {len(alumni_data)} alumni into {len(clusters)} clusters"
+            }
+        
+        except Exception as e:
+            logger.error(f"Error clustering alumni: {str(e)}")
+            raise
+    
+    async def _store_cluster(self, db_conn, cluster_record: Dict):
+        """Store cluster data in talent_clusters table"""
+        try:
+            async with db_conn.cursor() as cursor:
+                await cursor.execute("""
+                    INSERT INTO talent_clusters
+                    (cluster_name, center_latitude, center_longitude, radius_km,
+                     alumni_ids, dominant_skills, dominant_industries, 
+                     cluster_size, cluster_density, created_at, updated_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+                """, (
+                    cluster_record['cluster_name'],
+                    cluster_record['center_latitude'],
+                    cluster_record['center_longitude'],
+                    cluster_record['radius_km'],
+                    json.dumps(cluster_record['alumni_ids']),
+                    json.dumps(cluster_record['dominant_skills']),
+                    json.dumps(cluster_record['dominant_industries']),
+                    cluster_record['alumni_count'],
+                    cluster_record['density']
+                ))
+        except Exception as e:
+            logger.error(f"Error storing cluster: {str(e)}")
+            raise
+    
+    async def get_talent_clusters(
+        self,
+        db_conn,
+        min_cluster_size: int = 1
+    ) -> List[Dict]:
+        """
+        Get all talent clusters from database
+        
+        Args:
+            db_conn: Database connection
+            min_cluster_size: Minimum number of alumni in cluster
+            
+        Returns:
+            List of cluster data with statistics
+        """
+        try:
+            async with db_conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT 
+                        id, cluster_name, center_latitude, center_longitude,
+                        radius_km, alumni_ids, dominant_skills, dominant_industries,
+                        cluster_size, cluster_density, created_at, updated_at
+                    FROM talent_clusters
+                    WHERE cluster_size >= %s
+                    ORDER BY cluster_size DESC
+                """, (min_cluster_size,))
+                
+                clusters = await cursor.fetchall()
+            
+            cluster_data = []
+            for cluster in clusters:
+                cluster_data.append({
+                    "cluster_id": cluster[0],
+                    "cluster_name": cluster[1],
+                    "center": {
+                        "latitude": float(cluster[2]),
+                        "longitude": float(cluster[3])
+                    },
+                    "radius_km": float(cluster[4]),
+                    "alumni_ids": self._parse_json(cluster[5]),
+                    "dominant_skills": self._parse_json(cluster[6]),
+                    "dominant_industries": self._parse_json(cluster[7]),
+                    "alumni_count": cluster[8],
+                    "density": float(cluster[9]),
+                    "created_at": cluster[10].isoformat() if cluster[10] else None,
+                    "updated_at": cluster[11].isoformat() if cluster[11] else None
+                })
+            
+            return cluster_data
+        
+        except Exception as e:
+            logger.error(f"Error getting talent clusters: {str(e)}")
+            raise
+    
+    async def get_cluster_details(
+        self,
+        db_conn,
+        cluster_id: str
+    ) -> Dict:
+        """
+        Get detailed information about a specific cluster
+        
+        Args:
+            db_conn: Database connection
+            cluster_id: Cluster identifier
+            
+        Returns:
+            Detailed cluster information with alumni profiles
+        """
+        try:
+            # Get cluster data
+            async with db_conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT 
+                        id, cluster_name, center_latitude, center_longitude,
+                        radius_km, alumni_ids, dominant_skills, dominant_industries,
+                        cluster_size, cluster_density
+                    FROM talent_clusters
+                    WHERE id = %s
+                """, (cluster_id,))
+                
+                cluster = await cursor.fetchone()
+            
+            if not cluster:
+                raise ValueError(f"Cluster {cluster_id} not found")
+            
+            alumni_ids = self._parse_json(cluster[5])
+            
+            # Get alumni profiles in this cluster
+            if alumni_ids:
+                placeholders = ','.join(['%s'] * len(alumni_ids))
+                async with db_conn.cursor() as cursor:
+                    await cursor.execute(f"""
+                        SELECT 
+                            user_id, name, photo_url, current_company, 
+                            current_role, location, skills, industry
+                        FROM alumni_profiles
+                        WHERE user_id IN ({placeholders})
+                    """, alumni_ids)
+                    
+                    alumni_profiles = await cursor.fetchall()
+            else:
+                alumni_profiles = []
+            
+            # Format alumni data
+            alumni_data = []
+            for alum in alumni_profiles:
+                alumni_data.append({
+                    "user_id": alum[0],
+                    "name": alum[1],
+                    "photo_url": alum[2],
+                    "current_company": alum[3],
+                    "current_role": alum[4],
+                    "location": alum[5],
+                    "skills": self._parse_json(alum[6]),
+                    "industry": alum[7]
+                })
+            
+            return {
+                "cluster_id": cluster[0],
+                "cluster_name": cluster[1],
+                "center": {
+                    "latitude": float(cluster[2]),
+                    "longitude": float(cluster[3])
+                },
+                "radius_km": float(cluster[4]),
+                "dominant_skills": self._parse_json(cluster[6]),
+                "dominant_industries": self._parse_json(cluster[7]),
+                "alumni_count": cluster[8],
+                "density": float(cluster[9]),
+                "alumni_profiles": alumni_data
+            }
+        
+        except Exception as e:
+            logger.error(f"Error getting cluster details: {str(e)}")
+            raise
+    
+    def _haversine_distance(
+        self,
+        lat1: float,
+        lon1: float,
+        lat2: float,
+        lon2: float
+    ) -> float:
+        """
+        Calculate the great circle distance between two points 
+        on the earth (specified in decimal degrees)
+        Returns distance in kilometers
+        """
+        # Convert decimal degrees to radians
+        lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
+        
+        # Haversine formula
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = np.sin(dlat/2)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon/2)**2
+        c = 2 * np.arcsin(np.sqrt(a))
+        
+        # Radius of earth in kilometers
+        r = 6371
+        
+        return c * r
