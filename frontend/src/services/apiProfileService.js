@@ -141,10 +141,10 @@ class ApiProfileService {
       const response = await axios.get(`${BACKEND_URL}/api/admin/profiles/pending`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      return response.data.data || [];
+      return { success: true, data: response.data.data || [] };
     } catch (error) {
       console.error('Error fetching pending verifications:', error);
-      return [];
+      return { success: false, error: error.message, data: [] };
     }
   }
 

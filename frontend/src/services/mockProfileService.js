@@ -178,7 +178,18 @@ export const getSystemStats = async () => {
 // Get pending verification profiles (for admin verifications page)
 export const getPendingVerifications = async () => {
   const profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
-  return profiles.filter(p => !p.is_verified);
+  const users = getStoredData(USERS_KEY, mockData.users || []);
+  
+  const pendingProfiles = profiles.filter(p => !p.is_verified);
+  
+  // Enrich with user data
+  return pendingProfiles.map(profile => {
+    const user = users.find(u => u.id === profile.user_id);
+    return {
+      ...profile,
+      user: user || { email: 'unknown@example.com' }
+    };
+  });
 };
 
 // Get user by ID
@@ -235,6 +246,31 @@ export const mockProfileService = {
   getUserById,
   
   // ========== ADMIN VERIFICATION METHODS ==========
+  
+  getPendingVerifications: async () => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const profiles = getStoredData(PROFILES_KEY, mockData.alumni_profiles || []);
+        const users = getStoredData(USERS_KEY, mockData.users || []);
+        
+        const pendingProfiles = profiles.filter(p => !p.is_verified);
+        
+        // Enrich with user data
+        const enrichedProfiles = pendingProfiles.map(profile => {
+          const user = users.find(u => u.id === profile.user_id);
+          return {
+            ...profile,
+            user: user || { email: 'unknown@example.com' }
+          };
+        });
+        
+        resolve({
+          success: true,
+          data: enrichedProfiles
+        });
+      }, 300);
+    });
+  },
   
   approveVerification: async (profileId) => {
     return new Promise((resolve) => {

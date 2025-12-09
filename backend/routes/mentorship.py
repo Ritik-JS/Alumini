@@ -1,6 +1,7 @@
 """Mentorship management routes"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import Optional
+import aiomysql
 
 from database.models import (
     MentorProfileCreate,
@@ -18,7 +19,8 @@ from database.models import (
     UserResponse
 )
 from services.mentorship_service import MentorshipService
-from middleware.auth_middleware import get_current_user, require_role
+from middleware.auth_middleware import get_current_user, require_role, require_admin
+from database.connection import get_db_pool
 import logging
 
 logger = logging.getLogger(__name__)
@@ -538,3 +540,193 @@ async def submit_session_feedback(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to submit feedback"
         )
+
+
+# ============================================================================
+# ADMIN ENDPOINTS
+# ============================================================================
+
+@router.get("/admin/mentorship/requests", response_model=dict)
+async def admin_get_all_mentorship_requests(
+    status: Optional[str] = None,
+    page: int = 1,
+    limit: int = 100,
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Get all mentorship requests (Admin only)
+    
+    Returns all mentorship requests with student and mentor details
+    """
+    try:
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cursor:
+                # Build query
+                query = """
+                    SELECT 
+                        mr.*,
+                        us.email as student_email,
+                        um.email as mentor_email,
+                        ps.name as student_name,
+                        ps.photo_url as student_photo,
+                        pm.name as mentor_name,
+                        pm.photo_url as mentor_photo
+                    FROM mentorship_requests mr
+                    LEFT JOIN users us ON mr.student_id = us.id
+                    LEFT JOIN users um ON mr.mentor_id = um.id
+                    LEFT JOIN profiles ps ON mr.student_id = ps.user_id
+                    LEFT JOIN profiles pm ON mr.mentor_id = pm.user_id
+                """
+                
+                params = []
+                if status:
+                    query += " WHERE mr.status = %s"
+                    params.append(status)
+                
+                query += " ORDER BY mr.requested_at DESC LIMIT %s OFFSET %s"
+                params.extend([limit, (page - 1) * limit])
+                
+                await cursor.execute(query, params)
+                requests = await cursor.fetchall()
+                
+                # Get sessions for each mentorship
+                for req in requests:
+                    await cursor.execute(
+                        "SELECT * FROM mentorship_sessions WHERE mentorship_id = %s ORDER BY scheduled_date DESC",
+                        (req['id'],)
+                    )
+                    req['sessions'] = await cursor.fetchall()
+                    
+                    # Format the response
+                    req['student'] = {'email': req['student_email']}
+                    req['mentor'] = {'email': req['mentor_email']}
+                    req['studentProfile'] = {
+                        'name': req['student_name'],
+                        'photo_url': req['student_photo']
+                    }
+                    req['mentorProfile'] = {
+                        'name': req['mentor_name'],
+                        'photo_url': req['mentor_photo']
+                    }
+                
+                return {
+                    "success": True,
+                    "data": requests,
+                    "total": len(requests)
+                }
+                
+    except Exception as e:
+        logger.error(f"Error fetching all mentorship requests: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch mentorship requests"
+        )
+
+
+@router.get("/admin/mentorship/sessions", response_model=dict)
+async def admin_get_all_sessions(
+    status: Optional[str] = None,
+    page: int = 1,
+    limit: int = 100,
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Get all mentorship sessions (Admin only)
+    
+    Returns all sessions with mentorship details
+    """
+    try:
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cursor:
+                query = """
+                    SELECT 
+                        ms.*,
+                        mr.student_id,
+                        mr.mentor_id
+                    FROM mentorship_sessions ms
+                    LEFT JOIN mentorship_requests mr ON ms.mentorship_id = mr.id
+                """
+                
+                params = []
+                if status:
+                    query += " WHERE ms.status = %s"
+                    params.append(status)
+                
+                query += " ORDER BY ms.scheduled_date DESC LIMIT %s OFFSET %s"
+                params.extend([limit, (page - 1) * limit])
+                
+                await cursor.execute(query, params)
+                sessions = await cursor.fetchall()
+                
+                return {
+                    "success": True,
+                    "data": sessions,
+                    "total": len(sessions)
+                }
+                
+    except Exception as e:
+        logger.error(f"Error fetching all sessions: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch sessions"
+        )
+
+
+@router.get("/admin/mentors", response_model=dict)
+async def admin_get_all_mentors(
+    page: int = 1,
+    limit: int = 100,
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Get all mentor profiles (Admin only)
+    
+    Returns all registered mentors with statistics
+    """
+    try:
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cursor:
+                # Get all mentors with profile information
+                query = """
+                    SELECT 
+                        mp.*,
+                        p.name,
+                        p.photo_url,
+                        p.current_role,
+                        u.email,
+                        (SELECT COUNT(*) FROM mentorship_requests 
+                         WHERE mentor_id = mp.user_id AND status = 'accepted') as current_mentees_count,
+                        (SELECT COUNT(*) FROM mentorship_sessions ms
+                         JOIN mentorship_requests mr ON ms.mentorship_id = mr.id
+                         WHERE mr.mentor_id = mp.user_id AND ms.status = 'completed') as total_sessions
+                    FROM mentor_profiles mp
+                    LEFT JOIN profiles p ON mp.user_id = p.user_id
+                    LEFT JOIN users u ON mp.user_id = u.id
+                    ORDER BY mp.created_at DESC
+                    LIMIT %s OFFSET %s
+                """
+                
+                await cursor.execute(query, [limit, (page - 1) * limit])
+                mentors = await cursor.fetchall()
+                
+                # Get total count
+                await cursor.execute("SELECT COUNT(*) as total FROM mentor_profiles")
+                count_result = await cursor.fetchone()
+                total = count_result['total'] if count_result else 0
+                
+                return {
+                    "success": True,
+                    "data": mentors,
+                    "total": total
+                }
+                
+    except Exception as e:
+        logger.error(f"Error fetching all mentors: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch mentors"
+        )
+
