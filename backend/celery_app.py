@@ -11,10 +11,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Initialize Celery app
+# Support both redis:// and rediss:// (TLS) for cloud providers like Upstash
+broker_url = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+backend_url = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+
 app = Celery(
     'alumunity',
-    broker=os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0'),
-    backend=os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0'),
+    broker=broker_url,
+    backend=backend_url,
     include=[
         'tasks.upload_tasks',
         'tasks.ai_tasks',
@@ -93,6 +97,16 @@ app.conf.update(
         },
     },
 )
+
+# SSL/TLS Configuration for Redis connections (required for Upstash and other cloud providers)
+if broker_url.startswith('rediss://'):
+    app.conf.broker_use_ssl = {
+        'ssl_cert_reqs': None  # Disable SSL certificate verification for cloud providers
+    }
+if backend_url.startswith('rediss://'):
+    app.conf.redis_backend_use_ssl = {
+        'ssl_cert_reqs': None
+    }
 
 # Task classes for better organization
 class TaskConfig:

@@ -1,0 +1,25 @@
+{
+  "name": "alumunity",
+  "version": "1.0.0",
+  "description": "AlumUnity - Alumni Networking Platform",
+  "private": true,
+  "scripts": {
+    "start": "concurrently \"yarn start:backend\" \"yarn start:frontend\"",
+    "start:backend": "cd backend && python server.py",
+    "start:frontend": "cd frontend && yarn start",
+    "install:all": "yarn install && cd frontend && yarn install && cd ../backend && pip install -r requirements.txt",
+    "build": "cd frontend && yarn build",
+    "supervisor:start": "sudo supervisorctl start all",
+    "supervisor:stop": "sudo supervisorctl stop all",
+    "supervisor:restart": "sudo supervisorctl restart all",
+    "supervisor:status": "sudo supervisorctl status",
+    "backend": "cd backend && python server.py",
+    "frontend": "cd frontend && yarn start"
+  },
+  "workspaces": [
+    "frontend"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

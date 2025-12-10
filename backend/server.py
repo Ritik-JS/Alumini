@@ -251,3 +251,7 @@ async def periodic_cleanup():
             await rate_limiter.cleanup_old_entries()
         except Exception as e:
             logger.error(f"Rate limiter cleanup error: {str(e)}")
+            
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("server:app", host="0.0.0.0", port=8001, reload=True)

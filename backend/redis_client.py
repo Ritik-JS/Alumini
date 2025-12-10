@@ -48,16 +48,33 @@ async def get_redis_client() -> aioredis.Redis:
     global redis_client
     if redis_client is None:
         try:
-            redis_client = await aioredis.from_url(
-                f"redis://{RedisConfig.HOST}:{RedisConfig.PORT}/{RedisConfig.DB}",
-                password=RedisConfig.PASSWORD,
-                encoding="utf-8",
-                decode_responses=True,
-                max_connections=10
-            )
+            # Check if REDIS_URL is provided (for cloud services like Upstash)
+            redis_url = os.getenv('REDIS_URL')
+            
+            if redis_url:
+                # Use the full Redis URL (supports rediss:// for TLS)
+                redis_client = await aioredis.from_url(
+                    redis_url,
+                    encoding="utf-8",
+                    decode_responses=True,
+                    max_connections=10,
+                    ssl_cert_reqs=None  # Required for some cloud Redis providers
+                )
+                logger.info(f"✅ Connecting to Redis using URL: {redis_url.split('@')[1] if '@' in redis_url else redis_url}")
+            else:
+                # Fallback to individual connection parameters
+                redis_client = await aioredis.from_url(
+                    f"redis://{RedisConfig.HOST}:{RedisConfig.PORT}/{RedisConfig.DB}",
+                    password=RedisConfig.PASSWORD,
+                    encoding="utf-8",
+                    decode_responses=True,
+                    max_connections=10
+                )
+                logger.info(f"✅ Connecting to Redis at {RedisConfig.HOST}:{RedisConfig.PORT}")
+            
             # Test connection
             await redis_client.ping()
-            logger.info("✅ Redis connection established")
+            logger.info("✅ Redis connection established successfully")
         except Exception as e:
             logger.error(f"❌ Redis connection failed: {str(e)}")
             raise

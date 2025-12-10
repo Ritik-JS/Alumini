@@ -21,7 +21,7 @@ USE AlumUnity;
 
 -- Users table - Core authentication
 CREATE TABLE users (
-    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('student', 'alumni', 'recruiter', 'admin') NOT NULL DEFAULT 'student',
@@ -38,8 +38,8 @@ CREATE TABLE users (
 
 -- Email verification tokens
 CREATE TABLE email_verifications (
-    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL,
+    id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(50) NOT NULL,
     otp_code VARCHAR(6) NOT NULL,
     expires_at TIMESTAMP NOT NULL,
     is_used BOOLEAN DEFAULT FALSE,
@@ -51,8 +51,8 @@ CREATE TABLE email_verifications (
 
 -- Password reset tokens
 CREATE TABLE password_resets (
-    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL,
+    id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(50) NOT NULL,
     reset_token VARCHAR(255) NOT NULL UNIQUE,
     expires_at TIMESTAMP NOT NULL,
     is_used BOOLEAN DEFAULT FALSE,
@@ -69,8 +69,8 @@ CREATE TABLE password_resets (
 
 -- Alumni profiles
 CREATE TABLE alumni_profiles (
-    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL UNIQUE,
+    id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(50) NOT NULL UNIQUE,
     photo_url VARCHAR(500),
     name VARCHAR(255) NOT NULL,
     bio TEXT,
@@ -92,7 +92,7 @@ CREATE TABLE alumni_profiles (
     willing_to_hire BOOLEAN DEFAULT FALSE,    -- Willing to post job opportunities
     profile_completion_percentage INT DEFAULT 0,
     is_verified BOOLEAN DEFAULT FALSE,
-    verified_by VARCHAR(36) NULL,
+    verified_by VARCHAR(50) NULL,
     verified_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -110,11 +110,11 @@ CREATE TABLE alumni_profiles (
 
 -- Profile verification requests
 CREATE TABLE profile_verification_requests (
-    id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL,
+    id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
+    user_id VARCHAR(50) NOT NULL,
     status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
     rejection_reason TEXT,
-    reviewed_by VARCHAR(36) NULL,
+    reviewed_by VARCHAR(50) NULL,
     reviewed_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -140,7 +140,7 @@ CREATE TABLE jobs (
     skills_required JSON,  -- ["skill1", "skill2", ...]
     salary_range VARCHAR(100),
     apply_link VARCHAR(500),
-    posted_by VARCHAR(36) NOT NULL,
+    posted_by VARCHAR(50) NOT NULL,
     application_deadline DATE,
     status ENUM('active', 'closed', 'draft') DEFAULT 'active',
     views_count INT DEFAULT 0,
@@ -165,8 +165,8 @@ CREATE TABLE jobs (
 --   PUT /api/applications/:applicationId - Update application status
 CREATE TABLE job_applications (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    job_id VARCHAR(36) NOT NULL,
-    applicant_id VARCHAR(36) NOT NULL,
+    job_id VARCHAR(50) NOT NULL,
+    applicant_id VARCHAR(50) NOT NULL,
     cv_url VARCHAR(500),
     cover_letter TEXT,
     status ENUM('pending', 'reviewed', 'shortlisted', 'rejected', 'accepted') DEFAULT 'pending',
@@ -190,7 +190,7 @@ CREATE TABLE job_applications (
 -- Mentor profiles
 CREATE TABLE mentor_profiles (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL UNIQUE,
+    user_id VARCHAR(50) NOT NULL UNIQUE,
     is_available BOOLEAN DEFAULT TRUE,
     expertise_areas JSON,  -- ["area1", "area2", ...]
     max_mentees INT DEFAULT 5,
@@ -210,8 +210,8 @@ CREATE TABLE mentor_profiles (
 -- Mentorship requests
 CREATE TABLE mentorship_requests (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    student_id VARCHAR(36) NOT NULL,
-    mentor_id VARCHAR(36) NOT NULL,
+    student_id VARCHAR(50) NOT NULL,
+    mentor_id VARCHAR(50) NOT NULL,
     request_message TEXT,
     goals TEXT,
     preferred_topics JSON,  -- ["topic1", "topic2", ...]
@@ -232,7 +232,7 @@ CREATE TABLE mentorship_requests (
 -- Mentorship sessions
 CREATE TABLE mentorship_sessions (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    mentorship_request_id VARCHAR(36) NOT NULL,
+    mentorship_request_id VARCHAR(50) NOT NULL,
     scheduled_date TIMESTAMP NOT NULL,
     duration INT DEFAULT 60,  -- in minutes
     status ENUM('scheduled', 'completed', 'cancelled', 'missed') DEFAULT 'scheduled',
@@ -268,7 +268,7 @@ CREATE TABLE events (
     max_attendees INT,
     current_attendees_count INT DEFAULT 0,
     banner_image VARCHAR(500),
-    created_by VARCHAR(36) NOT NULL,
+    created_by VARCHAR(50) NOT NULL,
     status ENUM('draft', 'published', 'cancelled', 'completed') DEFAULT 'published',
     views_count INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -284,8 +284,10 @@ CREATE TABLE events (
 -- Event RSVPs
 CREATE TABLE event_rsvps (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    event_id VARCHAR(36) NOT NULL,
-    user_id VARCHAR(36) NOT NULL,
+
+
+    event_id VARCHAR(50) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
     status ENUM('attending', 'maybe', 'not_attending') DEFAULT 'attending',
     rsvp_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -302,7 +304,7 @@ CREATE TABLE forum_posts (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
     title VARCHAR(255),
     content TEXT NOT NULL,
-    author_id VARCHAR(36) NOT NULL,
+    author_id VARCHAR(50) NOT NULL,
     tags JSON,  -- ["tag1", "tag2", ...]
     likes_count INT DEFAULT 0,
     comments_count INT DEFAULT 0,
@@ -321,9 +323,9 @@ CREATE TABLE forum_posts (
 -- Forum comments
 CREATE TABLE forum_comments (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    post_id VARCHAR(36) NOT NULL,
-    author_id VARCHAR(36) NOT NULL,
-    parent_comment_id VARCHAR(36) NULL,
+    post_id VARCHAR(50) NOT NULL,
+    author_id VARCHAR(50) NOT NULL,
+    parent_comment_id VARCHAR(50) NULL,
     content TEXT NOT NULL,
     likes_count INT DEFAULT 0,
     is_deleted BOOLEAN DEFAULT FALSE,
@@ -341,8 +343,8 @@ CREATE TABLE forum_comments (
 -- Post and comment likes
 CREATE TABLE post_likes (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    post_id VARCHAR(36) NOT NULL,
-    user_id VARCHAR(36) NOT NULL,
+    post_id VARCHAR(50) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (post_id) REFERENCES forum_posts(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -353,8 +355,8 @@ CREATE TABLE post_likes (
 
 CREATE TABLE comment_likes (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    comment_id VARCHAR(36) NOT NULL,
-    user_id VARCHAR(36) NOT NULL,
+    comment_id VARCHAR(50) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (comment_id) REFERENCES forum_comments(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -370,7 +372,7 @@ CREATE TABLE comment_likes (
 -- Notifications
 CREATE TABLE notifications (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
     type ENUM('profile', 'mentorship', 'job', 'event', 'forum', 'system', 'verification') NOT NULL,
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
@@ -390,7 +392,7 @@ CREATE TABLE notifications (
 -- Notification preferences
 CREATE TABLE notification_preferences (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL UNIQUE,
+    user_id VARCHAR(50) NOT NULL UNIQUE,
     email_notifications BOOLEAN DEFAULT TRUE,
     push_notifications BOOLEAN DEFAULT TRUE,
     job_alerts BOOLEAN DEFAULT TRUE,
@@ -410,7 +412,7 @@ CREATE TABLE notification_preferences (
 -- Privacy settings
 CREATE TABLE privacy_settings (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL UNIQUE,
+    user_id VARCHAR(50) NOT NULL UNIQUE,
     profile_visibility ENUM('public', 'alumni', 'connections', 'private') DEFAULT 'public',
     show_email BOOLEAN DEFAULT FALSE,
     show_phone BOOLEAN DEFAULT FALSE,
@@ -431,10 +433,10 @@ CREATE TABLE privacy_settings (
 -- Admin actions audit log
 CREATE TABLE admin_actions (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    admin_id VARCHAR(36) NOT NULL,
+    admin_id VARCHAR(50) NOT NULL,
     action_type ENUM('user_management', 'content_moderation', 'verification', 'system_config', 'other') NOT NULL,
     target_type VARCHAR(50),  -- user, post, comment, job, event, etc.
-    target_id VARCHAR(36),
+    target_id VARCHAR(50),
     description TEXT NOT NULL,
     metadata JSON,
     ip_address VARCHAR(45),
@@ -462,11 +464,11 @@ CREATE TABLE system_metrics (
 CREATE TABLE content_flags (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
     content_type ENUM('post', 'comment', 'job', 'event', 'profile') NOT NULL,
-    content_id VARCHAR(36) NOT NULL,
-    flagged_by VARCHAR(36) NOT NULL,
+    content_id VARCHAR(50) NOT NULL,
+    flagged_by VARCHAR(50) NOT NULL,
     reason TEXT NOT NULL,
     status ENUM('pending', 'approved', 'removed') DEFAULT 'pending',
-    reviewed_by VARCHAR(36) NULL,
+    reviewed_by VARCHAR(50) NULL,
     reviewed_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (flagged_by) REFERENCES users(id) ON DELETE CASCADE,
@@ -482,7 +484,7 @@ CREATE TABLE content_flags (
 -- User interests and interactions
 CREATE TABLE user_interests (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL UNIQUE,
+    user_id VARCHAR(50) NOT NULL UNIQUE,
     interest_tags JSON,  -- ["tag1", "tag2", ...]
     interaction_history JSON,  -- {jobs: [...], events: [...], posts: [...]}
     preferred_industries JSON,
@@ -495,7 +497,7 @@ CREATE TABLE user_interests (
 -- Engagement scores
 CREATE TABLE engagement_scores (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL UNIQUE,
+    user_id VARCHAR(50) NOT NULL UNIQUE,
     total_score INT DEFAULT 0,
     contributions JSON,  -- {profile: 10, mentorship: 20, jobs: 15, events: 10, forum: 15}
     rank_position INT,
@@ -510,7 +512,7 @@ CREATE TABLE engagement_scores (
 -- Contribution history
 CREATE TABLE contribution_history (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
     contribution_type ENUM('profile_update', 'mentorship', 'job_post', 'event_attend', 'forum_post', 'forum_comment', 'help_others') NOT NULL,
     points_earned INT DEFAULT 0,
     description TEXT,
@@ -538,8 +540,8 @@ CREATE TABLE badges (
 -- User badges
 CREATE TABLE user_badges (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL,
-    badge_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
+    badge_id VARCHAR(50) NOT NULL,
     earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (badge_id) REFERENCES badges(id) ON DELETE CASCADE,
@@ -571,7 +573,7 @@ CREATE TABLE skill_graph (
 -- Career paths and transitions
 CREATE TABLE career_paths (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
     from_role VARCHAR(255),
     to_role VARCHAR(255),
     from_company VARCHAR(255),
@@ -591,7 +593,7 @@ CREATE TABLE career_paths (
 -- Career predictions
 CREATE TABLE career_predictions (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
     current_role VARCHAR(255),
     predicted_roles JSON,  -- [{role: "Senior Developer", probability: 0.85, timeframe: "2 years"}]
     recommended_skills JSON,  -- ["skill1", "skill2", ...]
@@ -606,7 +608,7 @@ CREATE TABLE career_predictions (
 -- Digital Alumni ID Cards
 CREATE TABLE alumni_cards (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL UNIQUE,
+    user_id VARCHAR(50) NOT NULL UNIQUE,
     card_number VARCHAR(20) NOT NULL UNIQUE,
     qr_code_data TEXT NOT NULL,  -- Encrypted data for QR code
     issue_date DATE NOT NULL,
@@ -647,7 +649,7 @@ CREATE TABLE knowledge_capsules (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
-    author_id VARCHAR(36) NOT NULL,
+    author_id VARCHAR(50) NOT NULL,
     category ENUM('technical', 'career', 'entrepreneurship', 'life_lessons', 'industry_insights', 'other') NOT NULL,
     tags JSON,  -- ["tag1", "tag2", ...]
     duration_minutes INT,  -- Estimated reading time
@@ -669,8 +671,8 @@ CREATE TABLE knowledge_capsules (
 -- Capsule bookmarks
 CREATE TABLE capsule_bookmarks (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    capsule_id VARCHAR(36) NOT NULL,
-    user_id VARCHAR(36) NOT NULL,
+    capsule_id VARCHAR(50) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (capsule_id) REFERENCES knowledge_capsules(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -682,8 +684,8 @@ CREATE TABLE capsule_bookmarks (
 -- Capsule likes
 CREATE TABLE capsule_likes (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    capsule_id VARCHAR(36) NOT NULL,
-    user_id VARCHAR(36) NOT NULL,
+    capsule_id VARCHAR(50) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (capsule_id) REFERENCES knowledge_capsules(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -699,7 +701,7 @@ CREATE TABLE capsule_likes (
 -- File uploads tracking
 CREATE TABLE file_uploads (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    user_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     file_url VARCHAR(500) NOT NULL,
     file_type VARCHAR(50),  -- cv, photo, banner, document
@@ -737,7 +739,7 @@ CREATE TABLE system_config (
     description TEXT,
     is_public BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_by VARCHAR(36),
+    updated_by VARCHAR(50),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
     INDEX idx_config_key (config_key)
@@ -827,7 +829,7 @@ ORDER BY es.total_score DESC;
 DELIMITER //
 
 -- Procedure to calculate profile completion percentage
-CREATE PROCEDURE calculate_profile_completion(IN p_user_id VARCHAR(36))
+CREATE PROCEDURE calculate_profile_completion(IN p_user_id VARCHAR(50))
 BEGIN
     DECLARE completion INT DEFAULT 0;
     DECLARE photo_score INT DEFAULT 0;
@@ -854,7 +856,7 @@ BEGIN
 END //
 
 -- Procedure to update engagement score
-CREATE PROCEDURE update_engagement_score(IN p_user_id VARCHAR(36))
+CREATE PROCEDURE update_engagement_score(IN p_user_id VARCHAR(50))
 BEGIN
     DECLARE profile_points INT DEFAULT 0;
     DECLARE mentorship_points INT DEFAULT 0;
@@ -920,7 +922,7 @@ END //
 
 -- Procedure to send notification
 CREATE PROCEDURE send_notification(
-    IN p_user_id VARCHAR(36),
+    IN p_user_id VARCHAR(50),
     IN p_type VARCHAR(50),
     IN p_title VARCHAR(255),
     IN p_message TEXT,
@@ -1097,7 +1099,7 @@ USE AlumUnity;
 -- 1. Admin Dataset Upload Tracking
 CREATE TABLE dataset_uploads (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    uploaded_by VARCHAR(36) NOT NULL,
+    uploaded_by VARCHAR(50) NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     file_url VARCHAR(500) NOT NULL,
     file_type ENUM('alumni', 'job_market', 'educational') NOT NULL,
@@ -1121,7 +1123,7 @@ CREATE TABLE dataset_uploads (
 -- 2. Dataset Processing Logs
 CREATE TABLE dataset_processing_logs (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    upload_id VARCHAR(36) NOT NULL,
+    upload_id VARCHAR(50) NOT NULL,
     stage ENUM('validation', 'cleaning', 'ai_processing', 'storage') NOT NULL,
     status ENUM('started', 'in_progress', 'completed', 'failed') NOT NULL,
     message TEXT,
@@ -1173,7 +1175,7 @@ CREATE TABLE career_transition_matrix (
     avg_duration_months INT,
     required_skills JSON,  -- Skills needed for transition
     success_rate DECIMAL(5,4),
-    college_id VARCHAR(36),  -- Per-college transition data
+    college_id VARCHAR(50),  -- Per-college transition data
     last_calculated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY unique_transition (from_role, to_role, college_id),
     INDEX idx_from_role (from_role),
@@ -1210,8 +1212,8 @@ CREATE TABLE talent_clusters (
 -- 7. Alumni ID Verification Records
 CREATE TABLE alumni_id_verifications (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    card_id VARCHAR(36) NOT NULL,
-    verified_by VARCHAR(36),
+    card_id VARCHAR(50) NOT NULL,
+    verified_by VARCHAR(50),
     verification_method ENUM('qr_scan', 'manual', 'api') NOT NULL,
     verification_location VARCHAR(255),
     is_valid BOOLEAN,
@@ -1230,8 +1232,8 @@ CREATE TABLE alumni_id_verifications (
 -- 8. Knowledge Capsule Rankings (AI-driven personalized)
 CREATE TABLE capsule_rankings (
     id VARCHAR(50) PRIMARY KEY DEFAULT (UUID()),
-    capsule_id VARCHAR(36) NOT NULL,
-    user_id VARCHAR(36) NOT NULL,  -- Personalized ranking per user
+    capsule_id VARCHAR(50) NOT NULL,
+    user_id VARCHAR(50) NOT NULL,  -- Personalized ranking per user
     relevance_score DECIMAL(5,4),  -- 0.0000 to 1.0000
     engagement_score DECIMAL(5,4),
     skill_match_score DECIMAL(5,4),
@@ -1309,7 +1311,7 @@ CREATE TABLE ai_processing_queue (
 DELIMITER //
 
 -- Procedure to trigger AI pipeline after dataset upload
-CREATE PROCEDURE trigger_ai_pipeline(IN p_upload_id VARCHAR(36))
+CREATE PROCEDURE trigger_ai_pipeline(IN p_upload_id VARCHAR(50))
 BEGIN
     DECLARE v_file_type VARCHAR(20);
     
@@ -1356,8 +1358,8 @@ END //
 
 -- Procedure to calculate personalized capsule rank
 CREATE PROCEDURE calculate_capsule_rank(
-    IN p_user_id VARCHAR(36),
-    IN p_capsule_id VARCHAR(36)
+    IN p_user_id VARCHAR(50),
+    IN p_capsule_id VARCHAR(50)
 )
 BEGIN
     DECLARE v_skill_match DECIMAL(5,4);
