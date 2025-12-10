@@ -1,14 +1,12 @@
-import axios from 'axios';
+import axios from './axiosConfig';
 import { handleApiError } from './apiErrorHandler';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 // Real Event Service API
 class ApiEventService {
   // Get all events with optional filters
   async getEvents(filters = {}) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/events`, { params: filters });
+      const response = await axios.get('/api/events', { params: filters });
       return response.data;
     } catch (error) {
       return handleApiError(error, []);
@@ -18,7 +16,7 @@ class ApiEventService {
   // Get single event by ID
   async getEventById(eventId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/events/${eventId}`);
+      const response = await axios.get(`/api/events/${eventId}`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -28,7 +26,7 @@ class ApiEventService {
   // Create new event
   async createEvent(eventData) {
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/events`, eventData);
+      const response = await axios.post('/api/events', eventData);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -38,7 +36,7 @@ class ApiEventService {
   // Update event
   async updateEvent(eventId, eventData) {
     try {
-      const response = await axios.put(`${BACKEND_URL}/api/events/${eventId}`, eventData);
+      const response = await axios.put(`/api/events/${eventId}`, eventData);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -48,7 +46,7 @@ class ApiEventService {
   // Delete event
   async deleteEvent(eventId) {
     try {
-      const response = await axios.delete(`${BACKEND_URL}/api/events/${eventId}`);
+      const response = await axios.delete(`/api/events/${eventId}`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -58,7 +56,7 @@ class ApiEventService {
   // RSVP to event
   async rsvpToEvent(eventId, status = 'attending') {
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/events/${eventId}/rsvp`, {
+      const response = await axios.post(`/api/events/${eventId}/rsvp`, {
         status,
       });
       return response.data;
@@ -70,7 +68,7 @@ class ApiEventService {
   // Get user's RSVP for an event
   async getUserRsvp(eventId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/events/${eventId}/my-rsvp`);
+      const response = await axios.get(`/api/events/${eventId}/my-rsvp`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -80,7 +78,7 @@ class ApiEventService {
   // Get attendees for an event
   async getEventAttendees(eventId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/events/${eventId}/attendees`);
+      const response = await axios.get(`/api/events/${eventId}/attendees`);
       return response.data;
     } catch (error) {
       return handleApiError(error, []);
@@ -90,7 +88,7 @@ class ApiEventService {
   // Get events created by current user
   async getMyEvents() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/events/my-events`);
+      const response = await axios.get('/api/events/my-events');
       return response.data;
     } catch (error) {
       return handleApiError(error, []);

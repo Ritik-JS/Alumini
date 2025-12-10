@@ -1,13 +1,11 @@
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+import axios from './axiosConfig';
 
 // Real Profile Service API
 class ApiProfileService {
   // Get user profile by ID
   async getProfile(userId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/profiles/${userId}`);
+      const response = await axios.get(`/api/profiles/${userId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -17,7 +15,7 @@ class ApiProfileService {
   // Get current user profile
   async getMyProfile() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/profiles/me`);
+      const response = await axios.get('/api/profiles/me');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -27,7 +25,7 @@ class ApiProfileService {
   // Update profile
   async updateProfile(userId, profileData) {
     try {
-      const response = await axios.put(`${BACKEND_URL}/api/profiles/${userId}`, profileData);
+      const response = await axios.put(`/api/profiles/${userId}`, profileData);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -40,7 +38,7 @@ class ApiProfileService {
       const formData = new FormData();
       formData.append('photo', photoFile);
       const response = await axios.post(
-        `${BACKEND_URL}/api/profiles/${userId}/photo`,
+        `/api/profiles/${userId}/photo`,
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -57,7 +55,7 @@ class ApiProfileService {
     try {
       const formData = new FormData();
       formData.append('cv', cvFile);
-      const response = await axios.post(`${BACKEND_URL}/api/profiles/${userId}/cv`, formData, {
+      const response = await axios.post(`/api/profiles/${userId}/cv`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;
@@ -69,7 +67,7 @@ class ApiProfileService {
   // Get profile by user ID
   async getProfileByUserId(userId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/profiles/${userId}`);
+      const response = await axios.get(`/api/profiles/${userId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -79,7 +77,7 @@ class ApiProfileService {
   // Get job applications by user
   async getJobApplicationsByUser(userId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/applications/user/${userId}`);
+      const response = await axios.get(`/api/applications/user/${userId}`);
       return response.data.data || [];
     } catch (error) {
       console.error('Error fetching job applications:', error);
@@ -90,9 +88,7 @@ class ApiProfileService {
   // Get mentorship requests by student
   async getMentorshipRequestsByStudent(studentId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/mentorship/my-requests`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get('/api/mentorship/my-requests');
       return response.data.data || [];
     } catch (error) {
       console.error('Error fetching mentorship requests:', error);
@@ -103,7 +99,7 @@ class ApiProfileService {
   // Get jobs posted by user
   async getJobsByPoster(userId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/jobs/user/${userId}`);
+      const response = await axios.get(`/api/jobs/user/${userId}`);
       return response.data.data || [];
     } catch (error) {
       console.error('Error fetching posted jobs:', error);
@@ -119,9 +115,7 @@ class ApiProfileService {
   // Get system statistics (Admin only)
   async getSystemStats() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/stats`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get('/api/admin/stats');
       return response.data.data || {};
     } catch (error) {
       console.error('Error fetching system stats:', error);
@@ -138,9 +132,7 @@ class ApiProfileService {
   // Get pending verifications (Admin only)
   async getPendingVerifications() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/profiles/pending`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get('/api/admin/profiles/pending');
       return { success: true, data: response.data.data || [] };
     } catch (error) {
       console.error('Error fetching pending verifications:', error);
@@ -153,11 +145,7 @@ class ApiProfileService {
   // Approve verification (Admin only)
   async approveVerification(profileId) {
     try {
-      const response = await axios.post(
-        `${BACKEND_URL}/api/admin/profiles/verify/${profileId}`,
-        {},
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
+      const response = await axios.post(`/api/admin/profiles/verify/${profileId}`, {});
       return { success: true, ...response.data };
     } catch (error) {
       console.error('Error approving verification:', error);
@@ -168,11 +156,7 @@ class ApiProfileService {
   // Reject verification (Admin only)
   async rejectVerification(profileId, reason = '') {
     try {
-      const response = await axios.post(
-        `${BACKEND_URL}/api/admin/profiles/reject/${profileId}`,
-        { reason },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
+      const response = await axios.post(`/api/admin/profiles/reject/${profileId}`, { reason });
       return { success: true, ...response.data };
     } catch (error) {
       console.error('Error rejecting verification:', error);
@@ -185,10 +169,7 @@ class ApiProfileService {
   // Get all users (Admin only)
   async getAllUsers(filters = {}) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/users`, {
-        params: filters,
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get('/api/admin/users', { params: filters });
       return response.data;
     } catch (error) {
       console.error('Error fetching all users:', error);
@@ -199,9 +180,7 @@ class ApiProfileService {
   // Get user with profile (Admin only)
   async getUserWithProfile(userId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/users/${userId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get(`/api/admin/users/${userId}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching user details:', error);
@@ -212,11 +191,7 @@ class ApiProfileService {
   // Ban user (Admin only)
   async banUser(userId, reason = '') {
     try {
-      const response = await axios.put(
-        `${BACKEND_URL}/api/admin/users/${userId}/ban`,
-        { reason },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
+      const response = await axios.put(`/api/admin/users/${userId}/ban`, { reason });
       return response.data;
     } catch (error) {
       console.error('Error banning user:', error);
@@ -227,9 +202,7 @@ class ApiProfileService {
   // Delete user (Admin only)
   async deleteUser(userId) {
     try {
-      const response = await axios.delete(`${BACKEND_URL}/api/admin/users/${userId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.delete(`/api/admin/users/${userId}`);
       return response.data;
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -240,11 +213,7 @@ class ApiProfileService {
   // Send password reset (Admin only)
   async resetPassword(userId) {
     try {
-      const response = await axios.post(
-        `${BACKEND_URL}/api/admin/users/${userId}/reset-password`,
-        {},
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-      );
+      const response = await axios.post(`/api/admin/users/${userId}/reset-password`, {});
       return response.data;
     } catch (error) {
       console.error('Error resetting password:', error);
@@ -255,9 +224,8 @@ class ApiProfileService {
   // Export users (Admin only)
   async exportUsers(format = 'csv') {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/users/export`, {
+      const response = await axios.get('/api/admin/users/export', {
         params: { format },
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         responseType: 'blob'
       });
       return { success: true, data: response.data };
@@ -270,9 +238,7 @@ class ApiProfileService {
   // Get privacy settings
   async getPrivacySettings() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/privacy/settings`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get('/api/privacy/settings');
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error getting privacy settings:', error);
@@ -286,13 +252,7 @@ class ApiProfileService {
   // Update privacy settings
   async updatePrivacySettings(privacyData) {
     try {
-      const response = await axios.put(
-        `${BACKEND_URL}/api/privacy/settings`,
-        privacyData,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        }
-      );
+      const response = await axios.put('/api/privacy/settings', privacyData);
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Error updating privacy settings:', error);

@@ -1,13 +1,11 @@
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+import axios from './axiosConfig';
 
 // Real Forum Service API
 class ApiForumService {
   // Get all posts
   async getPosts(filters = {}) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/forum/posts`, { params: filters });
+      const response = await axios.get('/api/forum/posts', { params: filters });
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -17,7 +15,7 @@ class ApiForumService {
   // Get post by ID
   async getPostById(postId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/forum/posts/${postId}`);
+      const response = await axios.get(`/api/forum/posts/${postId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -27,7 +25,7 @@ class ApiForumService {
   // Create post
   async createPost(postData) {
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/forum/posts`, postData);
+      const response = await axios.post('/api/forum/posts', postData);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -37,7 +35,7 @@ class ApiForumService {
   // Update post
   async updatePost(postId, postData) {
     try {
-      const response = await axios.put(`${BACKEND_URL}/api/forum/posts/${postId}`, postData);
+      const response = await axios.put(`/api/forum/posts/${postId}`, postData);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -47,7 +45,7 @@ class ApiForumService {
   // Delete post
   async deletePost(postId) {
     try {
-      const response = await axios.delete(`${BACKEND_URL}/api/forum/posts/${postId}`);
+      const response = await axios.delete(`/api/forum/posts/${postId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -57,7 +55,7 @@ class ApiForumService {
   // Like post
   async likePost(postId) {
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/forum/posts/${postId}/like`);
+      const response = await axios.post(`/api/forum/posts/${postId}/like`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -67,7 +65,7 @@ class ApiForumService {
   // Get comments for a post
   async getComments(postId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/forum/posts/${postId}/comments`);
+      const response = await axios.get(`/api/forum/posts/${postId}/comments`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -78,7 +76,7 @@ class ApiForumService {
   async addComment(postId, commentData) {
     try {
       const response = await axios.post(
-        `${BACKEND_URL}/api/forum/posts/${postId}/comments`,
+        `/api/forum/posts/${postId}/comments`,
         commentData
       );
       return response.data;
@@ -91,7 +89,7 @@ class ApiForumService {
   async updateComment(commentId, commentData) {
     try {
       const response = await axios.put(
-        `${BACKEND_URL}/api/forum/comments/${commentId}`,
+        `/api/forum/comments/${commentId}`,
         commentData
       );
       return response.data;
@@ -103,7 +101,7 @@ class ApiForumService {
   // Delete comment
   async deleteComment(commentId) {
     try {
-      const response = await axios.delete(`${BACKEND_URL}/api/forum/comments/${commentId}`);
+      const response = await axios.delete(`/api/forum/comments/${commentId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -113,7 +111,7 @@ class ApiForumService {
   // Like comment
   async likeComment(commentId) {
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/forum/comments/${commentId}/like`);
+      const response = await axios.post(`/api/forum/comments/${commentId}/like`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };

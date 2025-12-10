@@ -1,13 +1,11 @@
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+import axios from './axiosConfig';
 
 // Real Mentorship Service API
 class ApiMentorshipService {
   // Get all mentors
   async getMentors(filters = {}) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/mentors`, { params: filters });
+      const response = await axios.get('/api/mentors', { params: filters });
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -17,7 +15,7 @@ class ApiMentorshipService {
   // Get mentor profile
   async getMentorProfile(userId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/mentors/${userId}`);
+      const response = await axios.get(`/api/mentors/${userId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -27,7 +25,7 @@ class ApiMentorshipService {
   // Create mentorship request
   async createMentorshipRequest(requestData) {
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/mentorship/requests`, requestData);
+      const response = await axios.post('/api/mentorship/requests', requestData);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -37,7 +35,7 @@ class ApiMentorshipService {
   // Get my mentorship requests (as student)
   async getMyRequests() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/mentorship/my-requests`);
+      const response = await axios.get('/api/mentorship/my-requests');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -47,7 +45,7 @@ class ApiMentorshipService {
   // Get received mentorship requests (as mentor)
   async getReceivedRequests() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/mentorship/received-requests`);
+      const response = await axios.get('/api/mentorship/received-requests');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -57,7 +55,7 @@ class ApiMentorshipService {
   // Accept mentorship request
   async acceptRequest(requestId) {
     try {
-      const response = await axios.put(`${BACKEND_URL}/api/mentorship/requests/${requestId}/accept`);
+      const response = await axios.put(`/api/mentorship/requests/${requestId}/accept`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -67,7 +65,7 @@ class ApiMentorshipService {
   // Reject mentorship request
   async rejectRequest(requestId, reason = '') {
     try {
-      const response = await axios.put(`${BACKEND_URL}/api/mentorship/requests/${requestId}/reject`, {
+      const response = await axios.put(`/api/mentorship/requests/${requestId}/reject`, {
         reason,
       });
       return response.data;
@@ -79,7 +77,7 @@ class ApiMentorshipService {
   // Get mentorship sessions
   async getMySessions() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/mentorship/sessions`);
+      const response = await axios.get('/api/mentorship/sessions');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -89,7 +87,7 @@ class ApiMentorshipService {
   // Get session details
   async getSessionById(sessionId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/mentorship/sessions/${sessionId}`);
+      const response = await axios.get(`/api/mentorship/sessions/${sessionId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -99,7 +97,7 @@ class ApiMentorshipService {
   // Schedule session
   async scheduleSession(sessionData) {
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/mentorship/sessions`, sessionData);
+      const response = await axios.post('/api/mentorship/sessions', sessionData);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -110,7 +108,7 @@ class ApiMentorshipService {
   async updateSession(sessionId, sessionData) {
     try {
       const response = await axios.put(
-        `${BACKEND_URL}/api/mentorship/sessions/${sessionId}`,
+        `/api/mentorship/sessions/${sessionId}`,
         sessionData
       );
       return response.data;
@@ -123,7 +121,7 @@ class ApiMentorshipService {
   async completeSession(sessionId, feedback) {
     try {
       const response = await axios.put(
-        `${BACKEND_URL}/api/mentorship/sessions/${sessionId}/complete`,
+        `/api/mentorship/sessions/${sessionId}/complete`,
         feedback
       );
       return response.data;
@@ -137,9 +135,8 @@ class ApiMentorshipService {
   // Get all mentorship requests (Admin only)
   async getAllMentorshipRequests(filters = {}) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/mentorship/requests`, {
-        params: filters,
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const response = await axios.get('/api/admin/mentorship/requests', {
+        params: filters
       });
       return response.data;
     } catch (error) {
@@ -150,9 +147,8 @@ class ApiMentorshipService {
   // Get all sessions (Admin only)
   async getAllSessions(filters = {}) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/mentorship/sessions`, {
-        params: filters,
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const response = await axios.get('/api/admin/mentorship/sessions', {
+        params: filters
       });
       return response.data;
     } catch (error) {
@@ -163,9 +159,8 @@ class ApiMentorshipService {
   // Get all mentor profiles (Admin only)
   async getAllMentorProfiles(filters = {}) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/mentors`, {
-        params: filters,
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const response = await axios.get('/api/admin/mentors', {
+        params: filters
       });
       return response.data;
     } catch (error) {

@@ -1,14 +1,12 @@
-import axios from 'axios';
+import axios from './axiosConfig';
 import { handleApiError } from './apiErrorHandler';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 // Real Job Service API
 export const apiJobService = {
   // Get all jobs with optional filters
   async getAllJobs(filters = {}) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/jobs`, { params: filters });
+      const response = await axios.get('/api/jobs', { params: filters });
       return response.data;
     } catch (error) {
       return handleApiError(error, []);
@@ -18,7 +16,7 @@ export const apiJobService = {
   // Get job by ID
   async getJobById(jobId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/jobs/${jobId}`);
+      const response = await axios.get(`/api/jobs/${jobId}`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -28,7 +26,7 @@ export const apiJobService = {
   // Create new job
   async createJob(jobData) {
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/jobs`, jobData);
+      const response = await axios.post('/api/jobs', jobData);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -38,7 +36,7 @@ export const apiJobService = {
   // Update job
   async updateJob(jobId, jobData) {
     try {
-      const response = await axios.put(`${BACKEND_URL}/api/jobs/${jobId}`, jobData);
+      const response = await axios.put(`/api/jobs/${jobId}`, jobData);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -48,7 +46,7 @@ export const apiJobService = {
   // Delete job
   async deleteJob(jobId) {
     try {
-      const response = await axios.delete(`${BACKEND_URL}/api/jobs/${jobId}`);
+      const response = await axios.delete(`/api/jobs/${jobId}`);
       return response.data;
     } catch (error) {
       return handleApiError(error);
@@ -59,7 +57,7 @@ export const apiJobService = {
   async applyForJob(jobId, applicationData) {
     try {
       const response = await axios.post(
-        `${BACKEND_URL}/api/jobs/${jobId}/apply`,
+        `/api/jobs/${jobId}/apply`,
         applicationData
       );
       return response.data;
@@ -71,7 +69,7 @@ export const apiJobService = {
   // Get my applications
   async getMyApplications(userId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/applications/user/${userId}`);
+      const response = await axios.get(`/api/applications/user/${userId}`);
       return response.data;
     } catch (error) {
       return handleApiError(error, []);
@@ -81,7 +79,7 @@ export const apiJobService = {
   // Get applications for a specific job
   async getJobApplications(jobId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/jobs/${jobId}/applications`);
+      const response = await axios.get(`/api/jobs/${jobId}/applications`);
       return response.data;
     } catch (error) {
       return handleApiError(error, []);
@@ -92,7 +90,7 @@ export const apiJobService = {
   async updateApplicationStatus(applicationId, status, message = '') {
     try {
       const response = await axios.put(
-        `${BACKEND_URL}/api/applications/${applicationId}`,
+        `/api/applications/${applicationId}`,
         { status, response_message: message }
       );
       return response.data;
@@ -104,7 +102,7 @@ export const apiJobService = {
   // Get jobs posted by current user
   async getMyJobs(userId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/jobs/user/${userId}`);
+      const response = await axios.get(`/api/jobs/user/${userId}`);
       return response.data;
     } catch (error) {
       return handleApiError(error, []);
@@ -114,7 +112,7 @@ export const apiJobService = {
   // Get all applications for jobs posted by a recruiter
   async getAllRecruiterApplications(recruiterId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/applications/recruiter/${recruiterId}`);
+      const response = await axios.get(`/api/applications/recruiter/${recruiterId}`);
       return response.data;
     } catch (error) {
       return handleApiError(error, []);
@@ -123,9 +121,6 @@ export const apiJobService = {
 
   // Filter jobs (client-side filtering for API response)
   async filterJobs(filters = {}) {
-    // For API, filtering is done server-side via getAllJobs
-    // But for compatibility with Jobs page that expects client-side filtering,
-    // we fetch all jobs and filter them
     try {
       const response = await this.getAllJobs();
       const jobs = response.data || [];
