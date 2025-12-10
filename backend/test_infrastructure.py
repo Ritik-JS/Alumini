@@ -66,33 +66,36 @@ def test_directories():
     print("=" * 80)
     print()
     
+    # Get base directory (parent of backend folder)
+    backend_dir = Path(__file__).parent
+    base_dir = backend_dir.parent
+    
     required_dirs = [
-        '/app/storage',
-        '/app/storage/datasets',
-        '/app/storage/ml_models',
-        '/app/storage/photos',
-        '/app/storage/cvs',
-        '/app/storage/documents',
-        '/app/storage/qr_codes',
-        '/app/storage/temp',
-        '/app/backend/ml_models',
+        base_dir / 'storage',
+        base_dir / 'storage' / 'datasets',
+        base_dir / 'storage' / 'ml_models',
+        base_dir / 'storage' / 'photos',
+        base_dir / 'storage' / 'cvs',
+        base_dir / 'storage' / 'documents',
+        base_dir / 'storage' / 'qr_codes',
+        base_dir / 'storage' / 'temp',
+        backend_dir / 'ml_models',
     ]
     
     results = {'passed': [], 'failed': []}
     
     for dir_path in required_dirs:
-        path = Path(dir_path)
-        if path.exists():
-            results['passed'].append(dir_path)
-            print(f"✅ {dir_path:50} EXISTS")
+        if dir_path.exists():
+            results['passed'].append(str(dir_path))
+            print(f"✅ {str(dir_path):50} EXISTS")
         else:
             try:
-                path.mkdir(parents=True, exist_ok=True)
-                results['passed'].append(dir_path)
-                print(f"✅ {dir_path:50} CREATED")
+                dir_path.mkdir(parents=True, exist_ok=True)
+                results['passed'].append(str(dir_path))
+                print(f"✅ {str(dir_path):50} CREATED")
             except Exception as e:
-                results['failed'].append((dir_path, str(e)))
-                print(f"❌ {dir_path:50} FAILED: {str(e)}")
+                results['failed'].append((str(dir_path), str(e)))
+                print(f"❌ {str(dir_path):50} FAILED: {str(e)}")
     
     print()
     print("=" * 80)
@@ -110,28 +113,30 @@ def test_configuration_files():
     print("=" * 80)
     print()
     
+    # Get backend directory
+    backend_dir = Path(__file__).parent
+    
     required_files = [
-        '/app/backend/.env',
-        '/app/backend/celery_app.py',
-        '/app/backend/redis_client.py',
-        '/app/backend/storage.py',
-        '/app/backend/ai_utils.py',
-        '/app/backend/tasks/__init__.py',
-        '/app/backend/tasks/upload_tasks.py',
-        '/app/backend/tasks/ai_tasks.py',
-        '/app/backend/tasks/notification_tasks.py',
+        backend_dir / '.env',
+        backend_dir / 'celery_app.py',
+        backend_dir / 'redis_client.py',
+        backend_dir / 'storage.py',
+        backend_dir / 'ai_utils.py',
+        backend_dir / 'tasks' / '__init__.py',
+        backend_dir / 'tasks' / 'upload_tasks.py',
+        backend_dir / 'tasks' / 'ai_tasks.py',
+        backend_dir / 'tasks' / 'notification_tasks.py',
     ]
     
     results = {'passed': [], 'failed': []}
     
     for file_path in required_files:
-        path = Path(file_path)
-        if path.exists():
-            results['passed'].append(file_path)
-            print(f"✅ {file_path:60} EXISTS")
+        if file_path.exists():
+            results['passed'].append(str(file_path))
+            print(f"✅ {str(file_path):60} EXISTS")
         else:
-            results['failed'].append((file_path, 'Not found'))
-            print(f"❌ {file_path:60} NOT FOUND")
+            results['failed'].append((str(file_path), 'Not found'))
+            print(f"❌ {str(file_path):60} NOT FOUND")
     
     print()
     print("=" * 80)
@@ -150,7 +155,10 @@ def test_environment_variables():
     print()
     
     from dotenv import load_dotenv
-    load_dotenv('/app/backend/.env')
+    # Load .env from backend directory (platform independent)
+    backend_dir = Path(__file__).parent
+    env_file = backend_dir / '.env'
+    load_dotenv(env_file)
     
     required_vars = [
         'DB_HOST',
