@@ -6,7 +6,7 @@
 ![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110-009688?style=for-the-badge&logo=fastapi)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![License](https://img.shields.io/badge/License-Private-lightgrey?style=for-the-badge)
 
 **A comprehensive platform connecting alumni, students, recruiters, and administrators for networking, mentorship, and career development.**
 
@@ -49,10 +49,10 @@ AlumUnity is a full-stack web application designed to foster meaningful connecti
 
 - **42+ Pages** with role-specific dashboards
 - **90+ Reusable Components** built with React and shadcn/ui
-- **Real-time Notifications** for instant updates
+- **Notification System** designed for timely updates
 - **Advanced Analytics** with interactive data visualizations
 - **Responsive Design** optimized for mobile, tablet, and desktop
-- **Accessibility-first** approach (WCAG 2.1 Level AA compliant)
+- **Accessibility-focused** design aligned with WCAG 2.1 AA best practices
 - **Mock Data Services** for rapid development and testing
 
 ---
@@ -104,10 +104,10 @@ AlumUnity is a full-stack web application designed to foster meaningful connecti
 - Rich media support
 
 ### 🔔 Notifications
-- Real-time notification system
+- In-app notification system for user updates
 - Categorized notifications (jobs, mentorship, events, forum)
 - Customizable notification preferences
-- Email and push notifications (ready)
+- Email and push notifications (designed, implementation can be extended)
 
 ### 🛡️ Admin Panel
 - User management and verification
@@ -159,15 +159,23 @@ AlumUnity is a full-stack web application designed to foster meaningful connecti
 ## 📁 Project Structure
 
 ```
-Alumini/
-├── backend/
+/app
+├── backend/                      # FastAPI backend
+│   ├── server.py                 # Main FastAPI application
 │   ├── requirements.txt          # Python dependencies
-│   └── server.py                 # FastAPI server entry point
-├── frontend/
-│   ├── public/
-│   │   └── index.html
+│   ├── database/                 # DB connection and helpers
+│   ├── routes/                   # Modular API route files
+│   ├── services/                 # Business logic & service layer
+│   ├── ml/                       # AI/ML utilities
+│   ├── middleware/               # Custom middleware (rate limiting, etc.)
+│   └── utils/                    # Shared backend utilities
+│
+├── frontend/                     # React frontend
+│   ├── public/                   # Static assets
 │   ├── src/
 │   │   ├── components/           # Reusable UI components
+│   │   │   ├── admin/            # Admin-specific components
+│   │   │   ├── advanced/         # Advanced feature components
 │   │   │   ├── animations/       # Animation components
 │   │   │   ├── directory/        # Directory components
 │   │   │   ├── events/           # Event components
@@ -178,21 +186,23 @@ Alumini/
 │   │   │   ├── mentorship/       # Mentorship components
 │   │   │   ├── notifications/    # Notification components
 │   │   │   └── ui/               # shadcn/ui components
-│   │   ├── contexts/             # React contexts
-│   │   ├── hooks/                # Custom hooks
+│   │   ├── contexts/             # React contexts (e.g., AuthContext)
+│   │   ├── hooks/                # Custom React hooks
 │   │   ├── lib/                  # Utility functions
-│   │   ├── page/                 # Page components
+│   │   ├── page/                 # Page components (dashboards, modules)
+│   │   ├── pages/                # Error pages and misc.
 │   │   ├── schemas/              # Zod validation schemas
 │   │   ├── services/             # API & mock services
-│   │   ├── App.js
-│   │   └── index.js
+│   │   ├── App.js                # Main React component
+│   │   └── index.js              # React entry point
 │   ├── package.json
 │   └── tailwind.config.js
-├── tests/                        # Test files
+│
+├── tests/                        # Test stubs and future tests
 ├── database_schema.sql           # MySQL database schema
 ├── mockdata.json                 # Mock data for development
-├── README.md                     # This file
-└── *.md                          # Additional documentation
+├── *.md                          # Documentation files
+└── README.md                     # This file
 ```
 
 ---
@@ -338,7 +348,7 @@ Create, manage, and attend various types of events with RSVP functionality.
 Discussion platform with categories, voting, and nested comments.
 
 ### 8. Notification System
-Real-time notifications with customizable preferences.
+Notification system with customizable preferences.
 
 ### 9. Admin Panel
 Comprehensive tools for user management, analytics, and platform configuration.
@@ -551,7 +561,7 @@ Contributions are welcome! Please follow these steps:
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is currently **private**. A formal open-source license (such as MIT) has **not** been granted yet. Please do not reuse or redistribute this code without explicit permission from the author.
 
 ---
 
