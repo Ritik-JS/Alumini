@@ -42,9 +42,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.login(email, password);
       
-      if (response.success) {
+      // Check for successful login (backend returns access_token on success)
+      if (response.access_token && response.user) {
         setUser(response.user);
-        localStorage.setItem('token', response.token);
+        localStorage.setItem('token', response.access_token);
         localStorage.setItem('user', JSON.stringify(response.user));
         
         if (rememberMe) {
@@ -54,7 +55,8 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: response.user };
       }
       
-      return { success: false, message: response.message };
+      // Handle error response
+      return { success: false, message: response.error || response.message || 'Login failed. Please try again.' };
     } catch (error) {
       return { success: false, message: 'Login failed. Please try again.' };
     }
@@ -68,7 +70,7 @@ export const AuthProvider = ({ children }) => {
         return { success: true, message: 'Registration successful! Please check your email for verification.' };
       }
       
-      return { success: false, message: response.message };
+      return { success: false, message: response.error || response.message || 'Registration failed. Please try again.' };
     } catch (error) {
       return { success: false, message: 'Registration failed. Please try again.' };
     }
@@ -103,14 +105,16 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.googleSignIn();
       
-      if (response.success) {
+      // Check for successful login (backend returns access_token on success)
+      if (response.access_token && response.user) {
         setUser(response.user);
-        localStorage.setItem('token', response.token);
+        localStorage.setItem('token', response.access_token);
         localStorage.setItem('user', JSON.stringify(response.user));
         return { success: true, user: response.user };
       }
       
-      return { success: false, message: response.message };
+      // Handle error response
+      return { success: false, message: response.error || response.message || 'Google sign-in failed.' };
     } catch (error) {
       return { success: false, message: 'Google sign-in failed.' };
     }
