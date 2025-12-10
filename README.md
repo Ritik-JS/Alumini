@@ -292,23 +292,38 @@ AlumUnity is a full-stack web application designed to foster meaningful connecti
 
 ### Environment Variables
 
+> Note: The exact variable names can differ slightly between local development and specific deployment environments. Below is the canonical setup used in this codebase.
+
 **Backend (.env)**
 ```env
-DATABASE_HOST=localhost
-DATABASE_PORT=3306
-DATABASE_USER=root
-DATABASE_PASSWORD=your_password
-DATABASE_NAME=alumni_portal
-JWT_SECRET=your_jwt_secret_key
+# Database configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=alumni_user
+DB_PASSWORD=alumni_pass_123
+DB_NAME=AlumUnity
+
+# MySQL connection URL (used internally)
+MYSQL_URL=mysql://alumni_user:alumni_pass_123@localhost:3306/AlumUnity
+
+# JWT configuration
+JWT_SECRET=your-secret-key-change-in-production
 JWT_ALGORITHM=HS256
-JWT_EXPIRATION=3600
-CORS_ORIGINS=http://localhost:3000
+JWT_EXPIRATION_HOURS=24
+
+# CORS configuration
+CORS_ORIGINS=*
 ```
 
 **Frontend (.env)**
 ```env
-REACT_APP_API_URL=http://localhost:8000
+# Toggle between mock data and backend API
 REACT_APP_USE_MOCK_DATA=true
+
+# Backend API URL used by the React app
+# In some older docs this may be referred to as REACT_APP_API_URL,
+# but in this codebase we use REACT_APP_BACKEND_URL.
+REACT_APP_BACKEND_URL=<your-backend-url>
 ```
 
 ---
