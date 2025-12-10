@@ -91,6 +91,11 @@ if (config.enableVisualEdits) {
 // Setup dev server with visual edits and/or health check
 if (config.enableVisualEdits || config.enableHealthCheck) {
   webpackConfig.devServer = (devServerConfig) => {
+    // Remove deprecated onBeforeSetupMiddleware and onAfterSetupMiddleware
+    // These are replaced by setupMiddlewares
+    delete devServerConfig.onBeforeSetupMiddleware;
+    delete devServerConfig.onAfterSetupMiddleware;
+
     // Apply visual edits dev server setup if enabled
     if (config.enableVisualEdits && setupDevServer) {
       devServerConfig = setupDevServer(devServerConfig);

@@ -4,6 +4,7 @@ FastAPI application for Alumni Management System
 """
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from pathlib import Path
 import os
@@ -74,13 +75,79 @@ from routes.capsule_ranking import router as capsule_ranking_router
 # Import middleware
 from middleware.rate_limit import rate_limiter
 
-# Create FastAPI app
+# Background task for rate limiter cleanup
+async def periodic_cleanup():
+    """Periodic cleanup of rate limiter entries"""
+    while True:
+        try:
+            await asyncio.sleep(3600)  # Run every hour
+            await rate_limiter.cleanup_old_entries()
+        except Exception as e:
+            logger.error(f"Rate limiter cleanup error: {str(e)}")
+
+# Lifespan context manager for startup and shutdown events
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan (startup and shutdown)"""
+    # Startup
+    try:
+        # Initialize database pool
+        await get_db_pool()
+        logger.info("✅ Database connection pool initialized")
+        
+        # Initialize Redis (Phase 10.1)
+        try:
+            await get_redis_client()
+            logger.info("✅ Redis connection established")
+        except Exception as e:
+            logger.warning(f"⚠️ Redis connection failed: {str(e)} - Continuing without Redis")
+        
+        # Initialize file storage (Phase 10.1)
+        logger.info(f"✅ File storage initialized ({file_storage.storage_type})")
+        
+        # Start background cleanup task for rate limiter
+        cleanup_task = asyncio.create_task(periodic_cleanup())
+        logger.info("✅ Rate limiter cleanup task started")
+        
+        logger.info("🚀 AlumUnity API started successfully")
+        logger.info("📋 Phase 10.1: Infrastructure Setup - Active")
+    except Exception as e:
+        logger.error(f"❌ Startup failed: {str(e)}")
+        raise
+    
+    yield  # Application runs here
+    
+    # Shutdown
+    try:
+        # Cancel cleanup task
+        cleanup_task.cancel()
+        try:
+            await cleanup_task
+        except asyncio.CancelledError:
+            pass
+        
+        await close_db_pool()
+        logger.info("✅ Database connection pool closed")
+        
+        # Close Redis connection (Phase 10.1)
+        try:
+            await close_redis_client()
+            logger.info("✅ Redis connection closed")
+        except Exception as e:
+            logger.warning(f"⚠️ Redis close warning: {str(e)}")
+        
+        logger.info("👋 AlumUnity API shutdown complete")
+    except Exception as e:
+        logger.error(f"❌ Shutdown error: {str(e)}")
+
+# Create FastAPI app with lifespan
 app = FastAPI(
     title="AlumUnity API",
     description="Alumni Management System API with AI Features",
     version="1.0.0",
     docs_url="/api/docs",
-    redoc_url="/api/redoc"
+    redoc_url="/api/redoc",
+    lifespan=lifespan
 )
 
 # Create API router with /api prefix
@@ -193,64 +260,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Startup event
-@app.on_event("startup")
-async def startup():
-    """Initialize services on startup"""
-    try:
-        # Initialize database pool
-        await get_db_pool()
-        logger.info("✅ Database connection pool initialized")
-        
-        # Initialize Redis (Phase 10.1)
-        try:
-            await get_redis_client()
-            logger.info("✅ Redis connection established")
-        except Exception as e:
-            logger.warning(f"⚠️ Redis connection failed: {str(e)} - Continuing without Redis")
-        
-        # Initialize file storage (Phase 10.1)
-        logger.info(f"✅ File storage initialized ({file_storage.storage_type})")
-        
-        # Start background cleanup task for rate limiter
-        asyncio.create_task(periodic_cleanup())
-        logger.info("✅ Rate limiter cleanup task started")
-        
-        logger.info("🚀 AlumUnity API started successfully")
-        logger.info("📋 Phase 10.1: Infrastructure Setup - Active")
-    except Exception as e:
-        logger.error(f"❌ Startup failed: {str(e)}")
-        raise
-
-# Shutdown event
-@app.on_event("shutdown")
-async def shutdown():
-    """Cleanup on shutdown"""
-    try:
-        await close_db_pool()
-        logger.info("✅ Database connection pool closed")
-        
-        # Close Redis connection (Phase 10.1)
-        try:
-            await close_redis_client()
-            logger.info("✅ Redis connection closed")
-        except Exception as e:
-            logger.warning(f"⚠️ Redis close warning: {str(e)}")
-        
-        logger.info("👋 AlumUnity API shutdown complete")
-    except Exception as e:
-        logger.error(f"❌ Shutdown error: {str(e)}")
-
-# Background task for rate limiter cleanup
-async def periodic_cleanup():
-    """Periodic cleanup of rate limiter entries"""
-    while True:
-        try:
-            await asyncio.sleep(3600)  # Run every hour
-            await rate_limiter.cleanup_old_entries()
-        except Exception as e:
-            logger.error(f"Rate limiter cleanup error: {str(e)}")
             
 if __name__ == "__main__":
     import uvicorn
