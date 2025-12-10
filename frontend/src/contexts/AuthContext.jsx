@@ -115,6 +115,25 @@ export const AuthProvider = ({ children }) => {
       return { success: false, message: 'Google sign-in failed.' };
     }
   };
+  
+  const verifyEmail = async (email, otpCode) => {
+    try {
+      const response = await authService.verifyEmail(email, otpCode);
+      return response;
+    } catch (error) {
+      return { success: false, message: 'Email verification failed.' };
+    }
+  };
+
+  const resendVerification = async (email) => {
+    try {
+      const response = await authService.resendVerification(email);
+      return response;
+    } catch (error) {
+      return { success: false, message: 'Failed to resend verification code.' };
+    }
+  };
+
 
   const value = {
     user,
@@ -126,6 +145,8 @@ export const AuthProvider = ({ children }) => {
     forgotPassword,
     resetPassword,
     googleSignIn,
+    verifyEmail,
+    resendVerification,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

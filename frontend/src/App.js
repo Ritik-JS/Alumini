@@ -10,6 +10,7 @@ import { FullPageSkeleton } from '@/components/loading/SkeletonLoaders';
 // Auth Pages (not lazy loaded - needed immediately)
 import Login from '@/page/auth/Login';
 import Register from '@/page/auth/Register';
+import VerifyEmail from '@/page/auth/VerifyEmail';
 import ForgotPassword from '@/page/auth/ForgotPassword';
 import ResetPassword from '@/page/auth/ResetPassword';
 
@@ -141,6 +142,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
 

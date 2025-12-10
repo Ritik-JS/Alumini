@@ -74,4 +74,35 @@ export const apiAuth = {
       return handleApiError(error);
     }
   },
+
+  verifyEmail: async (email, otpCode) => {
+    try {
+      const response = await axios.post('/api/auth/verify-email', {
+        email,
+        otp_code: otpCode,
+      });
+      return {
+        success: true,
+        message: response.data?.message || 'Email verified successfully',
+        data: response.data,
+      };
+    } catch (error) {
+      return handleApiError(error);
+    }
+  },
+
+  resendVerification: async (email) => {
+    try {
+      const response = await axios.post('/api/auth/resend-verification', {
+        email,
+      });
+      return {
+        success: true,
+        message: response.data?.message || 'Verification code resent',
+        data: response.data,
+      };
+    } catch (error) {
+      return handleApiError(error);
+    }
+  },
 };

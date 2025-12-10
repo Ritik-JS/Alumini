@@ -88,6 +88,11 @@ const Register = () => {
         setRegistrationComplete(true);
         setStep(3);
         toast.success('Registration successful!');
+        
+        // Redirect to verification page after 2 seconds
+        setTimeout(() => {
+          navigate('/verify-email', { state: { email: data.email } });
+        }, 2000);
       } else {
         setError(result.message || 'Registration failed. Please try again.');
       }
@@ -356,14 +361,11 @@ const Register = () => {
               </div>
 
               <div className="space-y-3">
-                <Button onClick={() => navigate('/login')} className="w-full">
-                  Go to Login
+                <Button onClick={() => navigate('/verify-email', { state: { email: watchedFields.email } })} className="w-full">
+                  Enter Verification Code
                 </Button>
                 <p className="text-xs text-gray-500">
-                  Didn't receive the email?{' '}
-                  <button className="text-blue-600 hover:underline">
-                    Resend verification email
-                  </button>
+                  Redirecting to verification page...
                 </p>
               </div>
             </div>

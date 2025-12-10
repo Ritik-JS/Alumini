@@ -93,7 +93,26 @@ const Login = () => {
         toast.success('Login successful!');
         navigate('/dashboard');
       } else {
-        setError(result.message || 'Login failed. Please try again.');
+        // Check if error is due to unverified email
+        const errorMsg = result.message || 'Login failed. Please try again.';
+        
+        if (errorMsg.toLowerCase().includes('not verified') || errorMsg.toLowerCase().includes('verification')) {
+          setError(
+            <div className="space-y-2">
+              <p>{errorMsg}</p>
+              <Button
+                type="button"
+                variant="link"
+                className="p-0 h-auto text-blue-600 hover:text-blue-700 font-medium"
+                onClick={() => navigate('/verify-email', { state: { email: data.email } })}
+              >
+                Verify your email now →
+              </Button>
+            </div>
+          );
+        } else {
+          setError(errorMsg);
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
