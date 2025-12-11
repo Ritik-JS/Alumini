@@ -52,6 +52,29 @@ The system currently uses **rule-based logic** in `career_prediction_service.py`
 - **500+ unique alumni profiles** with skills and experience
 - **50+ unique roles** with multiple transition examples
 
+### ✅ Readiness checklist (must-haves before ML)
+
+Data volume & quality
+≥ 1,000 career transition records (clean), ≥ 500 distinct profiles, ≥ ~30–50 common roles.
+
+Feature completeness
+
+Structured skills, role titles (normalized), experience years, industry, timestamps.
+
+Infra
+
+Model storage + serving (models directory or model registry), Redis or cache, Celery/worker for offline jobs.
+
+Monitoring & logging
+
+Store predictions, input features, outcomes (when/if user changes role), latency metrics.
+
+Privacy & compliance
+
+Consent + PII handling policies for using alumni career data.
+
+If you satisfy these, proceed.
+
 #### Data Sources:
 1. **Internal Database**:
    - `career_paths` table: Historical transitions
@@ -62,6 +85,8 @@ The system currently uses **rule-based logic** in `career_prediction_service.py`
    - LinkedIn career transition data
    - Industry reports on career progressions
    - Public datasets (Kaggle, etc.)
+
+
 
 ## Implementation Steps
 
