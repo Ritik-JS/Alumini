@@ -1,13 +1,11 @@
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+import axios from './axiosConfig';
 
 // Real Heatmap Service API
 class ApiHeatmapService {
   // Get geographic data for heatmap
   async getGeographicData(filters = {}) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/heatmap/geographic`, {
+      const response = await axios.get('/api/heatmap/geographic', {
         params: filters,
       });
       return response.data;
@@ -19,7 +17,7 @@ class ApiHeatmapService {
   // Get alumni distribution by location
   async getAlumniDistribution() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/heatmap/alumni-distribution`);
+      const response = await axios.get('/api/heatmap/alumni-distribution');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -29,7 +27,7 @@ class ApiHeatmapService {
   // Get job distribution by location
   async getJobDistribution() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/heatmap/job-distribution`);
+      const response = await axios.get('/api/heatmap/job-distribution');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -39,8 +37,76 @@ class ApiHeatmapService {
   // Get location details
   async getLocationDetails(locationId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/heatmap/location/${locationId}`);
+      const response = await axios.get(`/api/heatmap/location/${locationId}`);
       return response.data;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  // Get all unique skills
+  async getSkills() {
+    try {
+      const response = await axios.get('/api/heatmap/skills');
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: [] };
+    }
+  }
+
+  // Get all unique industries
+  async getIndustries() {
+    try {
+      const response = await axios.get('/api/heatmap/industries');
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: [] };
+    }
+  }
+
+  // Get talent clusters
+  async getTalentClusters(filters = {}) {
+    try {
+      const response = await axios.get('/api/heatmap/talent-clusters', {
+        params: filters
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: [] };
+    }
+  }
+
+  // Get cluster details
+  async getClusterDetails(clusterId) {
+    try {
+      const response = await axios.get(`/api/heatmap/clusters/${clusterId}`);
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  // Get emerging hubs (fastest growing locations)
+  async getEmergingHubs() {
+    try {
+      const response = await axios.get('/api/heatmap/emerging-hubs');
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: [] };
+    }
+  }
+
+  // Export cluster data
+  async exportClusterData(clusterId) {
+    try {
+      const response = await axios.get(`/api/heatmap/clusters/${clusterId}/export`, {
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data,
+        format: 'json'
+      };
     } catch (error) {
       return { success: false, message: error.message };
     }

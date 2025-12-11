@@ -3,31 +3,7 @@
  * Connects to backend API endpoints for AI-powered skill recommendations
  */
 
-import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-
-// Get auth token from localStorage
-const getAuthToken = () => {
-  return localStorage.getItem('token');
-};
-
-// Create axios instance with auth
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add auth token to requests
-apiClient.interceptors.request.use((config) => {
-  const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import axios from './axiosConfig';
 
 // Calculate job match score for a user (client-side helper)
 const calculateJobMatchScore = (userSkills = [], jobSkills = []) => {
@@ -75,7 +51,7 @@ export const apiSkillRecommendationService = {
   // Get skill recommendations for a user
   async getRecommendations(userId) {
     try {
-      const response = await apiClient.get(`/api/recommendations/skills/${userId}`);
+      const response = await axios.get(`/api/recommendations/skills/${userId}`);
       return {
         success: true,
         data: response.data.data || response.data || [],
@@ -93,7 +69,7 @@ export const apiSkillRecommendationService = {
   // Get skill trends
   async getSkillTrends(filters = {}) {
     try {
-      const response = await apiClient.get('/api/recommendations/skill-trends', {
+      const response = await axios.get('/api/recommendations/skill-trends', {
         params: filters,
       });
       return {
@@ -113,7 +89,7 @@ export const apiSkillRecommendationService = {
   // Get top trending skills
   async getTopTrendingSkills(limit = 5) {
     try {
-      const response = await apiClient.get('/api/recommendations/skill-trends/top', {
+      const response = await axios.get('/api/recommendations/skill-trends/top', {
         params: { limit },
       });
       return {
@@ -144,7 +120,7 @@ export const apiSkillRecommendationService = {
   // Get skill recommendations based on career goal
   async getRecommendationsByCareerGoal(userId, targetRole) {
     try {
-      const response = await apiClient.get(
+      const response = await axios.get(
         `/api/recommendations/skills/${userId}/career-goal`,
         {
           params: { target_role: targetRole },
@@ -167,7 +143,7 @@ export const apiSkillRecommendationService = {
   // Get trending skills in user's field
   async getTrendingInField(industry) {
     try {
-      const response = await apiClient.get('/api/recommendations/skill-trends/by-industry', {
+      const response = await axios.get('/api/recommendations/skill-trends/by-industry', {
         params: { industry },
       });
       return {

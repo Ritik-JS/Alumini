@@ -1,13 +1,11 @@
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+import axios from './axiosConfig';
 
 // Real Leaderboard Service API
 class ApiLeaderboardService {
   // Get leaderboard
   async getLeaderboard(filters = {}) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/leaderboard`, { params: filters });
+      const response = await axios.get('/api/leaderboard', { params: filters });
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -17,7 +15,7 @@ class ApiLeaderboardService {
   // Get user engagement score
   async getUserScore(userId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/leaderboard/user/${userId}`);
+      const response = await axios.get(`/api/leaderboard/user/${userId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -27,7 +25,7 @@ class ApiLeaderboardService {
   // Get all badges
   async getAllBadges() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/badges`);
+      const response = await axios.get('/api/badges');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -37,7 +35,7 @@ class ApiLeaderboardService {
   // Get user badges
   async getUserBadges(userId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/badges/user/${userId}`);
+      const response = await axios.get(`/api/badges/user/${userId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -47,9 +45,7 @@ class ApiLeaderboardService {
   // Get my engagement score
   async getMyScore(userId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/engagement/my-score`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get('/api/engagement/my-score');
       return { success: true, data: response.data };
     } catch (error) {
       return { success: false, message: error.message, data: { total_score: 0 } };

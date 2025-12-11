@@ -3,37 +3,13 @@
  * Connects to backend API endpoints for AI-powered career predictions
  */
 
-import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-
-// Get auth token from localStorage
-const getAuthToken = () => {
-  return localStorage.getItem('token');
-};
-
-// Create axios instance with auth
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add auth token to requests
-apiClient.interceptors.request.use((config) => {
-  const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import axios from './axiosConfig';
 
 export const apiCareerPredictionService = {
   // Get career prediction for a user
   async getUserPrediction(userId) {
     try {
-      const response = await apiClient.get(`/api/career-predictions/user/${userId}`);
+      const response = await axios.get(`/api/career-predictions/user/${userId}`);
       return {
         success: true,
         data: response.data.data || response.data,
@@ -50,7 +26,7 @@ export const apiCareerPredictionService = {
   // Get all career predictions (admin)
   async getAllPredictions() {
     try {
-      const response = await apiClient.get('/api/career-predictions');
+      const response = await axios.get('/api/career-predictions');
       return {
         success: true,
         data: response.data.data || response.data,
@@ -68,7 +44,7 @@ export const apiCareerPredictionService = {
   // Get predictions by role
   async getPredictionsByRole(role) {
     try {
-      const response = await apiClient.get('/api/career-predictions/by-role', {
+      const response = await axios.get('/api/career-predictions/by-role', {
         params: { role },
       });
       return {
@@ -88,7 +64,7 @@ export const apiCareerPredictionService = {
   // Get specific predicted role details
   async getPredictedRoleDetails(userId, roleName) {
     try {
-      const response = await apiClient.get(`/api/career-predictions/user/${userId}/role/${roleName}`);
+      const response = await axios.get(`/api/career-predictions/user/${userId}/role/${roleName}`);
       return {
         success: true,
         data: response.data.data || response.data,
@@ -105,7 +81,7 @@ export const apiCareerPredictionService = {
   // Get alumni who made similar transitions
   async getSimilarAlumni(roleName) {
     try {
-      const response = await apiClient.get('/api/career-predictions/similar-alumni', {
+      const response = await axios.get('/api/career-predictions/similar-alumni', {
         params: { role: roleName },
       });
       return {
@@ -125,7 +101,7 @@ export const apiCareerPredictionService = {
   // Get recommended learning resources
   async getLearningResources(skills) {
     try {
-      const response = await apiClient.post('/api/career-predictions/learning-resources', {
+      const response = await axios.post('/api/career-predictions/learning-resources', {
         skills: Array.isArray(skills) ? skills : [skills],
       });
       return {

@@ -3,37 +3,13 @@
  * Connects to backend API endpoints for AI-powered engagement insights
  */
 
-import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-
-// Get auth token from localStorage
-const getAuthToken = () => {
-  return localStorage.getItem('token');
-};
-
-// Create axios instance with auth
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add auth token to requests
-apiClient.interceptors.request.use((config) => {
-  const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import axios from './axiosConfig';
 
 export const apiEngagementAIService = {
   // Get AI engagement insights for a user
   async getEngagementInsights(userId) {
     try {
-      const response = await apiClient.get(`/api/engagement/insights/${userId}`);
+      const response = await axios.get(`/api/engagement/insights/${userId}`);
       return {
         success: true,
         data: response.data.data || response.data,
@@ -87,7 +63,7 @@ export const apiEngagementAIService = {
   // Get engagement prediction
   async getEngagementPrediction(userId) {
     try {
-      const response = await apiClient.get(`/api/engagement/prediction/${userId}`);
+      const response = await axios.get(`/api/engagement/prediction/${userId}`);
       return {
         success: true,
         data: response.data.data || response.data,
@@ -109,7 +85,7 @@ export const apiEngagementAIService = {
   // Get activity patterns analysis
   async getActivityPatterns(userId) {
     try {
-      const response = await apiClient.get(`/api/engagement/activity-patterns/${userId}`);
+      const response = await axios.get(`/api/engagement/activity-patterns/${userId}`);
       return {
         success: true,
         data: response.data.data || response.data,
@@ -130,7 +106,7 @@ export const apiEngagementAIService = {
   // Get smart suggestions
   async getSmartSuggestions(userId) {
     try {
-      const response = await apiClient.get(`/api/engagement/suggestions/${userId}`);
+      const response = await axios.get(`/api/engagement/suggestions/${userId}`);
       return {
         success: true,
         data: response.data.data || response.data,
@@ -147,7 +123,7 @@ export const apiEngagementAIService = {
   // Get contribution impact history
   async getContributionImpact(userId, days = 30) {
     try {
-      const response = await apiClient.get(`/api/engagement/contribution-impact/${userId}`, {
+      const response = await axios.get(`/api/engagement/contribution-impact/${userId}`, {
         params: { days },
       });
       return {
@@ -166,7 +142,7 @@ export const apiEngagementAIService = {
   // Get comparison with similar users
   async getUserComparison(userId) {
     try {
-      const response = await apiClient.get(`/api/engagement/comparison/${userId}`);
+      const response = await axios.get(`/api/engagement/comparison/${userId}`);
       return {
         success: true,
         data: response.data.data || response.data,

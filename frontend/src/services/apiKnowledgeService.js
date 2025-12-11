@@ -1,13 +1,11 @@
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+import axios from './axiosConfig';
 
 // Real Knowledge Service API
 class ApiKnowledgeService {
   // Get all knowledge capsules
   async getCapsules(filters = {}) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/knowledge/capsules`, {
+      const response = await axios.get('/api/knowledge/capsules', {
         params: filters,
       });
       return response.data;
@@ -19,7 +17,7 @@ class ApiKnowledgeService {
   // Get capsule by ID
   async getCapsuleById(capsuleId) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/knowledge/capsules/${capsuleId}`);
+      const response = await axios.get(`/api/knowledge/capsules/${capsuleId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -29,7 +27,7 @@ class ApiKnowledgeService {
   // Create knowledge capsule
   async createCapsule(capsuleData) {
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/knowledge/capsules`, capsuleData);
+      const response = await axios.post('/api/knowledge/capsules', capsuleData);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -40,7 +38,7 @@ class ApiKnowledgeService {
   async updateCapsule(capsuleId, capsuleData) {
     try {
       const response = await axios.put(
-        `${BACKEND_URL}/api/knowledge/capsules/${capsuleId}`,
+        `/api/knowledge/capsules/${capsuleId}`,
         capsuleData
       );
       return response.data;
@@ -52,7 +50,7 @@ class ApiKnowledgeService {
   // Delete capsule
   async deleteCapsule(capsuleId) {
     try {
-      const response = await axios.delete(`${BACKEND_URL}/api/knowledge/capsules/${capsuleId}`);
+      const response = await axios.delete(`/api/knowledge/capsules/${capsuleId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -62,7 +60,7 @@ class ApiKnowledgeService {
   // Like capsule
   async likeCapsule(capsuleId) {
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/knowledge/capsules/${capsuleId}/like`);
+      const response = await axios.post(`/api/knowledge/capsules/${capsuleId}/like`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -73,7 +71,7 @@ class ApiKnowledgeService {
   async bookmarkCapsule(capsuleId) {
     try {
       const response = await axios.post(
-        `${BACKEND_URL}/api/knowledge/capsules/${capsuleId}/bookmark`
+        `/api/knowledge/capsules/${capsuleId}/bookmark`
       );
       return response.data;
     } catch (error) {
@@ -84,7 +82,7 @@ class ApiKnowledgeService {
   // Get bookmarked capsules
   async getBookmarkedCapsules() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/knowledge/bookmarks`);
+      const response = await axios.get('/api/knowledge/bookmarks');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -97,9 +95,8 @@ class ApiKnowledgeService {
   async toggleFeatured(capsuleId) {
     try {
       const response = await axios.put(
-        `${BACKEND_URL}/api/admin/knowledge/capsules/${capsuleId}/toggle-featured`,
-        {},
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        `/api/admin/knowledge/capsules/${capsuleId}/toggle-featured`,
+        {}
       );
       return response.data;
     } catch (error) {
@@ -110,13 +107,123 @@ class ApiKnowledgeService {
   // Get all capsules with admin data (Admin only)
   async getAllCapsulesAdmin(filters = {}) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/knowledge/capsules`, {
-        params: filters,
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const response = await axios.get('/api/admin/knowledge/capsules', {
+        params: filters
       });
       return response.data;
     } catch (error) {
       return { success: false, error: error.message, data: [] };
+    }
+  }
+
+  // Get all categories
+  async getCategories() {
+    try {
+      const response = await axios.get('/api/knowledge/categories');
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: [] };
+    }
+  }
+
+  // Get all tags
+  async getTags() {
+    try {
+      const response = await axios.get('/api/knowledge/tags');
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: [] };
+    }
+  }
+
+  // Get personalized capsules (AI-ranked)
+  async getPersonalizedCapsules(userId) {
+    try {
+      const response = await axios.get(`/api/knowledge/personalized/${userId}`);
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: [] };
+    }
+  }
+
+  // Get AI insights for a specific capsule
+  async getCapsuleAIInsights(capsuleId, userId) {
+    try {
+      const response = await axios.get(`/api/knowledge/capsules/${capsuleId}/ai-insights`, {
+        params: { user_id: userId }
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  // Get all learning paths
+  async getLearningPaths() {
+    try {
+      const response = await axios.get('/api/knowledge/learning-paths');
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: [] };
+    }
+  }
+
+  // Get single learning path
+  async getLearningPath(pathId) {
+    try {
+      const response = await axios.get(`/api/knowledge/learning-paths/${pathId}`);
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  // Generate learning path based on career goal
+  async generateLearningPath(targetRole, currentSkills = []) {
+    try {
+      const response = await axios.post('/api/knowledge/learning-paths/generate', {
+        target_role: targetRole,
+        current_skills: currentSkills
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  // Track learning path progress
+  async updatePathProgress(userId, pathId, capsuleId, completed) {
+    try {
+      const response = await axios.put(`/api/knowledge/learning-paths/${pathId}/progress`, {
+        user_id: userId,
+        capsule_id: capsuleId,
+        completed
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  // Get learning path progress
+  async getPathProgress(userId, pathId) {
+    try {
+      const response = await axios.get(`/api/knowledge/learning-paths/${pathId}/progress`, {
+        params: { user_id: userId }
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: { completed_capsules: [] } };
+    }
+  }
+
+  // Unlike capsule
+  async unlikeCapsule(capsuleId) {
+    try {
+      const response = await axios.delete(`/api/knowledge/capsules/${capsuleId}/like`);
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message };
     }
   }
 }

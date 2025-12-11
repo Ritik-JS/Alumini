@@ -3,37 +3,13 @@
  * Connects to backend API endpoints for AI system monitoring
  */
 
-import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-
-// Get auth token from localStorage
-const getAuthToken = () => {
-  return localStorage.getItem('token');
-};
-
-// Create axios instance with auth
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add auth token to requests
-apiClient.interceptors.request.use((config) => {
-  const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import axios from './axiosConfig';
 
 export const apiAIMonitorService = {
   // Get all AI systems status overview
   async getAllSystemsStatus() {
     try {
-      const response = await apiClient.get('/api/admin/ai-monitor/systems');
+      const response = await axios.get('/api/admin/ai-monitor/systems');
       return {
         success: true,
         data: response.data.data || response.data,
@@ -51,7 +27,7 @@ export const apiAIMonitorService = {
   // Get specific system details
   async getSystemDetails(systemId) {
     try {
-      const response = await apiClient.get(`/api/admin/ai-monitor/systems/${systemId}`);
+      const response = await axios.get(`/api/admin/ai-monitor/systems/${systemId}`);
       return {
         success: true,
         data: response.data.data || response.data,
@@ -68,7 +44,7 @@ export const apiAIMonitorService = {
   // Get model performance metrics
   async getModelPerformance(systemId, days = 30) {
     try {
-      const response = await apiClient.get(`/api/admin/ai-monitor/systems/${systemId}/performance`, {
+      const response = await axios.get(`/api/admin/ai-monitor/systems/${systemId}/performance`, {
         params: { days },
       });
       return {
@@ -87,7 +63,7 @@ export const apiAIMonitorService = {
   // Get processing queue status
   async getProcessingQueue() {
     try {
-      const response = await apiClient.get('/api/admin/ai-monitor/queue');
+      const response = await axios.get('/api/admin/ai-monitor/queue');
       return {
         success: true,
         data: response.data.data || response.data,
@@ -109,7 +85,7 @@ export const apiAIMonitorService = {
       if (systemId) {
         params.system_id = systemId;
       }
-      const response = await apiClient.get('/api/admin/ai-monitor/errors', { params });
+      const response = await axios.get('/api/admin/ai-monitor/errors', { params });
       return {
         success: true,
         data: response.data.data || response.data,
@@ -127,7 +103,7 @@ export const apiAIMonitorService = {
   // Trigger manual AI update
   async triggerAIUpdate(systemId) {
     try {
-      const response = await apiClient.post(`/api/admin/ai-monitor/systems/${systemId}/update`);
+      const response = await axios.post(`/api/admin/ai-monitor/systems/${systemId}/update`);
       return {
         success: true,
         data: response.data.data || response.data,
@@ -147,7 +123,7 @@ export const apiAIMonitorService = {
       const url = systemId
         ? `/api/admin/ai-monitor/systems/${systemId}/clear-queue`
         : '/api/admin/ai-monitor/queue/clear';
-      const response = await apiClient.post(url);
+      const response = await axios.post(url);
       return {
         success: true,
         data: response.data.data || response.data,
@@ -164,7 +140,7 @@ export const apiAIMonitorService = {
   // Download metrics report
   async downloadMetricsReport(format = 'json') {
     try {
-      const response = await apiClient.get('/api/admin/ai-monitor/report', {
+      const response = await axios.get('/api/admin/ai-monitor/report', {
         params: { format },
         responseType: format === 'json' ? 'json' : 'blob',
       });
@@ -184,7 +160,7 @@ export const apiAIMonitorService = {
   // Get system alerts
   async getSystemAlerts() {
     try {
-      const response = await apiClient.get('/api/admin/ai-monitor/alerts');
+      const response = await axios.get('/api/admin/ai-monitor/alerts');
       return {
         success: true,
         data: response.data.data || response.data,
@@ -202,7 +178,7 @@ export const apiAIMonitorService = {
   // Acknowledge alert
   async acknowledgeAlert(alertId) {
     try {
-      const response = await apiClient.post(`/api/admin/ai-monitor/alerts/${alertId}/acknowledge`);
+      const response = await axios.post(`/api/admin/ai-monitor/alerts/${alertId}/acknowledge`);
       return {
         success: true,
         data: response.data.data || response.data,

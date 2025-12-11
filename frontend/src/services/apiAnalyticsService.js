@@ -1,15 +1,11 @@
-import axios from 'axios';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+import axios from './axiosConfig';
 
 // Real Analytics Service API
 class ApiAnalyticsService {
   // Get dashboard statistics
   async getDashboardStats() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/analytics/dashboard`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get('/api/admin/analytics/dashboard');
       return response.data;
     } catch (error) {
       return { success: false, error: error.message, data: null };
@@ -19,9 +15,8 @@ class ApiAnalyticsService {
   // Get user growth over time
   async getUserGrowth(period = 'monthly') {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/analytics/user-growth`, {
-        params: { period },
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const response = await axios.get('/api/admin/analytics/user-growth', {
+        params: { period }
       });
       return response.data;
     } catch (error) {
@@ -32,9 +27,7 @@ class ApiAnalyticsService {
   // Get engagement metrics
   async getEngagementMetrics() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/analytics/engagement`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get('/api/admin/analytics/engagement');
       return response.data;
     } catch (error) {
       return { success: false, error: error.message, data: null };
@@ -44,9 +37,8 @@ class ApiAnalyticsService {
   // Get top contributors
   async getTopContributors(limit = 10) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/analytics/top-contributors`, {
-        params: { limit },
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const response = await axios.get('/api/admin/analytics/top-contributors', {
+        params: { limit }
       });
       return response.data;
     } catch (error) {
@@ -57,9 +49,8 @@ class ApiAnalyticsService {
   // Get platform activity breakdown
   async getPlatformActivity(days = 30) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/analytics/activity`, {
-        params: { days },
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const response = await axios.get('/api/admin/analytics/activity', {
+        params: { days }
       });
       return response.data;
     } catch (error) {
@@ -70,9 +61,7 @@ class ApiAnalyticsService {
   // Get analytics by category
   async getAnalyticsByCategory(category) {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/analytics/${category}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get(`/api/admin/analytics/${category}`);
       return response.data;
     } catch (error) {
       return { success: false, error: error.message, data: null };
@@ -82,9 +71,7 @@ class ApiAnalyticsService {
   // Get alumni analytics
   async getAlumniAnalytics() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/analytics/alumni`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get('/api/admin/analytics/alumni');
       return response.data;
     } catch (error) {
       return { success: false, error: error.message, data: null };
@@ -94,9 +81,7 @@ class ApiAnalyticsService {
   // Get job analytics
   async getJobAnalytics() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/analytics/jobs`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get('/api/admin/analytics/jobs');
       return response.data;
     } catch (error) {
       return { success: false, error: error.message, data: null };
@@ -106,9 +91,7 @@ class ApiAnalyticsService {
   // Get mentorship analytics
   async getMentorshipAnalytics() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/analytics/mentorship`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get('/api/admin/analytics/mentorship');
       return response.data;
     } catch (error) {
       return { success: false, error: error.message, data: null };
@@ -118,9 +101,7 @@ class ApiAnalyticsService {
   // Get event analytics
   async getEventAnalytics() {
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/admin/analytics/events`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await axios.get('/api/admin/analytics/events');
       return response.data;
     } catch (error) {
       return { success: false, error: error.message, data: null };

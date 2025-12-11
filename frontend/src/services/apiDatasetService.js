@@ -3,31 +3,7 @@
  * Connects to backend API endpoints for dataset upload operations
  */
 
-import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-
-// Get auth token from localStorage
-const getAuthToken = () => {
-  return localStorage.getItem('token');
-};
-
-// Create axios instance with auth
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add auth token to requests
-apiClient.interceptors.request.use((config) => {
-  const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import axios from './axiosConfig';
 
 export const apiDatasetService = {
   /**
@@ -46,7 +22,7 @@ export const apiDatasetService = {
         formData.append('description', description);
       }
 
-      const response = await apiClient.post('/api/admin/datasets/upload', formData, {
+      const response = await axios.post('/api/admin/datasets/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -65,7 +41,7 @@ export const apiDatasetService = {
    */
   async getUploadProgress(uploadId) {
     try {
-      const response = await apiClient.get(`/api/admin/datasets/upload/${uploadId}/progress`);
+      const response = await axios.get(`/api/admin/datasets/upload/${uploadId}/progress`);
       return response.data.data;
     } catch (error) {
       throw this._handleError(error);
@@ -79,7 +55,7 @@ export const apiDatasetService = {
    */
   async getUploadDetails(uploadId) {
     try {
-      const response = await apiClient.get(`/api/admin/datasets/upload/${uploadId}`);
+      const response = await axios.get(`/api/admin/datasets/upload/${uploadId}`);
       return response.data.data;
     } catch (error) {
       throw this._handleError(error);
@@ -93,7 +69,7 @@ export const apiDatasetService = {
    */
   async getUploadReport(uploadId) {
     try {
-      const response = await apiClient.get(`/api/admin/datasets/upload/${uploadId}/report`);
+      const response = await axios.get(`/api/admin/datasets/upload/${uploadId}/report`);
       return response.data.data;
     } catch (error) {
       throw this._handleError(error);
@@ -114,7 +90,7 @@ export const apiDatasetService = {
       if (filters.page) params.append('page', filters.page);
       if (filters.limit) params.append('limit', filters.limit);
 
-      const response = await apiClient.get(`/api/admin/datasets/uploads?${params.toString()}`);
+      const response = await axios.get(`/api/admin/datasets/uploads?${params.toString()}`);
       
       return {
         uploads: response.data.data,
@@ -132,7 +108,7 @@ export const apiDatasetService = {
    */
   async getStatistics() {
     try {
-      const response = await apiClient.get('/api/admin/datasets/statistics');
+      const response = await axios.get('/api/admin/datasets/statistics');
       return response.data.data;
     } catch (error) {
       throw this._handleError(error);
@@ -146,7 +122,7 @@ export const apiDatasetService = {
    */
   async downloadErrorReport(uploadId) {
     try {
-      const response = await apiClient.get(
+      const response = await axios.get(
         `/api/admin/datasets/upload/${uploadId}/errors/download`,
         {
           responseType: 'blob',
@@ -178,7 +154,7 @@ export const apiDatasetService = {
    */
   async deleteUpload(uploadId) {
     try {
-      const response = await apiClient.delete(`/api/admin/datasets/upload/${uploadId}`);
+      const response = await axios.delete(`/api/admin/datasets/upload/${uploadId}`);
       return response.data;
     } catch (error) {
       throw this._handleError(error);
