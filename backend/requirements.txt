@@ -98,7 +98,7 @@ isort>=5.13.2
 flake8>=7.0.0
 mypy>=1.8.0
 requests>=2.31.0
-jq>=1.6.0
+
 typer>=0.9.0
 tzdata>=2024.2
 kombu
