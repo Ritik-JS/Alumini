@@ -4,6 +4,7 @@ Handles all business logic for knowledge capsules system
 """
 import logging
 import json
+import uuid
 from typing import Optional
 from datetime import datetime
 from database.connection import get_db_pool
@@ -29,18 +30,19 @@ class CapsuleService:
             pool = await get_db_pool()
             async with pool.acquire() as conn:
                 async with conn.cursor() as cursor:
+                    # Generate UUID for the capsule
+                    capsule_id = str(uuid.uuid4())
+                    
                     query = """
                         INSERT INTO knowledge_capsules 
-                        (title, content, author_id, category, tags, duration_minutes, featured_image)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        (id, title, content, author_id, category, tags, duration_minutes, featured_image)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     """
                     await cursor.execute(
                         query,
-                        (title, content, author_id, category, json.dumps(tags), duration_minutes, featured_image)
+                        (capsule_id, title, content, author_id, category, json.dumps(tags), duration_minutes, featured_image)
                     )
                     await conn.commit()
-                    
-                    capsule_id = cursor.lastrowid
                     
                     # Fetch the created capsule
                     return await CapsuleService.get_capsule_by_id(capsule_id, author_id)

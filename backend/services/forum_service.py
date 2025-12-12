@@ -1,5 +1,6 @@
 """Forum service for handling forum posts, comments, and likes"""
 import logging
+import uuid
 from typing import Optional
 import json
 
@@ -24,23 +25,25 @@ class ForumService:
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor() as cursor:
+                # Generate UUID for the post
+                post_id = str(uuid.uuid4())
                 tags_json = json.dumps(post_data.tags) if post_data.tags else None
                 
                 query = """
-                INSERT INTO forum_posts (title, content, author_id, tags)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO forum_posts (id, title, content, author_id, tags)
+                VALUES (%s, %s, %s, %s, %s)
                 """
                 await cursor.execute(query, (
+                    post_id,
                     post_data.title,
                     post_data.content,
                     author_id,
                     tags_json
                 ))
-                post_id = cursor.lastrowid
+                await conn.commit()
                 
                 await cursor.execute("SELECT * FROM forum_posts WHERE id = %s", (post_id,))
                 post_row = await cursor.fetchone()
-                await conn.commit()
                 
                 if post_row:
                     return ForumService._post_from_row(post_row, cursor)
@@ -305,21 +308,24 @@ class ForumService:
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor() as cursor:
+                # Generate UUID for the comment
+                comment_id = str(uuid.uuid4())
+                
                 query = """
-                INSERT INTO forum_comments (post_id, author_id, parent_comment_id, content)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO forum_comments (id, post_id, author_id, parent_comment_id, content)
+                VALUES (%s, %s, %s, %s, %s)
                 """
                 await cursor.execute(query, (
+                    comment_id,
                     post_id,
                     author_id,
                     comment_data.parent_comment_id,
                     comment_data.content
                 ))
-                comment_id = cursor.lastrowid
+                await conn.commit()
                 
                 await cursor.execute("SELECT * FROM forum_comments WHERE id = %s", (comment_id,))
                 comment_row = await cursor.fetchone()
-                await conn.commit()
                 
                 if comment_row:
                     return ForumService._comment_from_row(comment_row, cursor)

@@ -1,6 +1,7 @@
 """Mentorship service for mentor-mentee management"""
 import json
 import logging
+import uuid
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 import aiomysql
@@ -343,22 +344,23 @@ class MentorshipService:
                 if existing:
                     raise ValueError("You already have an active mentorship request with this mentor")
                 
+                # Generate UUID for the request
+                request_id = str(uuid.uuid4())
+                
                 # Prepare JSON fields
                 preferred_topics_json = json.dumps(request_data.preferred_topics) if request_data.preferred_topics else None
                 
-                # Insert mentorship request
+                # Insert mentorship request with explicit ID
                 query = """
                 INSERT INTO mentorship_requests (
-                    student_id, mentor_id, request_message, goals, preferred_topics, status
-                ) VALUES (%s, %s, %s, %s, %s, 'pending')
+                    id, student_id, mentor_id, request_message, goals, preferred_topics, status
+                ) VALUES (%s, %s, %s, %s, %s, %s, 'pending')
                 """
                 await cursor.execute(query, (
-                    student_id, request_data.mentor_id, request_data.request_message,
+                    request_id, student_id, request_data.mentor_id, request_data.request_message,
                     request_data.goals, preferred_topics_json
                 ))
                 await conn.commit()
-                
-                request_id = cursor.lastrowid
                 
                 # Send notification to mentor (via email service)
                 # TODO: Integrate with email service
@@ -607,19 +609,20 @@ class MentorshipService:
                 if user_id not in [mentorship['student_id'], mentorship['mentor_id']]:
                     raise ValueError("You are not part of this mentorship")
                 
-                # Insert session
+                # Generate UUID for the session
+                session_id = str(uuid.uuid4())
+                
+                # Insert session with explicit ID
                 query = """
                 INSERT INTO mentorship_sessions (
-                    mentorship_request_id, scheduled_date, duration, meeting_link, agenda, status
-                ) VALUES (%s, %s, %s, %s, %s, 'scheduled')
+                    id, mentorship_request_id, scheduled_date, duration, meeting_link, agenda, status
+                ) VALUES (%s, %s, %s, %s, %s, %s, 'scheduled')
                 """
                 await cursor.execute(query, (
-                    mentorship_id, session_data.scheduled_date, session_data.duration,
+                    session_id, mentorship_id, session_data.scheduled_date, session_data.duration,
                     session_data.meeting_link, session_data.agenda
                 ))
                 await conn.commit()
-                
-                session_id = cursor.lastrowid
                 
                 return await MentorshipService.get_session_with_details(session_id)
     

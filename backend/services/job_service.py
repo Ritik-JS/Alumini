@@ -1,6 +1,7 @@
 """Job service for job and application management"""
 import json
 import logging
+import uuid
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 import aiomysql
@@ -32,21 +33,24 @@ class JobService:
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
+                # Generate UUID for the job
+                job_id = str(uuid.uuid4())
+                
                 # Prepare skills JSON
                 skills_json = json.dumps(job_data.skills_required) if job_data.skills_required else None
                 
-                # Insert job
+                # Insert job with explicit ID
                 query = """
                 INSERT INTO jobs (
-                    title, description, company, location, job_type,
+                    id, title, description, company, location, job_type,
                     experience_required, skills_required, salary_range,
                     apply_link, posted_by, application_deadline, status
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 )
                 """
                 await cursor.execute(query, (
-                    job_data.title, job_data.description, job_data.company,
+                    job_id, job_data.title, job_data.description, job_data.company,
                     job_data.location, job_data.job_type.value,
                     job_data.experience_required, skills_json, job_data.salary_range,
                     job_data.apply_link, user_id, job_data.application_deadline,
@@ -55,8 +59,7 @@ class JobService:
                 await conn.commit()
                 
                 # Get the created job
-                job_id = cursor.lastrowid
-                return await JobService.get_job_by_id(str(job_id))
+                return await JobService.get_job_by_id(job_id)
     
     @staticmethod
     async def get_job_by_id(job_id: str) -> Optional[Dict[str, Any]]:
@@ -325,21 +328,23 @@ class JobService:
                 if existing:
                     raise ValueError("You have already applied for this job")
                 
-                # Create application
+                # Generate UUID for the application
+                application_id = str(uuid.uuid4())
+                
+                # Create application with explicit ID
                 query = """
                 INSERT INTO job_applications (
-                    job_id, applicant_id, cv_url, cover_letter, status
-                ) VALUES (%s, %s, %s, %s, %s)
+                    id, job_id, applicant_id, cv_url, cover_letter, status
+                ) VALUES (%s, %s, %s, %s, %s, %s)
                 """
                 await cursor.execute(query, (
-                    job_id, applicant_id, application_data.cv_url,
+                    application_id, job_id, applicant_id, application_data.cv_url,
                     application_data.cover_letter, ApplicationStatus.PENDING.value
                 ))
                 await conn.commit()
                 
                 # Get the created application
-                application_id = cursor.lastrowid
-                return await JobService.get_application_by_id(str(application_id))
+                return await JobService.get_application_by_id(application_id)
     
     @staticmethod
     async def get_application_by_id(application_id: str) -> Optional[Dict[str, Any]]:

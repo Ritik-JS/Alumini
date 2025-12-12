@@ -1,5 +1,6 @@
 """Event management service for handling event CRUD operations"""
 import logging
+import uuid
 from typing import Optional
 from datetime import datetime
 import json
@@ -23,14 +24,18 @@ class EventService:
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor() as cursor:
+                # Generate UUID for the event
+                event_id = str(uuid.uuid4())
+                
                 query = """
                 INSERT INTO events (
-                    title, description, event_type, location, is_virtual,
+                    id, title, description, event_type, location, is_virtual,
                     meeting_link, start_date, end_date, registration_deadline,
                     max_attendees, banner_image, created_by, status
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 await cursor.execute(query, (
+                    event_id,
                     event_data.title,
                     event_data.description,
                     event_data.event_type.value,
@@ -45,12 +50,11 @@ class EventService:
                     created_by,
                     event_data.status.value
                 ))
-                event_id = cursor.lastrowid
+                await conn.commit()
                 
                 # Fetch the created event
                 await cursor.execute("SELECT * FROM events WHERE id = %s", (event_id,))
                 event_row = await cursor.fetchone()
-                await conn.commit()
                 
                 if event_row:
                     return EventService._event_from_row(event_row, cursor)
