@@ -105,9 +105,12 @@ const SkillGraph = () => {
       const res = await skillGraphService.getAlumniBySkill(skill.skill_name);
       if (res.success) {
         toast.success(`Found ${res.count} alumni with ${skill.skill_name}`);
+      } else {
+        toast.info(`${skill.alumni_count} alumni have ${skill.skill_name} skill`);
       }
     } catch (error) {
-      toast.error('Failed to load alumni data');
+      console.error('Error loading alumni data:', error);
+      toast.info(`${skill.alumni_count} alumni have ${skill.skill_name} skill`);
     }
   };
 
