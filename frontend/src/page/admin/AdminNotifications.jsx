@@ -33,7 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Bell, Plus, Edit, Trash2, MoreVertical, Eye, Send, CheckCircle, AlertCircle } from 'lucide-react';
-import { notificationService } from '@/services';
+import { adminService } from '@/services';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
@@ -63,14 +63,9 @@ const AdminNotifications = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await notificationService.getAllNotifications();
-      
-      if (result.success) {
-        setNotifications(result.data || []);
-        setFilteredNotifications(result.data || []);
-      } else {
-        setError(result.error || 'Failed to load notifications');
-      }
+      const result = await adminService.getAllNotifications();
+      setNotifications(result.notifications || []);
+      setFilteredNotifications(result.notifications || []);
     } catch (error) {
       console.error('Error loading notifications:', error);
       setError('Unable to connect to server. Please try again later.');
@@ -117,16 +112,11 @@ const AdminNotifications = () => {
         priority: formData.priority,
       };
 
-      const result = await notificationService.createNotification(notificationData);
-      
-      if (result.success) {
-        toast.success('Notification created and sent successfully');
-        setShowCreateModal(false);
-        resetForm();
-        loadNotifications(); // Reload to get fresh data
-      } else {
-        toast.error(result.error || 'Failed to create notification');
-      }
+      await adminService.createNotification(notificationData);
+      toast.success('Notification created and sent successfully');
+      setShowCreateModal(false);
+      resetForm();
+      loadNotifications();
     } catch (error) {
       console.error('Error creating notification:', error);
       toast.error('Unable to create notification. Please try again.');
@@ -161,17 +151,12 @@ const AdminNotifications = () => {
         priority: formData.priority,
       };
 
-      const result = await notificationService.updateNotification(editingNotification.id, updateData);
-      
-      if (result.success) {
-        toast.success('Notification updated successfully');
-        setShowCreateModal(false);
-        setEditingNotification(null);
-        resetForm();
-        loadNotifications();
-      } else {
-        toast.error(result.error || 'Failed to update notification');
-      }
+      await adminService.updateNotification(editingNotification.id, updateData);
+      toast.success('Notification updated successfully');
+      setShowCreateModal(false);
+      setEditingNotification(null);
+      resetForm();
+      loadNotifications();
     } catch (error) {
       console.error('Error updating notification:', error);
       toast.error('Unable to update notification. Please try again.');
@@ -181,14 +166,9 @@ const AdminNotifications = () => {
   const handleDeleteNotification = async (notificationId) => {
     if (window.confirm('Are you sure you want to delete this notification?')) {
       try {
-        const result = await notificationService.deleteNotification(notificationId);
-        
-        if (result.success) {
-          toast.success('Notification deleted successfully');
-          loadNotifications();
-        } else {
-          toast.error(result.error || 'Failed to delete notification');
-        }
+        await adminService.deleteNotification(notificationId);
+        toast.success('Notification deleted successfully');
+        loadNotifications();
       } catch (error) {
         console.error('Error deleting notification:', error);
         toast.error('Unable to delete notification. Please try again.');
@@ -203,13 +183,8 @@ const AdminNotifications = () => {
 
   const handleResendNotification = async (notificationId) => {
     try {
-      const result = await notificationService.resendNotification(notificationId);
-      
-      if (result.success) {
-        toast.success('Notification resent successfully');
-      } else {
-        toast.error(result.error || 'Failed to resend notification');
-      }
+      await adminService.resendNotification(notificationId);
+      toast.success('Notification resent successfully');
     } catch (error) {
       console.error('Error resending notification:', error);
       toast.error('Unable to resend notification. Please try again.');

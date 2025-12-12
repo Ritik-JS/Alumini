@@ -51,7 +51,6 @@ const AdminBadges = () => {
       setError(null);
       const result = await adminService.getAllBadges();
       setBadges(result.badges || []);
-      }
     } catch (error) {
       console.error('Error loading badges:', error);
       setError('Unable to connect to server. Please try again later.');
@@ -77,16 +76,11 @@ const AdminBadges = () => {
         requirements: JSON.parse(formData.requirements || '{}'),
       };
 
-      const result = await adminService.createBadge(badgeData);
-      
-      // Success response {
-        toast.success('Badge created successfully');
-        setShowCreateModal(false);
-        resetForm();
-        loadBadges();
-      } else {
-        toast.error(result.error || 'Failed to create badge');
-      }
+      await adminService.createBadge(badgeData);
+      toast.success('Badge created successfully');
+      setShowCreateModal(false);
+      resetForm();
+      loadBadges();
     } catch (error) {
       console.error('Error creating badge:', error);
       toast.error('Unable to create badge. Please try again.');
@@ -118,17 +112,12 @@ const AdminBadges = () => {
         requirements: JSON.parse(formData.requirements || '{}'),
       };
 
-      const result = await adminService.updateBadge(editingBadge.id, badgeData);
-      
-      // Success response {
-        toast.success('Badge updated successfully');
-        setShowCreateModal(false);
-        setEditingBadge(null);
-        resetForm();
-        loadBadges();
-      } else {
-        toast.error(result.error || 'Failed to update badge');
-      }
+      await adminService.updateBadge(editingBadge.id, badgeData);
+      toast.success('Badge updated successfully');
+      setShowCreateModal(false);
+      setEditingBadge(null);
+      resetForm();
+      loadBadges();
     } catch (error) {
       console.error('Error updating badge:', error);
       toast.error('Unable to update badge. Please try again.');
@@ -138,14 +127,9 @@ const AdminBadges = () => {
   const handleDeleteBadge = async (badgeId) => {
     if (window.confirm('Are you sure you want to delete this badge?')) {
       try {
-        const result = await adminService.deleteBadge(badgeId);
-        
-        // Success response {
-          setBadges(badges.filter((b) => b.id !== badgeId));
-          toast.success('Badge deleted successfully');
-        } else {
-          toast.error(result.error || 'Failed to delete badge');
-        }
+        await adminService.deleteBadge(badgeId);
+        setBadges(badges.filter((b) => b.id !== badgeId));
+        toast.success('Badge deleted successfully');
       } catch (error) {
         console.error('Error deleting badge:', error);
         toast.error('Unable to delete badge. Please try again.');
