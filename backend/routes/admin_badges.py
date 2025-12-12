@@ -3,8 +3,8 @@ from pydantic import BaseModel
 from typing import Optional
 import logging
 import json
-from ..database.connection import get_db_connection
-from ..middleware.auth_middleware import require_admin, get_current_user
+from database.connection import get_db_connection
+from middleware.auth_middleware import require_admin, get_current_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/admin/badges", tags=["admin-badges"])

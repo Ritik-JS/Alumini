@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 import logging
-from ..database.connection import get_db_connection
-from ..middleware.auth_middleware import require_admin
+from database.connection import get_db_connection
+from middleware.auth_middleware import require_admin
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/admin/mentorship", tags=["admin-mentorship"])

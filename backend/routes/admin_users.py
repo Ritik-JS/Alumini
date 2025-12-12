@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from typing import List, Optional
 import logging
 from datetime import datetime
-from ..database.connection import get_db_connection
-from ..middleware.auth_middleware import get_current_user, require_admin
+from database.connection import get_db_connection
+from middleware.auth_middleware import get_current_user, require_admin
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/admin/users", tags=["admin-users"])
