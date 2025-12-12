@@ -44,11 +44,32 @@ const TalentHeatmap = () => {
         heatmapService.getEmergingHubs()
       ]);
 
-      if (locationsRes.success) setLocations(locationsRes.data);
-      if (skillsRes.success) setSkills(skillsRes.data);
-      if (industriesRes.success) setIndustries(industriesRes.data);
-      if (clustersRes.success) setClusters(clustersRes.data);
-      if (emergingRes.success) setEmergingHubs(emergingRes.data);
+      if (locationsRes.success) setLocations(locationsRes.data || []);
+      if (skillsRes.success) {
+        // Extract skill names from array of objects {name, location_count}
+        const skillNames = (skillsRes.data || []).map(s => s.name);
+        setSkills(skillNames);
+      }
+      if (industriesRes.success) {
+        // Extract industry list - backend returns complex nested structure
+        const industryData = industriesRes.data || {};
+        // If data is array, extract names; if object, get top-level keys
+        let industryNames = [];
+        if (Array.isArray(industryData)) {
+          industryNames = industryData.map(ind => ind.name || ind);
+        } else if (typeof industryData === 'object') {
+          // Extract unique industries from nested structure
+          industryNames = Object.values(industryData)
+            .flatMap(locations => Array.isArray(locations) ? locations.map(l => l.industry) : [])
+            .filter((v, i, a) => v && a.indexOf(v) === i);
+        }
+        setIndustries(industryNames);
+      }
+      if (clustersRes.success) {
+        // Extract clusters array from nested data structure
+        setClusters(clustersRes.data?.clusters || clustersRes.data || []);
+      }
+      if (emergingRes.success) setEmergingHubs(emergingRes.data || []);
     } catch (error) {
       toast.error('Failed to load heatmap data');
     } finally {
@@ -72,7 +93,7 @@ const TalentHeatmap = () => {
       }
       
       if (clustersRes.success) {
-        setClusters(clustersRes.data);
+        setClusters(clustersRes.data?.clusters || clustersRes.data || []);
       }
     } catch (error) {
       toast.error('Failed to apply filters');

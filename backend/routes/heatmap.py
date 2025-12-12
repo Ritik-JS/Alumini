@@ -580,3 +580,155 @@ async def get_cluster_details(
             status_code=500,
             detail=f"Failed to fetch cluster details: {str(e)}"
         )
+
+
+@router.get("/skills")
+async def get_all_skills(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get all unique skills from geographic data
+    Extracts skills from top_skills field across all locations
+    
+    Useful for:
+        - Skill-based filtering on heatmap
+        - Understanding global skill distribution
+        - Identifying in-demand skills across locations
+    """
+    try:
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                # Get all unique skills from geographic_data.top_skills
+                await cursor.execute("""
+                    SELECT DISTINCT skill_name, COUNT(DISTINCT location_name) as location_count
+                    FROM (
+                        SELECT 
+                            location_name,
+                            JSON_UNQUOTE(JSON_EXTRACT(top_skills, CONCAT('$[', idx, ']'))) as skill_name
+                        FROM geographic_data
+                        CROSS JOIN (
+                            SELECT 0 AS idx UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4
+                            UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9
+                        ) AS indices
+                        WHERE top_skills IS NOT NULL 
+                        AND JSON_LENGTH(top_skills) > idx
+                    ) skills_by_location
+                    WHERE skill_name IS NOT NULL
+                    GROUP BY skill_name
+                    ORDER BY location_count DESC, skill_name ASC
+                """)
+                results = await cursor.fetchall()
+                
+                skills = [
+                    {
+                        "name": row[0],
+                        "location_count": row[1]
+                    }
+                    for row in results
+                ]
+                
+                return {
+                    "success": True,
+                    "data": skills,
+                    "total": len(skills)
+                }
+    
+    except Exception as e:
+        logger.error(f"Error getting skills: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch skills: {str(e)}"
+        )
+
+
+@router.get("/emerging-hubs")
+async def get_emerging_hubs(
+    limit: int = Query(10, ge=1, le=50),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get emerging tech hubs - locations with fastest growth potential
+    Identifies locations with high job opportunities and growing alumni presence
+    
+    Emerging hubs are identified by:
+        - High opportunity score (more jobs than alumni)
+        - Growing alumni count
+        - Presence of in-demand skills
+        - Strong industry diversity
+    
+    Useful for:
+        - Identifying new markets
+        - Career relocation planning
+        - Understanding emerging tech ecosystems
+    """
+    try:
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                # Find locations with high opportunity scores and growth potential
+                await cursor.execute("""
+                    SELECT 
+                        location_name,
+                        country,
+                        city,
+                        latitude,
+                        longitude,
+                        alumni_count,
+                        jobs_count,
+                        top_skills,
+                        top_companies,
+                        top_industries,
+                        CASE 
+                            WHEN alumni_count > 0 THEN ROUND(jobs_count / alumni_count, 2)
+                            ELSE jobs_count
+                        END as opportunity_ratio,
+                        ROUND((jobs_count * 0.6 + alumni_count * 0.4) / 100, 2) as growth_score
+                    FROM geographic_data
+                    WHERE jobs_count > 0 
+                    AND alumni_count > 0
+                    ORDER BY 
+                        opportunity_ratio DESC,
+                        growth_score DESC,
+                        jobs_count DESC
+                    LIMIT %s
+                """, (limit,))
+                results = await cursor.fetchall()
+                
+                import json
+                
+                emerging_hubs = [
+                    {
+                        "location": row[0],
+                        "country": row[1],
+                        "city": row[2],
+                        "coordinates": {
+                            "latitude": float(row[3]) if row[3] else None,
+                            "longitude": float(row[4]) if row[4] else None
+                        },
+                        "alumni_count": row[5],
+                        "jobs_count": row[6],
+                        "top_skills": json.loads(row[7]) if row[7] else [],
+                        "top_companies": json.loads(row[8]) if row[8] else [],
+                        "top_industries": json.loads(row[9]) if row[9] else [],
+                        "opportunity_ratio": float(row[10]),
+                        "growth_score": float(row[11]),
+                        "is_emerging": True
+                    }
+                    for row in results
+                ]
+                
+                return {
+                    "success": True,
+                    "data": emerging_hubs,
+                    "total": len(emerging_hubs)
+                }
+    
+    except Exception as e:
+        logger.error(f"Error getting emerging hubs: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch emerging hubs: {str(e)}"
+        )

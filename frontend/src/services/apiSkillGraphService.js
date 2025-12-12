@@ -2,10 +2,12 @@ import axios from './axiosConfig';
 
 // Real Skill Graph Service API
 class ApiSkillGraphService {
-  // Get skill graph data
-  async getSkillGraph() {
+  // Get skill graph data (skill network)
+  async getSkillGraph(filters = {}) {
     try {
-      const response = await axios.get('/api/skills/graph');
+      const response = await axios.get('/api/skill-graph/network', {
+        params: filters
+      });
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -15,18 +17,19 @@ class ApiSkillGraphService {
   // Get skill details
   async getSkillDetails(skillName) {
     try {
-      const response = await axios.get(`/api/skills/${encodeURIComponent(skillName)}`);
+      const response = await axios.get(`/api/skill-graph/skill/${encodeURIComponent(skillName)}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
     }
   }
 
-  // Get related skills
-  async getRelatedSkills(skillName) {
+  // Get related skills (AI-powered)
+  async getRelatedSkills(skillName, limit = 10) {
     try {
       const response = await axios.get(
-        `/api/skills/${encodeURIComponent(skillName)}/related`
+        `/api/skill-graph/related/${encodeURIComponent(skillName)}`,
+        { params: { limit } }
       );
       return response.data;
     } catch (error) {
@@ -35,20 +38,10 @@ class ApiSkillGraphService {
   }
 
   // Get trending skills
-  async getTrendingSkills() {
+  async getTrendingSkills(limit = 20) {
     try {
-      const response = await axios.get('/api/skills/trending');
-      return response.data;
-    } catch (error) {
-      return { success: false, message: error.message, data: [] };
-    }
-  }
-
-  // Search skills
-  async searchSkills(query) {
-    try {
-      const response = await axios.get('/api/skills/search', {
-        params: { q: query },
+      const response = await axios.get('/api/skill-graph/trending', {
+        params: { limit }
       });
       return response.data;
     } catch (error) {
@@ -56,20 +49,34 @@ class ApiSkillGraphService {
     }
   }
 
-  // Get alumni by skill
-  async getAlumniBySkill(skillName) {
+  // Get skill clusters
+  async getSkillClusters(minPopularity = 0.0) {
     try {
-      const response = await axios.get(`/api/skills/${encodeURIComponent(skillName)}/alumni`);
+      const response = await axios.get('/api/skill-graph/clusters', {
+        params: { min_popularity: minPopularity }
+      });
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
     }
   }
 
-  // Get all unique industries
+  // Find career paths by skill
+  async getCareerPathsBySkill(skillName, limit = 10) {
+    try {
+      const response = await axios.get('/api/skill-graph/paths', {
+        params: { skill: skillName, limit }
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: [] };
+    }
+  }
+
+  // Get all unique industries (from heatmap)
   async getIndustries() {
     try {
-      const response = await axios.get('/api/skills/industries');
+      const response = await axios.get('/api/heatmap/industries');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };

@@ -5,7 +5,7 @@ class ApiKnowledgeService {
   // Get all knowledge capsules
   async getCapsules(filters = {}) {
     try {
-      const response = await axios.get('/api/knowledge/capsules', {
+      const response = await axios.get('/api/capsules', {
         params: filters,
       });
       return response.data;
@@ -17,7 +17,7 @@ class ApiKnowledgeService {
   // Get capsule by ID
   async getCapsuleById(capsuleId) {
     try {
-      const response = await axios.get(`/api/knowledge/capsules/${capsuleId}`);
+      const response = await axios.get(`/api/capsules/${capsuleId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -27,7 +27,7 @@ class ApiKnowledgeService {
   // Create knowledge capsule
   async createCapsule(capsuleData) {
     try {
-      const response = await axios.post('/api/knowledge/capsules', capsuleData);
+      const response = await axios.post('/api/capsules/create', capsuleData);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -38,7 +38,7 @@ class ApiKnowledgeService {
   async updateCapsule(capsuleId, capsuleData) {
     try {
       const response = await axios.put(
-        `/api/knowledge/capsules/${capsuleId}`,
+        `/api/capsules/${capsuleId}`,
         capsuleData
       );
       return response.data;
@@ -50,7 +50,7 @@ class ApiKnowledgeService {
   // Delete capsule
   async deleteCapsule(capsuleId) {
     try {
-      const response = await axios.delete(`/api/knowledge/capsules/${capsuleId}`);
+      const response = await axios.delete(`/api/capsules/${capsuleId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -60,7 +60,7 @@ class ApiKnowledgeService {
   // Like capsule
   async likeCapsule(capsuleId) {
     try {
-      const response = await axios.post(`/api/knowledge/capsules/${capsuleId}/like`);
+      const response = await axios.post(`/api/capsules/${capsuleId}/like`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
@@ -71,7 +71,7 @@ class ApiKnowledgeService {
   async bookmarkCapsule(capsuleId) {
     try {
       const response = await axios.post(
-        `/api/knowledge/capsules/${capsuleId}/bookmark`
+        `/api/capsules/${capsuleId}/bookmark`
       );
       return response.data;
     } catch (error) {
@@ -82,7 +82,7 @@ class ApiKnowledgeService {
   // Get bookmarked capsules
   async getBookmarkedCapsules() {
     try {
-      const response = await axios.get('/api/knowledge/bookmarks');
+      const response = await axios.get('/api/capsules/my-bookmarks');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -119,7 +119,7 @@ class ApiKnowledgeService {
   // Get all categories
   async getCategories() {
     try {
-      const response = await axios.get('/api/knowledge/categories');
+      const response = await axios.get('/api/capsules/categories');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -139,7 +139,7 @@ class ApiKnowledgeService {
   // Get personalized capsules (AI-ranked)
   async getPersonalizedCapsules(userId) {
     try {
-      const response = await axios.get(`/api/knowledge/personalized/${userId}`);
+      const response = await axios.get(`/api/capsule-ranking/personalized/${userId}`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -220,7 +220,7 @@ class ApiKnowledgeService {
   // Unlike capsule
   async unlikeCapsule(capsuleId) {
     try {
-      const response = await axios.delete(`/api/knowledge/capsules/${capsuleId}/like`);
+      const response = await axios.delete(`/api/capsules/${capsuleId}/like`);
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
