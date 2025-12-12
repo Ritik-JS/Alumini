@@ -556,6 +556,44 @@ INSERT INTO alumni_cards (id, user_id, card_number, qr_code_data, issue_date, ex
 '2023-05-12', '2028-05-12', TRUE, 8, '2024-12-15 14:30:00', '2023-05-12 11:00:00', '2024-12-15 14:30:00');
 
 -- ============================================================================
+-- ADVANCED FEATURES DATA
+-- ============================================================================
+
+-- Talent Clusters (for heatmap visualization)
+INSERT INTO talent_clusters (id, cluster_name, center_latitude, center_longitude, radius_km, alumni_ids, dominant_skills, dominant_industries, cluster_size, cluster_density, created_at, updated_at) VALUES
+('cluster-sf-1', 'San Francisco Bay Area Tech Hub', 37.7749, -122.4194, 50.5, 
+'["660e8400-e29b-41d4-a716-446655440001","aa0e8400-e29b-41d4-a716-446655440005"]',
+'["JavaScript","Python","React","Cloud Computing"]',
+'["Technology","Software Engineering"]', 145, 2.87, NOW(), NOW()),
+
+('cluster-seattle-1', 'Seattle Tech Cluster', 47.6062, -122.3321, 35.2,
+'["770e8400-e29b-41d4-a716-446655440002"]',
+'["Python","AWS","Machine Learning","Product Management"]',
+'["Technology","Cloud Services"]', 98, 2.78, NOW(), NOW()),
+
+('cluster-boston-1', 'Boston Innovation Hub', 42.3601, -71.0589, 40.0,
+'["cc0e8400-e29b-41d4-a716-446655440007"]',
+'["Machine Learning","Data Science","Python"]',
+'["Technology","Research","Healthcare"]', 67, 1.68, NOW(), NOW());
+
+-- Career Transition Matrix (for career paths ML)
+INSERT INTO career_transition_matrix (id, from_role, to_role, transition_count, transition_probability, avg_duration_months, required_skills, success_rate, college_id, last_calculated) VALUES
+('trans-1', 'Software Engineer', 'Senior Software Engineer', 45, 0.85, 36, 
+'["Leadership","System Design","Mentoring"]', 0.92, NULL, NOW()),
+
+('trans-2', 'Software Engineer', 'Product Manager', 12, 0.35, 48,
+'["Product Strategy","Communication","User Research"]', 0.75, NULL, NOW()),
+
+('trans-3', 'Senior Software Engineer', 'Engineering Manager', 18, 0.65, 30,
+'["Leadership","Team Management","Strategic Planning"]', 0.88, NULL, NOW()),
+
+('trans-4', 'Junior Developer', 'Software Engineer', 52, 0.95, 24,
+'["Problem Solving","Code Review","Testing"]', 0.98, NULL, NOW()),
+
+('trans-5', 'UX Designer', 'Lead UX Designer', 15, 0.70, 30,
+'["Design Systems","Leadership","Mentoring"]', 0.85, NULL, NOW());
+
+-- ============================================================================
 -- SYSTEM CONFIGURATION
 -- ============================================================================
 
@@ -611,6 +649,10 @@ UNION ALL
 SELECT 'Geographic Data', COUNT(*) FROM geographic_data
 UNION ALL
 SELECT 'Alumni Cards', COUNT(*) FROM alumni_cards
+UNION ALL
+SELECT 'Talent Clusters', COUNT(*) FROM talent_clusters
+UNION ALL
+SELECT 'Career Transitions', COUNT(*) FROM career_transition_matrix
 UNION ALL
 SELECT 'System Config', COUNT(*) FROM system_config;
 

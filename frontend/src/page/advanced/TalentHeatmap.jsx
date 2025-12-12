@@ -81,7 +81,14 @@ const TalentHeatmap = () => {
       }
       if (emergingRes.success) setEmergingHubs(emergingRes.data || []);
     } catch (error) {
-      toast.error('Failed to load heatmap data');
+      console.error('Error loading heatmap data:', error);
+      toast.error('Failed to load heatmap data. Please try again.');
+      // Set safe defaults to prevent undefined errors
+      setLocations([]);
+      setSkills([]);
+      setIndustries([]);
+      setClusters([]);
+      setEmergingHubs([]);
     } finally {
       setLoading(false);
     }
@@ -320,7 +327,7 @@ const TalentHeatmap = () => {
                             >
                               <Layers className="h-8 w-8 text-blue-600 mb-2" />
                               <span className="text-sm font-bold text-gray-700 text-center px-2">
-                                {cluster.center_location.city}
+                                {cluster.cluster_name || cluster.center_location?.city || 'Cluster'}
                               </span>
                               <span className="text-xs text-gray-600">Cluster</span>
                               <span className="text-lg font-bold text-blue-600">{cluster.alumni_count}</span>

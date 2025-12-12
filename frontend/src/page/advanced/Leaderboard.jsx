@@ -45,10 +45,22 @@ const Leaderboard = () => {
         engagementAIService.getEngagementInsights(currentUser.id)
       ]);
 
-      if (leaderboardRes.success) setLeaderboard(leaderboardRes.data);
-      if (myScoreRes.success) setMyScore(myScoreRes.data);
-      if (badgesRes.success) setAllBadges(badgesRes.data);
-      if (myBadgesRes.success) setMyBadges(myBadgesRes.data);
+      if (leaderboardRes.success) {
+        const leaderboardData = leaderboardRes.data?.leaderboard || 
+                               leaderboardRes.data || [];
+        setLeaderboard(Array.isArray(leaderboardData) ? leaderboardData : []);
+      }
+      if (myScoreRes.success && myScoreRes.data) {
+        setMyScore(myScoreRes.data);
+      }
+      if (badgesRes.success) {
+        const badgesData = badgesRes.data?.badges || badgesRes.data || [];
+        setAllBadges(Array.isArray(badgesData) ? badgesData : []);
+      }
+      if (myBadgesRes.success) {
+        const myBadgesData = myBadgesRes.data?.badges || myBadgesRes.data || [];
+        setMyBadges(Array.isArray(myBadgesData) ? myBadgesData : []);
+      }
       
       // Load AI features
       if (aiInsightsRes.success) {
@@ -57,7 +69,16 @@ const Leaderboard = () => {
         setImpactHistory(aiInsightsRes.data.contribution_impact_history || []);
       }
     } catch (error) {
-      toast.error('Failed to load leaderboard');
+      console.error('Error loading leaderboard data:', error);
+      toast.error('Failed to load leaderboard. Please try again.');
+      // Set safe defaults to prevent undefined errors
+      setLeaderboard([]);
+      setMyScore(null);
+      setAllBadges([]);
+      setMyBadges([]);
+      setAiInsights(null);
+      setSmartSuggestions([]);
+      setImpactHistory([]);
     } finally {
       setLoading(false);
       setAiLoading(false);
@@ -105,13 +126,13 @@ const Leaderboard = () => {
         </div>
 
         {/* My Score Card */}
-        {myScore && myScore.rank && (
+        {myScore && myScore.rank_position !== undefined && (
           <Card className="mb-8 border-2 border-blue-500" data-testid="my-score-card">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
               <CardTitle className="flex items-center justify-between">
                 <span>Your Score</span>
                 <Badge variant="secondary" className="text-lg px-4 py-2">
-                  Rank #{myScore.rank}
+                  Rank #{myScore.rank_position}
                 </Badge>
               </CardTitle>
             </CardHeader>

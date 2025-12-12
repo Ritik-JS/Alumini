@@ -46,8 +46,17 @@ const SkillGraph = () => {
       }
       
       // Handle industries response - ensure it's an array
-      if (industriesRes?.success && Array.isArray(industriesRes.data)) {
-        setIndustries(industriesRes.data);
+      if (industriesRes?.success) {
+        let industryNames = [];
+        const industryData = industriesRes.data;
+        
+        if (industryData?.top_industries_global && Array.isArray(industryData.top_industries_global)) {
+          industryNames = industryData.top_industries_global.map(item => item.industry || item);
+        } else if (Array.isArray(industryData)) {
+          industryNames = industryData.map(ind => ind.name || ind.industry || ind);
+        }
+        
+        setIndustries(industryNames || []);
       } else {
         setIndustries([]);
       }
@@ -67,8 +76,8 @@ const SkillGraph = () => {
       }
     } catch (error) {
       console.error('Error loading skill graph data:', error);
-      toast.error('Failed to load skill graph data');
-      // Set empty arrays on error
+      toast.error('Failed to load skill graph data. Please try again.');
+      // Set empty arrays on error to prevent undefined errors
       setSkills([]);
       setIndustries([]);
       setRecommendations([]);
