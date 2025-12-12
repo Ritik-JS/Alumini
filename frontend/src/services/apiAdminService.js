@@ -179,7 +179,7 @@ const apiAdminService = {
    */
   async getDashboardStats() {
     const response = await axios.get('/api/admin/analytics/dashboard');
-    return response.data;
+    return response.data?.data || response.data;
   },
 
   /**
@@ -211,7 +211,7 @@ const apiAdminService = {
    */
   async getAlumniAnalytics() {
     const response = await axios.get('/api/admin/analytics/alumni');
-    return response.data;
+    return response.data?.data || response.data;
   },
 
   /**
@@ -219,7 +219,7 @@ const apiAdminService = {
    */
   async getJobAnalytics() {
     const response = await axios.get('/api/admin/analytics/jobs');
-    return response.data;
+    return response.data?.data || response.data;
   },
 
   /**
@@ -227,7 +227,7 @@ const apiAdminService = {
    */
   async getMentorshipAnalytics() {
     const response = await axios.get('/api/admin/analytics/mentorship');
-    return response.data;
+    return response.data?.data || response.data;
   },
 
   /**
@@ -235,7 +235,7 @@ const apiAdminService = {
    */
   async getEventAnalytics() {
     const response = await axios.get('/api/admin/analytics/events');
-    return response.data;
+    return response.data?.data || response.data;
   },
 
   /**
@@ -243,7 +243,7 @@ const apiAdminService = {
    */
   async getEngagementMetrics() {
     const response = await axios.get('/api/admin/analytics/engagement');
-    return response.data;
+    return response.data?.data || response.data;
   },
 
   // ==================== MENTORSHIP MANAGEMENT ====================

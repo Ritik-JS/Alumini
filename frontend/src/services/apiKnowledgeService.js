@@ -8,9 +8,15 @@ class ApiKnowledgeService {
       const response = await axios.get('/api/capsules', {
         params: filters,
       });
-      return response.data;
+      // Backend returns { items: [], total: number, page: number, limit: number }
+      // Wrap it to match expected format { success: true, data: [...] }
+      if (response.data && response.data.items) {
+        return { success: true, data: response.data.items };
+      }
+      return { success: true, data: response.data || [] };
     } catch (error) {
-      return { success: false, message: error.message, data: [] };
+      console.error('Error fetching capsules:', error);
+      return { success: false, error: error.message, data: [] };
     }
   }
 
@@ -41,9 +47,10 @@ class ApiKnowledgeService {
         `/api/capsules/${capsuleId}`,
         capsuleData
       );
-      return response.data;
+      return { success: true, data: response.data };
     } catch (error) {
-      return { success: false, message: error.message };
+      console.error('Error updating capsule:', error);
+      return { success: false, error: error.message };
     }
   }
 
@@ -51,9 +58,10 @@ class ApiKnowledgeService {
   async deleteCapsule(capsuleId) {
     try {
       const response = await axios.delete(`/api/capsules/${capsuleId}`);
-      return response.data;
+      return { success: true, data: response.data };
     } catch (error) {
-      return { success: false, message: error.message };
+      console.error('Error deleting capsule:', error);
+      return { success: false, error: error.message };
     }
   }
 
