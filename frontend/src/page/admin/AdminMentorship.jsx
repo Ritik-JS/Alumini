@@ -46,12 +46,12 @@ const AdminMentorship = () => {
         adminService.getMentors()
       ]);
       
-      setMentorships(requestsResult.requests || []);
-      setFilteredMentorships(requestsResult.requests || []);
+      setMentorships(requestsResult.data || []);
+      setFilteredMentorships(requestsResult.data || []);
       
-      setSessions(sessionsResult.sessions || []);
+      setSessions(sessionsResult.data || []);
       
-      setMentors(mentorsResult.mentors || []);
+      setMentors(mentorsResult.data || []);
     } catch (error) {
       console.error('Error loading mentorship data:', error);
       setError('Unable to connect to server. Please try again later.');
