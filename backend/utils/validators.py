@@ -8,14 +8,20 @@ from typing import Any, Optional
 
 def validate_uuid(value: str, field_name: str = "ID") -> str:
     """
-    Validate UUID format
+    Validate UUID format (with optional prefix support)
+    
+    Handles prefixed UUIDs like:
+    - job-550e8400-e29b-41d4-a716-446655440014
+    - user-550e8400-e29b-41d4-a716-446655440014
+    
+    Returns the clean UUID without prefix
     
     Args:
         value: String to validate as UUID
         field_name: Name of the field for error messages
         
     Returns:
-        The validated UUID string
+        The validated UUID string (cleaned of prefix)
         
     Raises:
         HTTPException: If UUID format is invalid
@@ -23,19 +29,28 @@ def validate_uuid(value: str, field_name: str = "ID") -> str:
     if not value:
         raise HTTPException(status_code=400, detail=f"{field_name} is required")
     
+    # Strip common prefixes
+    prefixes = ['job-', 'user-', 'profile-', 'event-', 'mentor-', 'application-', 
+                'post-', 'comment-', 'badge-', 'session-', 'capsule-']
+    clean_value = value
+    for prefix in prefixes:
+        if value.startswith(prefix):
+            clean_value = value[len(prefix):]
+            break
+    
     # UUID v4 format: 8-4-4-4-12 hex characters
     uuid_pattern = re.compile(
         r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
         re.IGNORECASE
     )
     
-    if not uuid_pattern.match(value):
+    if not uuid_pattern.match(clean_value):
         raise HTTPException(
             status_code=400,
             detail=f"Invalid {field_name} format. Must be a valid UUID."
         )
     
-    return value
+    return clean_value  # Return clean UUID without prefix
 
 
 def validate_email(email: str) -> str:

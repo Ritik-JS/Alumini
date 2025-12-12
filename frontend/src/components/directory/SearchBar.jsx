@@ -27,7 +27,7 @@ const SearchBar = ({ value, onChange, onSearch }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = async (e) => {
     const newValue = e.target.value;
     setLocalValue(newValue);
 
@@ -36,11 +36,17 @@ const SearchBar = ({ value, onChange, onSearch }) => {
       clearTimeout(debounceTimer.current);
     }
 
-    // Get suggestions immediately for UI feedback
+    // Get suggestions asynchronously
     if (newValue.trim()) {
-      const newSuggestions = directoryService.getSearchSuggestions(newValue);
-      setSuggestions(newSuggestions);
-      setShowSuggestions(newSuggestions.length > 0);
+      try {
+        const newSuggestions = await directoryService.getSearchSuggestions(newValue);
+        setSuggestions(newSuggestions || []);
+        setShowSuggestions((newSuggestions || []).length > 0);
+      } catch (error) {
+        console.error('Error fetching search suggestions:', error);
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
     } else {
       setSuggestions([]);
       setShowSuggestions(false);

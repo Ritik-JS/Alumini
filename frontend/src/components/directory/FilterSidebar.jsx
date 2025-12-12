@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -36,11 +36,50 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters }) => {
     verified: true
   });
 
-  const companies = directoryService.getUniqueCompanies();
-  const skills = directoryService.getUniqueSkills();
-  const locations = directoryService.getUniqueLocations();
-  const roles = directoryService.getUniqueRoles();
-  const [minYear, maxYear] = directoryService.getBatchYearRange();
+  // State for filter options fetched from async service calls
+  const [companies, setCompanies] = useState([]);
+  const [skills, setSkills] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [batchYearRange, setBatchYearRange] = useState([2015, 2024]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch filter options on component mount
+  useEffect(() => {
+    const loadFilterOptions = async () => {
+      setLoading(true);
+      try {
+        const [companiesData, skillsData, locationsData, rolesData, yearRange] = 
+          await Promise.all([
+            directoryService.getUniqueCompanies(),
+            directoryService.getUniqueSkills(),
+            directoryService.getUniqueLocations(),
+            directoryService.getUniqueRoles(),
+            directoryService.getBatchYearRange()
+          ]);
+        
+        setCompanies(companiesData || []);
+        setSkills(skillsData || []);
+        setLocations(locationsData || []);
+        setRoles(rolesData || []);
+        setBatchYearRange(yearRange || [2015, 2024]);
+      } catch (error) {
+        console.error('Error loading filter options:', error);
+        // Set defaults on error
+        setCompanies([]);
+        setSkills([]);
+        setLocations([]);
+        setRoles([]);
+        setBatchYearRange([2015, 2024]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadFilterOptions();
+  }, []); // Load once on mount
+
+  const [minYear, maxYear] = batchYearRange;
 
   const toggleSection = (section) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -91,6 +130,22 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters }) => {
     (filters.yearRange ? 1 : 0)
   );
 
+  // Show loading state while fetching filter options
+  if (loading) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-gray-900">Filters</h2>
+        </div>
+        <div className="space-y-4">
+          <div className="h-8 bg-gray-200 rounded animate-pulse" />
+          <div className="h-8 bg-gray-200 rounded animate-pulse" />
+          <div className="h-8 bg-gray-200 rounded animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
       {/* Header */}
@@ -136,22 +191,26 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters }) => {
             isOpen={openSections.company}
             onToggle={() => toggleSection('company')}
           >
-            {companies.map(company => (
-              <div key={company} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`company-${company}`}
-                  data-testid={`company-checkbox-${company}`}
-                  checked={(filters.companies || []).includes(company)}
-                  onCheckedChange={(checked) => handleCompanyChange(company, checked)}
-                />
-                <label
-                  htmlFor={`company-${company}`}
-                  className="text-sm text-gray-700 cursor-pointer flex-1"
-                >
-                  {company}
-                </label>
-              </div>
-            ))}
+            {companies.length === 0 ? (
+              <p className="text-sm text-gray-500">No companies available</p>
+            ) : (
+              companies.map(company => (
+                <div key={company} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`company-${company}`}
+                    data-testid={`company-checkbox-${company}`}
+                    checked={(filters.companies || []).includes(company)}
+                    onCheckedChange={(checked) => handleCompanyChange(company, checked)}
+                  />
+                  <label
+                    htmlFor={`company-${company}`}
+                    className="text-sm text-gray-700 cursor-pointer flex-1"
+                  >
+                    {company}
+                  </label>
+                </div>
+              ))
+            )}
           </FilterSection>
 
           {/* Skills Filter */}
@@ -161,22 +220,26 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters }) => {
             onToggle={() => toggleSection('skills')}
           >
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {skills.slice(0, 15).map(skill => (
-                <div key={skill} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`skill-${skill}`}
-                    data-testid={`skill-checkbox-${skill}`}
-                    checked={(filters.skills || []).includes(skill)}
-                    onCheckedChange={(checked) => handleSkillChange(skill, checked)}
-                  />
-                  <label
-                    htmlFor={`skill-${skill}`}
-                    className="text-sm text-gray-700 cursor-pointer flex-1"
-                  >
-                    {skill}
-                  </label>
-                </div>
-              ))}
+              {skills.length === 0 ? (
+                <p className="text-sm text-gray-500">No skills available</p>
+              ) : (
+                skills.slice(0, 15).map(skill => (
+                  <div key={skill} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`skill-${skill}`}
+                      data-testid={`skill-checkbox-${skill}`}
+                      checked={(filters.skills || []).includes(skill)}
+                      onCheckedChange={(checked) => handleSkillChange(skill, checked)}
+                    />
+                    <label
+                      htmlFor={`skill-${skill}`}
+                      className="text-sm text-gray-700 cursor-pointer flex-1"
+                    >
+                      {skill}
+                    </label>
+                  </div>
+                ))
+              )}
             </div>
           </FilterSection>
 
@@ -186,22 +249,26 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters }) => {
             isOpen={openSections.location}
             onToggle={() => toggleSection('location')}
           >
-            {locations.map(location => (
-              <div key={location} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`location-${location}`}
-                  data-testid={`location-checkbox-${location}`}
-                  checked={(filters.locations || []).includes(location)}
-                  onCheckedChange={(checked) => handleLocationChange(location, checked)}
-                />
-                <label
-                  htmlFor={`location-${location}`}
-                  className="text-sm text-gray-700 cursor-pointer flex-1"
-                >
-                  {location}
-                </label>
-              </div>
-            ))}
+            {locations.length === 0 ? (
+              <p className="text-sm text-gray-500">No locations available</p>
+            ) : (
+              locations.map(location => (
+                <div key={location} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`location-${location}`}
+                    data-testid={`location-checkbox-${location}`}
+                    checked={(filters.locations || []).includes(location)}
+                    onCheckedChange={(checked) => handleLocationChange(location, checked)}
+                  />
+                  <label
+                    htmlFor={`location-${location}`}
+                    className="text-sm text-gray-700 cursor-pointer flex-1"
+                  >
+                    {location}
+                  </label>
+                </div>
+              ))
+            )}
           </FilterSection>
 
           {/* Batch Year Range */}
@@ -233,22 +300,26 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters }) => {
             isOpen={openSections.role}
             onToggle={() => toggleSection('role')}
           >
-            {roles.map(role => (
-              <div key={role} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`role-${role}`}
-                  data-testid={`role-checkbox-${role}`}
-                  checked={(filters.roles || []).includes(role)}
-                  onCheckedChange={(checked) => handleRoleChange(role, checked)}
-                />
-                <label
-                  htmlFor={`role-${role}`}
-                  className="text-sm text-gray-700 cursor-pointer flex-1"
-                >
-                  {role}
-                </label>
-              </div>
-            ))}
+            {roles.length === 0 ? (
+              <p className="text-sm text-gray-500">No roles available</p>
+            ) : (
+              roles.map(role => (
+                <div key={role} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`role-${role}`}
+                    data-testid={`role-checkbox-${role}`}
+                    checked={(filters.roles || []).includes(role)}
+                    onCheckedChange={(checked) => handleRoleChange(role, checked)}
+                  />
+                  <label
+                    htmlFor={`role-${role}`}
+                    className="text-sm text-gray-700 cursor-pointer flex-1"
+                  >
+                    {role}
+                  </label>
+                </div>
+              ))
+            )}
           </FilterSection>
         </div>
       </ScrollArea>

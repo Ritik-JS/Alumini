@@ -26,28 +26,50 @@ const JobDetails = () => {
     const loadJob = async () => {
       setLoading(true);
       try {
-        const response = await jobService.getJobById(jobId);
-        if (response.success && response.data) {
-          setJob(response.data);
+        // Ensure jobId is clean (remove prefix if present)
+        const cleanJobId = jobId.startsWith('job-') ? jobId.substring(4) : jobId;
+        
+        const response = await jobService.getJobById(cleanJobId);
+        
+        // Handle both response formats
+        const jobData = response.success ? response.data : (response.data?.data || response);
+        
+        if (jobData && jobData.id) {
+          setJob(jobData);
           
           // Check if user has applied
           if (user) {
-            const applied = await jobService.hasUserApplied(jobId, user.id);
-            setHasApplied(applied);
+            try {
+              const applied = await jobService.hasUserApplied(cleanJobId, user.id);
+              setHasApplied(applied);
+            } catch (error) {
+              console.error('Error checking application status:', error);
+              // Continue even if this fails
+            }
           }
 
           // Load similar jobs
-          const filtered = await jobService.filterJobs({
-            skills: response.data.skills_required.slice(0, 2),
-          });
-          setSimilarJobs(filtered.filter(j => j.id !== jobId).slice(0, 3));
+          try {
+            if (jobData.skills_required && jobData.skills_required.length > 0) {
+              const filtered = await jobService.filterJobs({
+                skills: jobData.skills_required.slice(0, 2),
+              });
+              setSimilarJobs(filtered.filter(j => j.id !== cleanJobId).slice(0, 3));
+            }
+          } catch (error) {
+            console.error('Error loading similar jobs:', error);
+            // Continue even if this fails
+          }
         } else {
+          console.error('Job response:', response);
           toast.error('Job not found');
           navigate('/jobs');
         }
       } catch (error) {
         console.error('Error loading job:', error);
-        toast.error('Failed to load job details');
+        toast.error('Failed to load job details: ' + (error.message || 'Unknown error'));
+        // Navigate back after a short delay to allow user to see the error
+        setTimeout(() => navigate('/jobs'), 2000);
       } finally {
         setLoading(false);
       }
