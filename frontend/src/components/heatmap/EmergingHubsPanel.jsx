@@ -38,80 +38,106 @@ const EmergingHubsPanel = ({ emergingHubs, onViewCluster }) => {
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
-        {emergingHubs.length === 0 ? (
+        {!emergingHubs || emergingHubs.length === 0 ? (
           <p className="text-center text-gray-500 py-8">No emerging hubs data available</p>
         ) : (
           <div className="space-y-4">
-            {emergingHubs.map((hub, idx) => (
-              <div
-                key={hub.id}
-                className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:shadow-md transition-all"
-                data-testid={`emerging-hub-${hub.id}`}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-2xl font-bold text-gray-400">#{idx + 1}</span>
-                      <h3 className="font-bold text-lg">{hub.cluster_name}</h3>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-600 mb-2">
-                      <MapPin className="h-4 w-4" />
-                      <span>{hub.center_location.city}</span>
-                    </div>
-                  </div>
-                  <Badge className={getGrowthBadgeColor(hub.growth_label)}>
-                    {hub.growth_label} Growth
-                  </Badge>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4 mb-3">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Growth Rate</p>
-                    {getGrowthIcon(hub.growth_rate)}
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Alumni</p>
-                    <div className="flex items-center gap-1 font-semibold">
-                      <Users className="h-4 w-4 text-blue-600" />
-                      <span>{hub.alumni_count}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Jobs</p>
-                    <p className="font-semibold text-green-600">{hub.job_opportunities}</p>
-                  </div>
-                </div>
-
-                {/* Top Industry */}
-                <div className="mb-3">
-                  <p className="text-xs text-gray-500 mb-1">Dominant Industry</p>
-                  <Badge variant="outline">
-                    {hub.dominant_industries[0].name} ({hub.dominant_industries[0].percentage}%)
-                  </Badge>
-                </div>
-
-                {/* Comparison bar */}
-                <div className="mb-3">
-                  <p className="text-xs text-gray-500 mb-1">Growth Comparison</p>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all"
-                      style={{ width: `${Math.min((hub.growth_rate / 50) * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => onViewCluster(hub)}
-                  data-testid={`view-hub-details-${hub.id}`}
+            {emergingHubs.map((hub, idx) => {
+              // Extract city from various possible properties
+              const cityName = hub.city || hub.location || hub.cluster_name || 'Unknown Location';
+              const growthRate = hub.growth_rate || hub.opportunity_ratio * 10 || 0;
+              const growthLabel = hub.growth_label || (growthRate > 30 ? 'High' : 'Moderate');
+              
+              return (
+                <div
+                  key={hub.id || hub.location || idx}
+                  className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:shadow-md transition-all"
+                  data-testid={`emerging-hub-${hub.id || idx}`}
                 >
-                  View Details
-                </Button>
-              </div>
-            ))}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-2xl font-bold text-gray-400">#{idx + 1}</span>
+                        <h3 className="font-bold text-lg">{cityName}</h3>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600 mb-2">
+                        <MapPin className="h-4 w-4" />
+                        <span>{hub.country || 'Unknown Country'}</span>
+                      </div>
+                    </div>
+                    <Badge className={getGrowthBadgeColor(growthLabel)}>
+                      {growthLabel} Growth
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 mb-3">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Growth Rate</p>
+                      {getGrowthIcon(Math.round(growthRate))}
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Alumni</p>
+                      <div className="flex items-center gap-1 font-semibold">
+                        <Users className="h-4 w-4 text-blue-600" />
+                        <span>{hub.alumni_count || 0}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Jobs</p>
+                      <p className="font-semibold text-green-600">{hub.jobs_count || hub.job_opportunities || 0}</p>
+                    </div>
+                  </div>
+
+                  {/* Top Industry */}
+                  {hub.dominant_industries && Array.isArray(hub.dominant_industries) && hub.dominant_industries.length > 0 && (
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-500 mb-1">Dominant Industry</p>
+                      <Badge variant="outline">
+                        {typeof hub.dominant_industries[0] === 'object' 
+                          ? `${hub.dominant_industries[0].name} (${hub.dominant_industries[0].percentage}%)`
+                          : hub.dominant_industries[0]
+                        }
+                      </Badge>
+                    </div>
+                  )}
+                  
+                  {/* Alternative: top_industries from geographic_data */}
+                  {hub.top_industries && Array.isArray(hub.top_industries) && hub.top_industries.length > 0 && (
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-500 mb-1">Top Industries</p>
+                      <div className="flex flex-wrap gap-1">
+                        {hub.top_industries.slice(0, 2).map((industry, i) => (
+                          <Badge key={i} variant="outline" className="text-xs">
+                            {industry}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Growth Comparison bar */}
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-1">Growth Comparison</p>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all"
+                        style={{ width: `${Math.min((growthRate / 50) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => onViewCluster && onViewCluster(hub)}
+                    data-testid={`view-hub-details-${hub.id || idx}`}
+                  >
+                    View Details
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         )}
       </CardContent>
