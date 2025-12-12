@@ -18,7 +18,7 @@ import {
   Award,
   Heart,
 } from 'lucide-react';
-import { analyticsService } from '@/services';
+import { adminService } from '@/services';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -61,73 +61,50 @@ const AdminAnalytics = () => {
         eventsResult,
         engagementResult
       ] = await Promise.all([
-        analyticsService.getDashboardStats(),
-        analyticsService.getUserGrowth('monthly'),
-        analyticsService.getTopContributors(5),
-        analyticsService.getPlatformActivity(30),
-        analyticsService.getAlumniAnalytics(),
-        analyticsService.getJobAnalytics(),
-        analyticsService.getMentorshipAnalytics(),
-        analyticsService.getEventAnalytics(),
-        analyticsService.getEngagementMetrics()
+        adminService.getDashboardStats(),
+        adminService.getUserGrowth('monthly'),
+        adminService.getTopContributors(5),
+        adminService.getPlatformActivity(30),
+        adminService.getAlumniAnalytics(),
+        adminService.getJobAnalytics(),
+        adminService.getMentorshipAnalytics(),
+        adminService.getEventAnalytics(),
+        adminService.getEngagementMetrics()
       ]);
 
       // Set dashboard stats
-      if (dashboardResult.success) {
-        setAnalyticsData(dashboardResult.data || {
-          totalUsers: 0,
-          activeUsers: 0,
-          totalJobs: 0,
-          totalEvents: 0,
-          totalPosts: 0,
-          verifiedAlumni: 0,
-        });
-      }
+      setAnalyticsData(dashboardResult || {
+        totalUsers: 0,
+        activeUsers: 0,
+        totalJobs: 0,
+        totalEvents: 0,
+        totalPosts: 0,
+        verifiedAlumni: 0,
+      });
 
       // Set user growth data
-      if (userGrowthResult.success) {
-        setUserGrowthData(userGrowthResult.data || []);
-      }
+      setUserGrowthData(userGrowthResult?.data || []);
 
       // Set top contributors
-      if (contributorsResult.success) {
-        setTopContributors(contributorsResult.data || []);
-      }
+      setTopContributors(contributorsResult?.contributors || []);
 
       // Set platform activity
-      if (activityResult.success) {
-        setPlatformActivity(activityResult.data || []);
-      }
+      setPlatformActivity(activityResult?.activity || []);
 
       // Set alumni analytics
-      if (alumniResult.success) {
-        setAlumniData(alumniResult.data);
-      }
+      setAlumniData(alumniResult);
 
       // Set jobs analytics
-      if (jobsResult.success) {
-        setJobsData(jobsResult.data);
-      }
+      setJobsData(jobsResult);
 
       // Set mentorship analytics
-      if (mentorshipResult.success) {
-        setMentorshipData(mentorshipResult.data);
-      }
+      setMentorshipData(mentorshipResult);
 
       // Set events analytics
-      if (eventsResult.success) {
-        setEventsData(eventsResult.data);
-      }
+      setEventsData(eventsResult);
 
       // Set engagement metrics
-      if (engagementResult.success) {
-        setEngagementData(engagementResult.data);
-      }
-
-      // If any critical service failed, show error
-      if (!dashboardResult.success) {
-        setError(dashboardResult.error || 'Failed to load analytics');
-      }
+      setEngagementData(engagementResult);
     } catch (error) {
       console.error('Error loading analytics:', error);
       setError('Unable to connect to server. Please try again later.');

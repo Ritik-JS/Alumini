@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Award, Plus, Edit, Trash2, Star } from 'lucide-react';
-import { badgeService } from '@/services';
+import { adminService } from '@/services';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
@@ -49,12 +49,8 @@ const AdminBadges = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await badgeService.getAllBadges();
-      
-      if (result.success) {
-        setBadges(result.data || []);
-      } else {
-        setError(result.error || 'Failed to load badges');
+      const result = await adminService.getAllBadges();
+      setBadges(result.badges || []);
       }
     } catch (error) {
       console.error('Error loading badges:', error);
@@ -81,9 +77,9 @@ const AdminBadges = () => {
         requirements: JSON.parse(formData.requirements || '{}'),
       };
 
-      const result = await badgeService.createBadge(badgeData);
+      const result = await adminService.createBadge(badgeData);
       
-      if (result.success) {
+      // Success response {
         toast.success('Badge created successfully');
         setShowCreateModal(false);
         resetForm();
@@ -122,9 +118,9 @@ const AdminBadges = () => {
         requirements: JSON.parse(formData.requirements || '{}'),
       };
 
-      const result = await badgeService.updateBadge(editingBadge.id, badgeData);
+      const result = await adminService.updateBadge(editingBadge.id, badgeData);
       
-      if (result.success) {
+      // Success response {
         toast.success('Badge updated successfully');
         setShowCreateModal(false);
         setEditingBadge(null);
@@ -142,9 +138,9 @@ const AdminBadges = () => {
   const handleDeleteBadge = async (badgeId) => {
     if (window.confirm('Are you sure you want to delete this badge?')) {
       try {
-        const result = await badgeService.deleteBadge(badgeId);
+        const result = await adminService.deleteBadge(badgeId);
         
-        if (result.success) {
+        // Success response {
           setBadges(badges.filter((b) => b.id !== badgeId));
           toast.success('Badge deleted successfully');
         } else {

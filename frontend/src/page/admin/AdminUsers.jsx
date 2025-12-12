@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Search, MoreVertical, UserCheck, UserX, Mail, Shield, Trash2, Download, Eye } from 'lucide-react';
-import { profileService } from '@/services';
+import { adminService } from '@/services';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
@@ -46,14 +46,9 @@ const AdminUsers = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await profileService.getAllUsers();
-      
-      if (result.success) {
-        setUsers(result.data || []);
-        setFilteredUsers(result.data || []);
-      } else {
-        setError(result.error || 'Failed to load users');
-      }
+      const result = await adminService.getAllUsers();
+      setUsers(result.users || []);
+      setFilteredUsers(result.users || []);
     } catch (error) {
       console.error('Error loading users:', error);
       setError('Unable to connect to server. Please try again later.');
@@ -87,13 +82,9 @@ const AdminUsers = () => {
 
   const handleBanUser = async (userId) => {
     try {
-      const result = await profileService.banUser(userId);
-      if (result.success) {
-        toast.success('User has been banned');
-        loadUsers();
-      } else {
-        toast.error(result.error || 'Failed to ban user');
-      }
+      await adminService.banUser(userId);
+      toast.success('User has been banned');
+      loadUsers();
     } catch (error) {
       console.error('Error banning user:', error);
       toast.error('Unable to ban user. Please try again.');
@@ -103,13 +94,9 @@ const AdminUsers = () => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       try {
-        const result = await profileService.deleteUser(userId);
-        if (result.success) {
-          setUsers(users.filter((u) => u.id !== userId));
-          toast.success('User deleted successfully');
-        } else {
-          toast.error(result.error || 'Failed to delete user');
-        }
+        await adminService.deleteUser(userId);
+        setUsers(users.filter((u) => u.id !== userId));
+        toast.success('User deleted successfully');
       } catch (error) {
         console.error('Error deleting user:', error);
         toast.error('Unable to delete user. Please try again.');
@@ -119,12 +106,8 @@ const AdminUsers = () => {
 
   const handleResetPassword = async (userId) => {
     try {
-      const result = await profileService.resetPassword(userId);
-      if (result.success) {
-        toast.success('Password reset email sent');
-      } else {
-        toast.error(result.error || 'Failed to send password reset email');
-      }
+      await adminService.resetUserPassword(userId);
+      toast.success('Password reset email sent');
     } catch (error) {
       console.error('Error sending password reset:', error);
       toast.error('Unable to send password reset email. Please try again.');
@@ -182,13 +165,9 @@ const AdminUsers = () => {
 
   const handleViewUserDetails = async (userId) => {
     try {
-      const result = await profileService.getUserWithProfile(userId);
-      if (result.success) {
-        setSelectedUserDetails(result.data);
-        setShowUserModal(true);
-      } else {
-        toast.error(result.error || 'Failed to load user details');
-      }
+      const result = await adminService.getUserDetails(userId);
+      setSelectedUserDetails(result.user);
+      setShowUserModal(true);
     } catch (error) {
       console.error('Error loading user details:', error);
       toast.error('Unable to load user details. Please try again.');

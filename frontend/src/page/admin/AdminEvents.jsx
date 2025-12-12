@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Search, MoreVertical, Eye, Trash2, Calendar, Users, MapPin } from 'lucide-react';
-import { eventService } from '@/services';
+import { adminService } from '@/services';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
@@ -45,14 +45,9 @@ const AdminEvents = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await eventService.getEvents();
-      
-      if (result.success) {
-        setEvents(result.data || []);
-        setFilteredEvents(result.data || []);
-      } else {
-        setError(result.error || 'Failed to load events');
-      }
+      const result = await adminService.getAllEvents();
+      setEvents(result.events || []);
+      setFilteredEvents(result.events || []);
     } catch (error) {
       console.error('Error loading events:', error);
       setError('Unable to connect to server. Please try again later.');
@@ -97,13 +92,9 @@ const AdminEvents = () => {
 
   const handleChangeStatus = async (eventId, newStatus) => {
     try {
-      const result = await eventService.updateEvent(eventId, { status: newStatus });
-      if (result.success) {
-        setEvents(events.map(e => e.id === eventId ? { ...e, status: newStatus } : e));
-        toast.success(`Event status updated to ${newStatus}`);
-      } else {
-        toast.error(result.error || 'Failed to update event status');
-      }
+      await adminService.updateEvent(eventId, { status: newStatus });
+      setEvents(events.map(e => e.id === eventId ? { ...e, status: newStatus } : e));
+      toast.success(`Event status updated to ${newStatus}`);
     } catch (error) {
       console.error('Error updating event status:', error);
       toast.error('Unable to update event status. Please try again.');
@@ -113,13 +104,9 @@ const AdminEvents = () => {
   const handleDeleteEvent = async (eventId) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
       try {
-        const result = await eventService.deleteEvent(eventId);
-        if (result.success) {
-          setEvents(events.filter((e) => e.id !== eventId));
-          toast.success('Event deleted successfully');
-        } else {
-          toast.error(result.error || 'Failed to delete event');
-        }
+        await adminService.deleteEvent(eventId);
+        setEvents(events.filter((e) => e.id !== eventId));
+        toast.success('Event deleted successfully');
       } catch (error) {
         console.error('Error deleting event:', error);
         toast.error('Unable to delete event. Please try again.');

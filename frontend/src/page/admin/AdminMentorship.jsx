@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Search, Users, Calendar, Star, TrendingUp } from 'lucide-react';
-import { mentorshipService } from '@/services';
+import { adminService } from '@/services';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
@@ -41,25 +41,17 @@ const AdminMentorship = () => {
       
       // Load all mentorship data
       const [requestsResult, sessionsResult, mentorsResult] = await Promise.all([
-        mentorshipService.getAllMentorshipRequests(),
-        mentorshipService.getAllSessions(),
-        mentorshipService.getMentors()
+        adminService.getMentorshipRequests(),
+        adminService.getMentorshipSessions(),
+        adminService.getMentors()
       ]);
       
-      if (requestsResult.success) {
-        setMentorships(requestsResult.data || []);
-        setFilteredMentorships(requestsResult.data || []);
-      } else {
-        setError(requestsResult.error || 'Failed to load mentorship requests');
-      }
+      setMentorships(requestsResult.requests || []);
+      setFilteredMentorships(requestsResult.requests || []);
       
-      if (sessionsResult.success) {
-        setSessions(sessionsResult.data || []);
-      }
+      setSessions(sessionsResult.sessions || []);
       
-      if (mentorsResult.success) {
-        setMentors(mentorsResult.data || []);
-      }
+      setMentors(mentorsResult.mentors || []);
     } catch (error) {
       console.error('Error loading mentorship data:', error);
       setError('Unable to connect to server. Please try again later.');

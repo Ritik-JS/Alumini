@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Search, MoreVertical, Eye, Edit, Trash2, CheckCircle, XCircle, Briefcase, TrendingUp } from 'lucide-react';
-import { jobService } from '@/services';
+import { adminService } from '@/services';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { toast } from 'sonner';
@@ -45,14 +45,9 @@ const AdminJobs = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await jobService.getAllJobs();
-      
-      if (result.success) {
-        setJobs(result.data || []);
-        setFilteredJobs(result.data || []);
-      } else {
-        setError(result.error || 'Failed to load jobs');
-      }
+      const result = await adminService.getAllJobs();
+      setJobs(result.jobs || []);
+      setFilteredJobs(result.jobs || []);
     } catch (error) {
       console.error('Error loading jobs:', error);
       setError('Unable to connect to server. Please try again later.');
@@ -86,13 +81,9 @@ const AdminJobs = () => {
 
   const handleViewJob = async (jobId) => {
     try {
-      const result = await jobService.getJobById(jobId);
-      if (result.success) {
-        setSelectedJob(result.data);
-        setShowJobModal(true);
-      } else {
-        toast.error(result.error || 'Failed to load job details');
-      }
+      const result = await adminService.getJobDetails(jobId);
+      setSelectedJob(result.job);
+      setShowJobModal(true);
     } catch (error) {
       console.error('Error loading job:', error);
       toast.error('Unable to load job details. Please try again.');
@@ -101,14 +92,9 @@ const AdminJobs = () => {
 
   const handleChangeStatus = async (jobId, newStatus) => {
     try {
-      const result = await jobService.updateJob(jobId, { status: newStatus });
-      
-      if (result.success) {
-        setJobs(jobs.map(j => j.id === jobId ? { ...j, status: newStatus } : j));
-        toast.success(`Job status updated to ${newStatus}`);
-      } else {
-        toast.error(result.error || 'Failed to update job status');
-      }
+      await adminService.updateJob(jobId, { status: newStatus });
+      setJobs(jobs.map(j => j.id === jobId ? { ...j, status: newStatus } : j));
+      toast.success(`Job status updated to ${newStatus}`);
     } catch (error) {
       console.error('Error updating job status:', error);
       toast.error('Unable to update job status. Please try again.');
@@ -118,14 +104,9 @@ const AdminJobs = () => {
   const handleDeleteJob = async (jobId) => {
     if (window.confirm('Are you sure you want to delete this job posting?')) {
       try {
-        const result = await jobService.deleteJob(jobId);
-        
-        if (result.success) {
-          setJobs(jobs.filter((j) => j.id !== jobId));
-          toast.success('Job deleted successfully');
-        } else {
-          toast.error(result.error || 'Failed to delete job');
-        }
+        await adminService.deleteJob(jobId);
+        setJobs(jobs.filter((j) => j.id !== jobId));
+        toast.success('Job deleted successfully');
       } catch (error) {
         console.error('Error deleting job:', error);
         toast.error('Unable to delete job. Please try again.');
