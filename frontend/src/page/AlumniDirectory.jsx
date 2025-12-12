@@ -57,22 +57,52 @@ const AlumniDirectory = () => {
     hasMore: false,
   });
 
-  // Load results
-  const loadResults = useCallback(() => {
+  // Load results from backend API
+  const loadResults = useCallback(async () => {
     setLoading(true);
     try {
-      // Filter alumni
-      let filtered = directoryService.filterAlumni(filters);
+      const params = {
+        name: filters.search,
+        company: filters.companies.join(','),
+        skills: filters.skills.join(','),
+        location: filters.locations.join(','),
+        job_role: filters.roles.join(','),
+        verified_only: filters.verifiedOnly,
+        page: currentPage,
+        limit: pageSize
+      };
       
-      // Sort alumni
-      filtered = directoryService.sortAlumni(filtered, sortBy);
+      const response = await directoryService.searchProfiles(params);
       
-      // Paginate
-      const paginated = directoryService.paginateResults(filtered, currentPage, pageSize);
-      
-      setResults(paginated);
+      if (response.success && response.data) {
+        // Backend returns paginated data
+        setResults({
+          data: response.data.profiles || [],
+          totalPages: response.data.total_pages || 0,
+          totalResults: response.data.total || 0,
+          currentPage: response.data.page || 1,
+          hasMore: (response.data.page * pageSize) < response.data.total
+        });
+      } else {
+        // Fallback to empty results
+        setResults({
+          data: [],
+          totalPages: 0,
+          totalResults: 0,
+          currentPage: 1,
+          hasMore: false
+        });
+      }
     } catch (error) {
       console.error('Error loading results:', error);
+      // Fallback to empty results on error
+      setResults({
+        data: [],
+        totalPages: 0,
+        totalResults: 0,
+        currentPage: 1,
+        hasMore: false
+      });
     } finally {
       setLoading(false);
     }

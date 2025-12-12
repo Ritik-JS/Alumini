@@ -74,6 +74,28 @@ class ApiProfileService {
     }
   }
 
+  // Search profiles with filters
+  async searchProfiles(params) {
+    try {
+      const response = await axios.get('/api/profiles/search', {
+        params: {
+          name: params.name || undefined,
+          company: params.company || undefined,
+          skills: params.skills || undefined,
+          batch_year: params.batch_year || undefined,
+          job_role: params.job_role || undefined,
+          location: params.location || undefined,
+          verified_only: params.verified_only || false,
+          page: params.page || 1,
+          limit: params.limit || 20
+        }
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: null };
+    }
+  }
+
   // Get job applications by user
   async getJobApplicationsByUser(userId) {
     try {
