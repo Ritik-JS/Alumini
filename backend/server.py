@@ -65,6 +65,7 @@ from routes.heatmap import router as heatmap_router
 # Import wrapper routes for frontend compatibility
 from routes.knowledge_routes import router as knowledge_router
 from routes.skills_routes import router as skills_router
+from routes.api_wrappers import router as api_wrappers_router
 
 # Import Phase 10.2 routes - Admin Dataset Upload
 from routes.datasets import router as datasets_router
@@ -242,6 +243,7 @@ app.include_router(heatmap_router)
 # Include wrapper routes for frontend compatibility
 app.include_router(knowledge_router)
 app.include_router(skills_router)
+app.include_router(api_wrappers_router)
 
 # Include Phase 10.2 routes - Admin Dataset Upload
 app.include_router(datasets_router)

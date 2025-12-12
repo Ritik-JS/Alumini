@@ -310,3 +310,55 @@ async def check_and_award_badges(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to check badges"
         )
+
+
+@router.get(
+    "/insights/{user_id}",
+    summary="Get engagement insights for a user"
+)
+async def get_engagement_insights(
+    user_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get detailed engagement insights and predictions for a user.
+    
+    Returns:
+    - Activity pattern analysis
+    - Future engagement prediction
+    - Personalized recommendations
+    - Contribution breakdown
+    """
+    try:
+        from services.engagement_service import engagement_service
+        
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            # Get current score
+            score = await engagement_service.get_user_score(conn, user_id)
+            
+            # Get activity pattern
+            pattern = await engagement_service._analyze_activity_pattern(conn, user_id)
+            
+            # Get future prediction
+            prediction = await engagement_service.predict_future_engagement(conn, user_id)
+            
+            # Get contribution history
+            history = await engagement_service.get_contribution_history(conn, user_id, limit=10)
+            
+            return {
+                "success": True,
+                "data": {
+                    "current_score": score,
+                    "activity_pattern": pattern,
+                    "prediction": prediction,
+                    "recent_contributions": history
+                }
+            }
+        
+    except Exception as e:
+        logger.error(f"Error getting engagement insights: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get engagement insights"
+        )
