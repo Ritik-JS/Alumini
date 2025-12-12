@@ -43,15 +43,15 @@ class EngagementService:
                 # Enhanced: Apply AI-powered activity pattern analysis
                 ai_boost = await self._calculate_ai_activity_boost(db_conn, user_id)
                 
-                # Parse contributions JSON if it's a string (MySQL stores it as TEXT/JSON)
-                contributions = score[3]
-                if isinstance(contributions, str):
+                # Parse contributions JSON if it's a string (MySQL stores JSON as string)
+                contributions_data = score[3]
+                if contributions_data and isinstance(contributions_data, str):
                     try:
-                        contributions = json.loads(contributions)
-                    except (json.JSONDecodeError, TypeError):
-                        contributions = {}
-                elif not contributions:
-                    contributions = {}
+                        contributions_data = json.loads(contributions_data)
+                    except json.JSONDecodeError:
+                        contributions_data = {}
+                elif not contributions_data:
+                    contributions_data = {}
                 
                 return {
                     'id': score[0],
@@ -59,7 +59,7 @@ class EngagementService:
                     'total_score': score[2] + ai_boost,  # Apply AI boost
                     'base_score': score[2],
                     'ai_boost': ai_boost,
-                    'contributions': contributions,
+                    'contributions': contributions_data,
                     'rank_position': score[4],
                     'level': self._determine_level(score[2] + ai_boost) if not score[5] else score[5],
                     'last_calculated': score[6],
@@ -392,21 +392,21 @@ class EngagementService:
                 result = await cursor.fetchone()
             
             if result:
-                # Parse contributions JSON if it's a string (MySQL stores it as TEXT/JSON)
-                contributions = result[3]
-                if isinstance(contributions, str):
+                # Parse contributions JSON if it's a string (MySQL stores JSON as string)
+                contributions_data = result[3]
+                if contributions_data and isinstance(contributions_data, str):
                     try:
-                        contributions = json.loads(contributions)
-                    except (json.JSONDecodeError, TypeError):
-                        contributions = {}
-                elif not contributions:
-                    contributions = {}
+                        contributions_data = json.loads(contributions_data)
+                    except json.JSONDecodeError:
+                        contributions_data = {}
+                elif not contributions_data:
+                    contributions_data = {}
                 
                 return {
                     'id': result[0],
                     'user_id': result[1],
                     'total_score': result[2],
-                    'contributions': contributions,
+                    'contributions': contributions_data,
                     'rank_position': result[4],
                     'level': result[5] if result[5] else self._determine_level(result[2]),
                     'last_calculated': result[6],
@@ -446,15 +446,15 @@ class EngagementService:
             # Format leaderboard entries
             entries = []
             for entry in leaderboard:
-                # Parse contributions JSON if it's a string (MySQL stores it as TEXT/JSON)
-                contributions = entry[7]
-                if isinstance(contributions, str):
+                # Parse contributions JSON if it's a string (MySQL stores JSON as string)
+                contributions_data = entry[7]
+                if contributions_data and isinstance(contributions_data, str):
                     try:
-                        contributions = json.loads(contributions)
-                    except (json.JSONDecodeError, TypeError):
-                        contributions = {}
-                elif not contributions:
-                    contributions = {}
+                        contributions_data = json.loads(contributions_data)
+                    except json.JSONDecodeError:
+                        contributions_data = {}
+                elif not contributions_data:
+                    contributions_data = {}
                 
                 entries.append({
                     'user_id': entry[0],
@@ -464,7 +464,7 @@ class EngagementService:
                     'total_score': entry[4],
                     'rank_position': entry[5],
                     'level': entry[6] if entry[6] else self._determine_level(entry[4]),
-                    'contributions': contributions
+                    'contributions': contributions_data
                 })
             
             # Get current user's rank if provided

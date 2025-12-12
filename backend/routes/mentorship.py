@@ -164,7 +164,7 @@ async def get_mentor_profile(mentor_id: str):
         # Get statistics
         try:
             statistics = await MentorshipService.get_mentor_statistics(mentor['user_id'])
-        except:
+        except Exception:
             statistics = None
         
         return {
@@ -368,6 +368,43 @@ async def get_active_mentorships(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch active mentorships"
+        )
+
+
+@router.get("/mentorship/my-requests", response_model=dict)
+async def get_my_mentorship_requests(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get all mentorship requests for current user (both sent and received)
+    
+    Returns both:
+    - Requests sent by user as student
+    - Requests received by user as mentor
+    """
+    try:
+        # Get sent requests
+        sent_requests = await MentorshipService.get_sent_requests(current_user['id'], None)
+        
+        # Get received requests
+        received_requests = await MentorshipService.get_received_requests(current_user['id'], None)
+        
+        return {
+            "success": True,
+            "data": {
+                "sent": sent_requests,
+                "received": received_requests
+            },
+            "total": {
+                "sent": len(sent_requests),
+                "received": len(received_requests)
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error fetching my mentorship requests: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch mentorship requests"
         )
 
 

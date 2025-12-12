@@ -3,7 +3,7 @@ Career Path Prediction Routes
 Provides endpoints for career trajectory predictions and analysis
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional
+from typing import Optional, List
 import logging
 
 from middleware.auth_middleware import get_current_user
@@ -13,6 +13,9 @@ from services.career_prediction_service import CareerPredictionService
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/career", tags=["Career Paths"])
+
+# Add wrapper routes for /api/career-paths
+career_paths_router = APIRouter(prefix="/api/career-paths", tags=["Career Paths"])
 
 career_service = CareerPredictionService()
 
@@ -254,4 +257,89 @@ async def get_my_latest_prediction(
         raise HTTPException(
             status_code=500,
             detail=f"Failed to fetch latest prediction: {str(e)}"
+        )
+
+
+# ============================================================================
+# WRAPPER ROUTES FOR /api/career-paths
+# ============================================================================
+
+@career_paths_router.get("")
+async def get_career_paths_wrapper(
+    limit: int = Query(20, ge=1, le=100),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Wrapper for GET /api/career/paths
+    Get most common career transitions
+    """
+    try:
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            paths = await career_service.get_common_career_paths(
+                conn,
+                limit=limit
+            )
+            
+            return {
+                "success": True,
+                "data": {
+                    "career_paths": paths,
+                    "total": len(paths)
+                }
+            }
+    
+    except Exception as e:
+        logger.error(f"Error getting career paths: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch career paths: {str(e)}"
+        )
+
+
+@career_paths_router.get("/roles")
+async def get_career_roles(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get all unique career roles from alumni profiles
+    Useful for career exploration and filtering
+    """
+    try:
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                # Get all unique current roles
+                await cursor.execute("""
+                    SELECT DISTINCT current_role, COUNT(*) as count
+                    FROM alumni_profiles
+                    WHERE current_role IS NOT NULL AND current_role != ''
+                    GROUP BY current_role
+                    ORDER BY count DESC
+                """)
+                roles = await cursor.fetchall()
+                
+                role_list = [
+                    {
+                        "role": row[0],
+                        "alumni_count": row[1]
+                    }
+                    for row in roles
+                ]
+                
+                return {
+                    "success": True,
+                    "data": {
+                        "roles": role_list,
+                        "total": len(role_list)
+                    }
+                }
+    
+    except Exception as e:
+        logger.error(f"Error getting career roles: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch career roles: {str(e)}"
         )

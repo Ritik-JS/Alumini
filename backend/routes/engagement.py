@@ -314,19 +314,19 @@ async def check_and_award_badges(
 
 @router.get(
     "/insights/{user_id}",
-    summary="Get engagement insights for a user"
+    summary="Get user engagement insights"
 )
-async def get_engagement_insights(
+async def get_user_engagement_insights(
     user_id: str,
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Get detailed engagement insights and predictions for a user.
+    Get detailed engagement insights for a user.
     
     Returns:
     - Activity pattern analysis
-    - Future engagement prediction
-    - Personalized recommendations
+    - Engagement predictions
+    - Recommendations for improvement
     - Contribution breakdown
     """
     try:
@@ -334,13 +334,16 @@ async def get_engagement_insights(
         
         pool = await get_db_pool()
         async with pool.acquire() as conn:
-            # Get current score
+            # Get current score and activity pattern
             score = await engagement_service.get_user_score(conn, user_id)
             
-            # Get activity pattern
-            pattern = await engagement_service._analyze_activity_pattern(conn, user_id)
+            if not score:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User engagement data not found"
+                )
             
-            # Get future prediction
+            # Get predictions
             prediction = await engagement_service.predict_future_engagement(conn, user_id)
             
             # Get contribution history
@@ -350,12 +353,18 @@ async def get_engagement_insights(
                 "success": True,
                 "data": {
                     "current_score": score,
-                    "activity_pattern": pattern,
                     "prediction": prediction,
-                    "recent_contributions": history
+                    "recent_contributions": history,
+                    "insights": {
+                        "activity_pattern": score.get('activity_pattern', 'unknown'),
+                        "level": score.get('level', 'Beginner'),
+                        "rank_position": score.get('rank_position')
+                    }
                 }
             }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting engagement insights: {str(e)}")
         raise HTTPException(

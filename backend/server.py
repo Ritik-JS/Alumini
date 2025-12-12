@@ -58,14 +58,14 @@ from routes.engagement import router as engagement_router
 from routes.capsules import router as capsules_router
 from routes.aes import router as aes_router
 from routes.skill_graph import router as skill_graph_router
-from routes.career_paths import router as career_paths_router
+from routes.career_paths import router as career_router, career_paths_router
 from routes.alumni_card import router as alumni_card_router
 from routes.heatmap import router as heatmap_router
 
 # Import wrapper routes for frontend compatibility
 from routes.knowledge_routes import router as knowledge_router
 from routes.skills_routes import router as skills_router
-from routes.api_wrappers import router as api_wrappers_router
+from routes.wrapper_routes import router as wrapper_router
 
 # Import Phase 10.2 routes - Admin Dataset Upload
 from routes.datasets import router as datasets_router
@@ -236,14 +236,15 @@ app.include_router(engagement_router)
 app.include_router(capsules_router)
 app.include_router(aes_router)
 app.include_router(skill_graph_router)
-app.include_router(career_paths_router)
+app.include_router(career_router)
 app.include_router(alumni_card_router)
 app.include_router(heatmap_router)
 
 # Include wrapper routes for frontend compatibility
 app.include_router(knowledge_router)
 app.include_router(skills_router)
-app.include_router(api_wrappers_router)
+app.include_router(wrapper_router)
+app.include_router(career_paths_router)
 
 # Include Phase 10.2 routes - Admin Dataset Upload
 app.include_router(datasets_router)

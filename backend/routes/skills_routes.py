@@ -96,13 +96,20 @@ async def search_skills(
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor() as cursor:
-                # Search in profiles skills
+                # Search in profiles skills (MySQL compatible)
                 query = """
-                    SELECT DISTINCT skill_name, COUNT(*) as count
+                    SELECT skill_name, COUNT(*) as count
                     FROM (
-                        SELECT jsonb_array_elements_text(skills) as skill_name
+                        SELECT JSON_UNQUOTE(JSON_EXTRACT(skills, CONCAT('$[', idx, ']'))) as skill_name
                         FROM profiles
-                        WHERE skills IS NOT NULL
+                        CROSS JOIN (
+                            SELECT 0 AS idx UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4
+                            UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9
+                            UNION SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14
+                            UNION SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19
+                        ) AS indices
+                        WHERE skills IS NOT NULL 
+                        AND JSON_LENGTH(skills) > idx
                     ) skills_list
                     WHERE LOWER(skill_name) LIKE LOWER(%s)
                     GROUP BY skill_name
@@ -175,6 +182,50 @@ async def get_skill_details(
         )
 
 
+@router.get("/industries")
+async def get_industries(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get all unique industries from alumni profiles
+    Useful for filtering and career exploration
+    """
+    try:
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                # Get all unique industries
+                await cursor.execute("""
+                    SELECT DISTINCT industry, COUNT(*) as alumni_count
+                    FROM alumni_profiles
+                    WHERE industry IS NOT NULL AND industry != ''
+                    GROUP BY industry
+                    ORDER BY alumni_count DESC
+                """)
+                results = await cursor.fetchall()
+                
+                industries = [
+                    {
+                        "name": row[0],
+                        "alumni_count": row[1]
+                    }
+                    for row in results
+                ]
+                
+                return {
+                    "success": True,
+                    "data": industries,
+                    "total": len(industries)
+                }
+    
+    except Exception as e:
+        logger.error(f"Error getting industries: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch industries: {str(e)}"
+        )
+
+
 @router.get("/{skill_name}/related")
 async def get_related_skills(
     skill_name: str,
@@ -189,45 +240,63 @@ async def get_related_skills(
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor() as cursor:
-                # Find skills that commonly appear together
-                query = """
-                    WITH target_skill_profiles AS (
-                        SELECT user_id
-                        FROM profiles
-                        WHERE skills @> %s::jsonb
-                    )
-                    SELECT 
-                        skill_name,
-                        COUNT(*) as co_occurrence_count,
-                        ROUND((COUNT(*) * 100.0 / (SELECT COUNT(*) FROM target_skill_profiles)), 2) as percentage
-                    FROM (
-                        SELECT 
-                            p.user_id,
-                            jsonb_array_elements_text(p.skills) as skill_name
-                        FROM profiles p
-                        INNER JOIN target_skill_profiles tsp ON p.user_id = tsp.user_id
-                        WHERE p.skills IS NOT NULL
-                    ) all_skills
-                    WHERE skill_name != %s
-                    GROUP BY skill_name
-                    ORDER BY co_occurrence_count DESC
-                    LIMIT %s
-                """
-                
+                # Find skills that commonly appear together (MySQL compatible)
                 import json
-                skill_json = json.dumps([skill_name])
-                await cursor.execute(query, (skill_json, skill_name, limit))
-                results = await cursor.fetchall()
                 
-                related_skills = [
-                    {
-                        "name": row[0],
-                        "co_occurrence_count": row[1],
-                        "percentage": float(row[2]),
-                        "relationship_strength": min(100, float(row[2]))
-                    }
-                    for row in results
-                ]
+                # First, get profiles that have the target skill
+                query_profiles = """
+                    SELECT user_id
+                    FROM profiles
+                    WHERE skills IS NOT NULL
+                    AND JSON_CONTAINS(skills, %s, '$')
+                """
+                skill_json = json.dumps(skill_name)
+                await cursor.execute(query_profiles, (skill_json,))
+                target_profiles = await cursor.fetchall()
+                
+                if not target_profiles:
+                    related_skills = []
+                else:
+                    profile_ids = [p[0] for p in target_profiles]
+                    total_profiles = len(profile_ids)
+                    
+                    # Get all skills from those profiles
+                    placeholders = ','.join(['%s'] * len(profile_ids))
+                    query = f"""
+                        SELECT skill_name, COUNT(*) as co_occurrence_count,
+                               ROUND((COUNT(*) * 100.0 / {total_profiles}), 2) as percentage
+                        FROM (
+                            SELECT 
+                                p.user_id,
+                                JSON_UNQUOTE(JSON_EXTRACT(p.skills, CONCAT('$[', idx, ']'))) as skill_name
+                            FROM profiles p
+                            CROSS JOIN (
+                                SELECT 0 AS idx UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4
+                                UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9
+                                UNION SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14
+                                UNION SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19
+                            ) AS indices
+                            WHERE p.user_id IN ({placeholders})
+                            AND p.skills IS NOT NULL
+                            AND JSON_LENGTH(p.skills) > idx
+                        ) all_skills
+                        WHERE skill_name != %s
+                        GROUP BY skill_name
+                        ORDER BY co_occurrence_count DESC
+                        LIMIT %s
+                    """
+                    await cursor.execute(query, profile_ids + [skill_name, limit])
+                    results = await cursor.fetchall()
+                    
+                    related_skills = [
+                        {
+                            "name": row[0],
+                            "co_occurrence_count": row[1],
+                            "percentage": float(row[2]),
+                            "relationship_strength": min(100, float(row[2]))
+                        }
+                        for row in results
+                    ]
                 
                 return {
                     "success": True,
