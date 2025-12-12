@@ -33,8 +33,15 @@ const CareerPaths = () => {
         careerPathService.getRoles()
       ]);
 
-      if (pathsRes.success) setCareerPaths(pathsRes.data);
-      if (rolesRes.success) setRoles(rolesRes.data);
+      if (pathsRes.success) {
+        // Extract career_paths array from nested data structure
+        setCareerPaths(pathsRes.data?.career_paths || pathsRes.data || []);
+      }
+      if (rolesRes.success) {
+        // Extract role names from array of objects {role, alumni_count}
+        const roleNames = (rolesRes.data?.roles || []).map(r => r.role);
+        setRoles(roleNames);
+      }
     } catch (error) {
       toast.error('Failed to load career paths');
     } finally {
@@ -47,8 +54,9 @@ const CareerPaths = () => {
       setLoading(true);
       const res = await careerPathService.getCareerPaths(filters);
       if (res.success) {
-        setCareerPaths(res.data);
-        if (res.data.length === 0) {
+        const paths = res.data?.career_paths || res.data || [];
+        setCareerPaths(paths);
+        if (paths.length === 0) {
           toast.info('No career paths found matching your criteria');
         }
       }
