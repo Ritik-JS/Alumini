@@ -99,7 +99,22 @@ INSERT INTO alumni_profiles (id, user_id, photo_url, name, bio, headline, curren
 '["Kaggle Competitions Master","Published 5 ML research papers","AWS ML Certified"]',
 '{"linkedin":"https://linkedin.com/in/lisaanderson","github":"https://github.com/lisadatascience","kaggle":"https://kaggle.com/lisaanderson"}',
 'https://storage.example.com/cvs/lisa-anderson-cv.pdf',
-'Technology', 6, TRUE, FALSE, 98, TRUE, '550e8400-e29b-41d4-a716-446655440000', '2023-04-20 13:00:00', '2023-04-18 09:30:00', '2024-12-05 11:20:00');
+'Technology', 6, TRUE, FALSE, 98, TRUE, '550e8400-e29b-41d4-a716-446655440000', '2023-04-20 13:00:00', '2023-04-18 09:30:00', '2024-12-05 11:20:00'),
+
+-- Additional Alumni Profiles (20 more diverse profiles)
+('profile-dd0e8400-e29b-41d4-a716', 'dd0e8400-e29b-41d4-a716-446655440008',
+'https://api.dicebear.com/7.x/avataaars/svg?seed=Robert',
+'Robert Taylor',
+'Startup founder and tech recruiter with experience at multiple unicorn companies. Help connecting talented alumni with great opportunities.',
+'Founder at StartupVentures | Tech Recruiter',
+'StartupVentures', 'Founder & CEO', 'Austin, TX', 2017,
+'[{"company":"StartupVentures","role":"Founder & CEO","start_date":"2022-01-01","end_date":null,"description":"Building recruitment platform for tech startups"}]',
+'[{"institution":"Tech University","degree":"Bachelor of Science","field":"Business Administration","start_year":2013,"end_year":2017,"achievements":"Entrepreneur Club President"}]',
+'["Recruitment","Business Development","Networking","Sales","Leadership"]',
+'["Founded 2 successful startups","Placed 200+ candidates"]',
+'{"linkedin":"https://linkedin.com/in/roberttaylor"}',
+'https://storage.example.com/cvs/robert-taylor-cv.pdf',
+'Recruitment', 7, FALSE, TRUE, 85, TRUE, '550e8400-e29b-41d4-a716-446655440000', '2024-03-11 10:00:00', '2024-03-10 11:20:00', '2024-12-15 09:00:00')
 
 -- ============================================================================
 -- PHASE 3: JOBS & CAREER
@@ -469,7 +484,66 @@ INSERT INTO geographic_data (id, location_name, country, city, latitude, longitu
 
 ('geo-boston', 'Boston, MA', 'United States', 'Boston', 42.3601, -71.0589, 67,
 45, '["Machine Learning","Data Science","Python","Research","Robotics"]',
-'["MIT","Harvard","Boston Dynamics","HubSpot","Wayfair"]', '["Technology","Education","Healthcare","Research"]', '2024-12-28 00:00:00');
+'["MIT","Harvard","Boston Dynamics","HubSpot","Wayfair"]', '["Technology","Education","Healthcare","Research"]', '2024-12-28 00:00:00'),
+
+-- Additional Geographic Data (International Locations)
+('geo-new-york', 'New York, NY', 'United States', 'New York', 40.7128, -74.0060, 124,
+78, '["Finance","Python","Java","React","Product Management"]',
+'["Goldman Sachs","JPMorgan","Meta","IBM","Bloomberg"]', '["Finance","Technology","Media"]', '2024-12-28 00:00:00'),
+
+('geo-austin', 'Austin, TX', 'United States', 'Austin', 30.2672, -97.7431, 56,
+42, '["JavaScript","Python","Cloud Computing","Mobile Development"]',
+'["Dell","Oracle","Tesla","Indeed","Whole Foods"]', '["Technology","E-commerce"]', '2024-12-28 00:00:00'),
+
+('geo-london', 'London', 'United Kingdom', 'London', 51.5074, -0.1278, 89,
+53, '["Python","Machine Learning","Finance","React","Node.js"]',
+'["DeepMind","Revolut","Monzo","TransferWise","Sky"]', '["Technology","Fintech","Media"]', '2024-12-28 00:00:00'),
+
+('geo-bangalore', 'Bangalore', 'India', 'Bangalore', 12.9716, 77.5946, 134,
+96, '["Java","Python","React","AWS","Microservices"]',
+'["Infosys","Wipro","Amazon","Microsoft","Flipkart"]', '["Technology","E-commerce","Consulting"]', '2024-12-28 00:00:00'),
+
+('geo-toronto', 'Toronto', 'Canada', 'Toronto', 43.6532, -79.3832, 72,
+48, '["Python","Machine Learning","Finance","React","Cloud Computing"]',
+'["Shopify","RBC","TD Bank","Wealthsimple","Uber"]', '["Technology","Finance","E-commerce"]', '2024-12-28 00:00:00'),
+
+('geo-singapore', 'Singapore', 'Singapore', 'Singapore', 1.3521, 103.8198, 95,
+61, '["Python","Java","Cloud Computing","Data Science","DevOps"]',
+'["Grab","Sea Group","Shopee","DBS","Google"]', '["Technology","Finance","E-commerce"]', '2024-12-28 00:00:00'),
+
+('geo-berlin', 'Berlin', 'Germany', 'Berlin', 52.5200, 13.4050, 67,
+44, '["Python","JavaScript","React","Machine Learning","Cloud"]',
+'["SAP","Siemens","Zalando","SoundCloud","N26"]', '["Technology","E-commerce","Fintech"]', '2024-12-28 00:00:00'),
+
+('geo-sydney', 'Sydney', 'Australia', 'Sydney', -33.8688, 151.2093, 58,
+39, '["Python","JavaScript","Cloud Computing","Data Science"]',
+'["Atlassian","Canva","Afterpay","Commonwealth Bank","Telstra"]', '["Technology","Finance","E-commerce"]', '2024-12-28 00:00:00'),
+
+('geo-dublin', 'Dublin', 'Ireland', 'Dublin', 53.3498, -6.2603, 82,
+56, '["JavaScript","Python","Cloud Computing","React","DevOps"]',
+'["Google","Facebook","Apple","Microsoft","Amazon"]', '["Technology","Cloud Services"]', '2024-12-28 00:00:00'),
+
+('geo-tel-aviv', 'Tel Aviv', 'Israel', 'Tel Aviv', 32.0853, 34.7818, 64,
+47, '["Python","Cybersecurity","Machine Learning","Cloud","Mobile"]',
+'["Wix","Mobileye","Waze","Check Point","Monday.com"]', '["Technology","Cybersecurity","Startups"]', '2024-12-28 00:00:00');
+
+-- Additional Skill Graph Data
+INSERT INTO skill_graph (id, skill_name, related_skills, industry_connections, alumni_count, job_count, popularity_score, created_at, updated_at) VALUES
+('skill-typescript', 'TypeScript', '["JavaScript","React","Node.js","Angular"]', '["Frontend Development","Web Development","Software Engineering"]', 112, 67, 88.7, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-aws', 'AWS', '["Cloud Computing","DevOps","Kubernetes","Docker"]', '["Cloud Services","DevOps","Infrastructure"]', 134, 89, 91.2, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-docker', 'Docker', '["Kubernetes","DevOps","AWS","CI/CD"]', '["DevOps","Cloud Services","Infrastructure"]', 98, 71, 87.3, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-kubernetes', 'Kubernetes', '["Docker","AWS","DevOps","Cloud Native"]', '["DevOps","Cloud Services","Infrastructure"]', 87, 64, 85.9, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-nodejs', 'Node.js', '["JavaScript","Express","MongoDB","React"]', '["Backend Development","Full-Stack","API Development"]', 121, 78, 89.4, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-sql', 'SQL', '["Database","PostgreSQL","MySQL","Data Analysis"]', '["Data Science","Backend Development","Database Management"]', 145, 92, 90.1, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-mongodb', 'MongoDB', '["NoSQL","Node.js","Express","Database"]', '["Backend Development","Full-Stack","Database"]', 89, 56, 82.5, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-ci-cd', 'CI/CD', '["DevOps","Jenkins","GitLab","GitHub Actions"]', '["DevOps","Software Engineering","Automation"]', 76, 58, 81.2, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-agile', 'Agile', '["Scrum","Project Management","Product Management"]', '["Product Management","Project Management"]', 134, 45, 79.8, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-data-analysis', 'Data Analysis', '["Python","SQL","Excel","Tableau"]', '["Data Science","Business Intelligence","Analytics"]', 103, 68, 84.6, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-api-design', 'API Design', '["REST","GraphQL","Node.js","Python"]', '["Backend Development","Software Engineering"]', 92, 61, 83.4, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-product-strategy', 'Product Strategy', '["Product Management","Business Strategy","Analytics"]', '["Product Management","Business"]', 78, 42, 77.9, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-ui-design', 'UI Design', '["UX Design","Figma","Design Systems","CSS"]', '["Product Design","Frontend Development"]', 71, 48, 80.2, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-leadership', 'Leadership', '["Management","Team Building","Communication"]', '["Management","Leadership"]', 156, 38, 76.5, '2024-01-01 00:00:00', '2024-12-28 00:00:00'),
+('skill-communication', 'Communication', '["Leadership","Presentation","Writing"]', '["Management","Product Management","Sales"]', 167, 29, 74.3, '2024-01-01 00:00:00', '2024-12-28 00:00:00');
 
 -- Alumni Cards
 INSERT INTO alumni_cards (id, user_id, card_number, qr_code_data, issue_date, expiry_date, is_active, verification_count, last_verified, created_at, updated_at) VALUES
