@@ -203,7 +203,7 @@ const Profile = () => {
           field: field || '',
           start_year: parseInt(startYear) || new Date().getFullYear() - 4,
           end_year: parseInt(endYear) || new Date().getFullYear(),
-          achievements: ''
+          achievements: []
         }]
       }));
     }
