@@ -290,3 +290,47 @@ async def toggle_bookmark_capsule(
     except Exception as e:
         logger.error(f"Error toggling bookmark: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to toggle bookmark: {str(e)}")
+
+
+@router.get("/categories")
+async def get_categories(
+    current_user: Optional[dict] = Depends(get_current_user)
+):
+    """
+    Get all unique categories from knowledge capsules
+    
+    Returns list of categories with capsule counts
+    """
+    try:
+        from database.connection import get_db_pool
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                # Get all unique categories with counts
+                await cursor.execute("""
+                    SELECT category, COUNT(*) as count
+                    FROM knowledge_capsules
+                    WHERE category IS NOT NULL AND category != ''
+                    GROUP BY category
+                    ORDER BY count DESC
+                """)
+                results = await cursor.fetchall()
+                
+                categories = [
+                    {
+                        "name": row[0],
+                        "count": row[1]
+                    }
+                    for row in results
+                ]
+                
+                return {
+                    "success": True,
+                    "data": categories,
+                    "total": len(categories)
+                }
+    
+    except Exception as e:
+        logger.error(f"Error getting categories: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get categories: {str(e)}")

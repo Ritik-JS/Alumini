@@ -15,7 +15,7 @@ class ApiAlumniCardService {
   // Get my alumni card
   async getMyCard() {
     try {
-      const response = await axios.get('/api/alumni-card/me');
+      const response = await axios.get('/api/alumni-card/');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };

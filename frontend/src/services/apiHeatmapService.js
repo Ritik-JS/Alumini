@@ -67,7 +67,7 @@ class ApiHeatmapService {
   // Get talent clusters
   async getTalentClusters(filters = {}) {
     try {
-      const response = await axios.get('/api/heatmap/talent-clusters', {
+      const response = await axios.get('/api/heatmap/clusters', {
         params: filters
       });
       return response.data;
