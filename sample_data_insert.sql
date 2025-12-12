@@ -114,7 +114,7 @@ INSERT INTO alumni_profiles (id, user_id, photo_url, name, bio, headline, curren
 '["Founded 2 successful startups","Placed 200+ candidates"]',
 '{"linkedin":"https://linkedin.com/in/roberttaylor"}',
 'https://storage.example.com/cvs/robert-taylor-cv.pdf',
-'Recruitment', 7, FALSE, TRUE, 85, TRUE, '550e8400-e29b-41d4-a716-446655440000', '2024-03-11 10:00:00', '2024-03-10 11:20:00', '2024-12-15 09:00:00')
+'Recruitment', 7, FALSE, TRUE, 85, TRUE, '550e8400-e29b-41d4-a716-446655440000', '2024-03-11 10:00:00', '2024-03-10 11:20:00', '2024-12-15 09:00:00');
 
 -- ============================================================================
 -- PHASE 3: JOBS & CAREER
