@@ -22,7 +22,7 @@ router = APIRouter(prefix="/api/profiles", tags=["profiles"])
 @router.post("/create", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_profile(
     profile_data: AlumniProfileCreate,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Create alumni profile
@@ -45,7 +45,7 @@ async def create_profile(
     - **willing_to_hire**: Willing to post job opportunities
     """
     try:
-        profile = await ProfileService.create_profile(current_user.id, profile_data)
+        profile = await ProfileService.create_profile(current_user['id'], profile_data)
         return {
             "success": True,
             "message": "Profile created successfully",
@@ -65,10 +65,10 @@ async def create_profile(
 
 
 @router.get("/me", response_model=dict)
-async def get_my_profile(current_user: UserResponse = Depends(get_current_user)):
+async def get_my_profile(current_user: dict = Depends(get_current_user)):
     """Get current user's profile"""
     try:
-        profile = await ProfileService.get_profile_by_user_id(current_user.id)
+        profile = await ProfileService.get_profile_by_user_id(current_user['id'])
         
         if not profile:
             raise HTTPException(
@@ -120,7 +120,7 @@ async def get_profile(user_id: str):
 async def update_profile(
     user_id: str,
     profile_data: AlumniProfileUpdate,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Update alumni profile
@@ -128,7 +128,7 @@ async def update_profile(
     Users can only update their own profile unless they are admin
     """
     # Check if user is updating their own profile or is admin
-    if current_user.id != user_id and current_user.role != "admin":
+    if current_user['id'] != user_id and current_user['role'] != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only update your own profile"
@@ -153,11 +153,11 @@ async def update_profile(
 @router.delete("/{user_id}", response_model=dict)
 async def delete_profile(
     user_id: str,
-    current_user: UserResponse = Depends(require_roles(["admin"]))
+    current_user: dict = Depends(require_roles(["admin"]))
 ):
     """Delete profile (admin only)"""
     try:
-        success = await ProfileService.delete_profile(user_id, current_user.id)
+        success = await ProfileService.delete_profile(user_id, current_user['id'])
         
         if not success:
             raise HTTPException(
@@ -182,7 +182,7 @@ async def delete_profile(
 @router.post("/upload-cv", response_model=dict)
 async def upload_cv(
     file: UploadFile = File(...),
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Upload CV file
@@ -203,10 +203,10 @@ async def upload_cv(
         
         # In production, upload to S3 or similar
         # For now, create a mock URL
-        cv_url = f"https://storage.example.com/cvs/{current_user.id}/{file.filename}"
+        cv_url = f"https://storage.example.com/cvs/{current_user['id']}/{file.filename}"
         
         # Update profile with CV URL
-        profile = await ProfileService.update_cv_url(current_user.id, cv_url)
+        profile = await ProfileService.update_cv_url(current_user['id'], cv_url)
         
         return {
             "success": True,

@@ -35,7 +35,7 @@ router = APIRouter(prefix="/api", tags=["mentorship"])
 @router.post("/mentors/register", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def register_as_mentor(
     profile_data: MentorProfileCreate,
-    current_user: UserResponse = Depends(require_role(["alumni"]))
+    current_user: dict = Depends(require_role(["alumni"]))
 ):
     """
     Register as mentor (Alumni only)
@@ -49,7 +49,7 @@ async def register_as_mentor(
     - **mentorship_approach**: Description of mentorship approach
     """
     try:
-        mentor_profile = await MentorshipService.register_as_mentor(current_user.id, profile_data)
+        mentor_profile = await MentorshipService.register_as_mentor(current_user['id'], profile_data)
         return {
             "success": True,
             "message": "Successfully registered as mentor",
@@ -71,7 +71,7 @@ async def register_as_mentor(
 @router.put("/mentors/availability", response_model=dict)
 async def update_mentor_availability(
     profile_data: MentorProfileUpdate,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Update mentor profile and availability
@@ -82,7 +82,7 @@ async def update_mentor_availability(
     - **mentorship_approach**: Description of mentorship approach
     """
     try:
-        mentor_profile = await MentorshipService.update_mentor_profile(current_user.id, profile_data)
+        mentor_profile = await MentorshipService.update_mentor_profile(current_user['id'], profile_data)
         
         if not mentor_profile:
             raise HTTPException(
@@ -187,7 +187,7 @@ async def get_mentor_profile(mentor_id: str):
 @router.put("/mentors/profile", response_model=dict)
 async def update_mentor_profile(
     profile_data: MentorProfileUpdate,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Update mentor profile (same as update availability)
@@ -204,7 +204,7 @@ async def update_mentor_profile(
 @router.post("/mentorship/request", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def send_mentorship_request(
     request_data: MentorshipRequestCreate,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Send mentorship request (Student or Alumni)
@@ -215,7 +215,7 @@ async def send_mentorship_request(
     - **preferred_topics**: List of preferred discussion topics (optional)
     """
     try:
-        request = await MentorshipService.create_mentorship_request(current_user.id, request_data)
+        request = await MentorshipService.create_mentorship_request(current_user['id'], request_data)
         return {
             "success": True,
             "message": "Mentorship request sent successfully",
@@ -237,7 +237,7 @@ async def send_mentorship_request(
 @router.post("/mentorship/{request_id}/accept", response_model=dict)
 async def accept_mentorship_request(
     request_id: str,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Accept mentorship request (Mentor only)
@@ -245,7 +245,7 @@ async def accept_mentorship_request(
     Only the mentor who received the request can accept it
     """
     try:
-        request = await MentorshipService.accept_mentorship_request(request_id, current_user.id)
+        request = await MentorshipService.accept_mentorship_request(request_id, current_user['id'])
         return {
             "success": True,
             "message": "Mentorship request accepted successfully",
@@ -268,7 +268,7 @@ async def accept_mentorship_request(
 async def reject_mentorship_request(
     request_id: str,
     rejection_data: RejectMentorshipRequest,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Reject mentorship request (Mentor only)
@@ -278,7 +278,7 @@ async def reject_mentorship_request(
     Only the mentor who received the request can reject it
     """
     try:
-        request = await MentorshipService.reject_mentorship_request(request_id, current_user.id, rejection_data)
+        request = await MentorshipService.reject_mentorship_request(request_id, current_user['id'], rejection_data)
         return {
             "success": True,
             "message": "Mentorship request rejected",
@@ -300,7 +300,7 @@ async def reject_mentorship_request(
 @router.get("/mentorship/requests/received", response_model=dict)
 async def get_received_requests(
     status: Optional[str] = Query(None, description="Filter by status: pending, accepted, rejected"),
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get mentorship requests received by current user as mentor
@@ -308,7 +308,7 @@ async def get_received_requests(
     - **status**: Filter by status (optional)
     """
     try:
-        requests = await MentorshipService.get_received_requests(current_user.id, status)
+        requests = await MentorshipService.get_received_requests(current_user['id'], status)
         return {
             "success": True,
             "data": requests,
@@ -325,7 +325,7 @@ async def get_received_requests(
 @router.get("/mentorship/requests/sent", response_model=dict)
 async def get_sent_requests(
     status: Optional[str] = Query(None, description="Filter by status: pending, accepted, rejected"),
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get mentorship requests sent by current user as student
@@ -333,7 +333,7 @@ async def get_sent_requests(
     - **status**: Filter by status (optional)
     """
     try:
-        requests = await MentorshipService.get_sent_requests(current_user.id, status)
+        requests = await MentorshipService.get_sent_requests(current_user['id'], status)
         return {
             "success": True,
             "data": requests,
@@ -349,7 +349,7 @@ async def get_sent_requests(
 
 @router.get("/mentorship/active", response_model=dict)
 async def get_active_mentorships(
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get active mentorships for current user
@@ -357,7 +357,7 @@ async def get_active_mentorships(
     Returns all accepted mentorships where user is either mentor or student
     """
     try:
-        mentorships = await MentorshipService.get_active_mentorships(current_user.id)
+        mentorships = await MentorshipService.get_active_mentorships(current_user['id'])
         return {
             "success": True,
             "data": mentorships,
@@ -379,7 +379,7 @@ async def get_active_mentorships(
 async def schedule_session(
     mentorship_id: str,
     session_data: MentorshipSessionCreate,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Schedule a mentorship session
@@ -392,7 +392,7 @@ async def schedule_session(
     Both mentor and student can schedule sessions
     """
     try:
-        session = await MentorshipService.schedule_session(mentorship_id, current_user.id, session_data)
+        session = await MentorshipService.schedule_session(mentorship_id, current_user['id'], session_data)
         return {
             "success": True,
             "message": "Session scheduled successfully",
@@ -414,7 +414,7 @@ async def schedule_session(
 @router.get("/mentorship/sessions", response_model=dict)
 async def get_sessions(
     status: Optional[str] = Query(None, description="Filter by status: scheduled, completed, cancelled, missed"),
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get all sessions for current user
@@ -424,7 +424,7 @@ async def get_sessions(
     Returns sessions where user is either mentor or student
     """
     try:
-        sessions = await MentorshipService.get_sessions(current_user.id, status)
+        sessions = await MentorshipService.get_sessions(current_user['id'], status)
         return {
             "success": True,
             "data": sessions,
@@ -442,7 +442,7 @@ async def get_sessions(
 async def update_session(
     session_id: str,
     session_data: MentorshipSessionUpdate,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Update mentorship session
@@ -457,7 +457,7 @@ async def update_session(
     Both mentor and student can update sessions
     """
     try:
-        session = await MentorshipService.update_session(session_id, current_user.id, session_data)
+        session = await MentorshipService.update_session(session_id, current_user['id'], session_data)
         return {
             "success": True,
             "message": "Session updated successfully",
@@ -479,7 +479,7 @@ async def update_session(
 @router.post("/mentorship/sessions/{session_id}/complete", response_model=dict)
 async def complete_session(
     session_id: str,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Mark session as completed
@@ -487,7 +487,7 @@ async def complete_session(
     Both mentor and student can mark sessions as completed
     """
     try:
-        session = await MentorshipService.complete_session(session_id, current_user.id)
+        session = await MentorshipService.complete_session(session_id, current_user['id'])
         return {
             "success": True,
             "message": "Session marked as completed",
@@ -510,7 +510,7 @@ async def complete_session(
 async def submit_session_feedback(
     session_id: str,
     feedback_data: MentorshipSessionFeedback,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Submit feedback for completed session (Student only)
@@ -523,7 +523,7 @@ async def submit_session_feedback(
     Feedback automatically updates mentor's rating.
     """
     try:
-        session = await MentorshipService.submit_session_feedback(session_id, current_user.id, feedback_data)
+        session = await MentorshipService.submit_session_feedback(session_id, current_user['id'], feedback_data)
         return {
             "success": True,
             "message": "Feedback submitted successfully",

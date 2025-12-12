@@ -138,7 +138,7 @@ async def mark_all_notifications_as_read(
 @router.delete("/{notification_id}", response_model=MarkReadResponse)
 async def delete_notification(
     notification_id: str,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Delete a specific notification
@@ -150,7 +150,7 @@ async def delete_notification(
     try:
         success = await notification_service.delete_notification(
             notification_id=notification_id,
-            user_id=current_user.id
+            user_id=current_user['id']
         )
         
         if success:
