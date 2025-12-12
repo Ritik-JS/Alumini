@@ -7,67 +7,99 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, CheckCircle, XCircle, MessageSquare, Briefcase, Calendar } from 'lucide-react';
+import { AlertTriangle, CheckCircle, XCircle, MessageSquare, Briefcase, Calendar, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { adminService } from '@/services';
 
 const AdminModeration = () => {
   const { user } = useAuth();
   const [flaggedContent, setFlaggedContent] = useState({
-    posts: [
-      {
-        id: 1,
-        type: 'forum_post',
-        title: 'Inappropriate job posting',
-        content: 'This is a sample flagged forum post that needs review...',
-        author: 'john.doe@alumni.edu',
-        reportedBy: 'jane.smith@alumni.edu',
-        reason: 'Spam',
-        timestamp: new Date().toISOString(),
-      },
-      {
-        id: 2,
-        type: 'forum_post',
-        title: 'Offensive language in discussion',
-        content: 'Sample content with reported offensive language...',
-        author: 'user@example.com',
-        reportedBy: 'moderator@alumni.edu',
-        reason: 'Inappropriate content',
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-      },
-    ],
-    jobs: [
-      {
-        id: 3,
-        type: 'job_posting',
-        title: 'Suspicious job offer',
-        content: 'Work from home, earn $10000/month...',
-        author: 'recruiter@company.com',
-        reportedBy: 'student@alumni.edu',
-        reason: 'Suspicious/Scam',
-        timestamp: new Date(Date.now() - 172800000).toISOString(),
-      },
-    ],
+    posts: [],
+    jobs: [],
     comments: [],
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(null);
 
-  const handleApprove = (contentType, contentId) => {
-    setFlaggedContent((prev) => ({
-      ...prev,
-      [contentType]: prev[contentType].filter((item) => item.id !== contentId),
-    }));
-    toast.success('Content approved and flag removed');
+  useEffect(() => {
+    loadFlaggedContent();
+  }, []);
+
+  const loadFlaggedContent = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await adminService.getFlaggedContent();
+      if (response.success) {
+        setFlaggedContent(response.data || { posts: [], jobs: [], comments: [] });
+      } else {
+        setError(response.message || 'Failed to load flagged content');
+        toast.error(response.message || 'Failed to load flagged content');
+      }
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to load flagged content';
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRemove = (contentType, contentId) => {
-    setFlaggedContent((prev) => ({
-      ...prev,
-      [contentType]: prev[contentType].filter((item) => item.id !== contentId),
-    }));
-    toast.success('Content removed successfully');
+  const handleApprove = async (contentType, contentId) => {
+    setActionLoading(`approve-${contentId}`);
+    try {
+      const response = await adminService.approveContent(contentId, contentType);
+      if (response.success) {
+        setFlaggedContent((prev) => ({
+          ...prev,
+          [contentType]: prev[contentType].filter((item) => item.id !== contentId),
+        }));
+        toast.success('Content approved and flag removed');
+      } else {
+        toast.error(response.message || 'Failed to approve content');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to approve content');
+    } finally {
+      setActionLoading(null);
+    }
   };
 
-  const handleWarn = (contentType, contentId) => {
-    toast.success('Warning sent to user');
+  const handleRemove = async (contentType, contentId) => {
+    setActionLoading(`remove-${contentId}`);
+    try {
+      const response = await adminService.removeContent(contentId, contentType);
+      if (response.success) {
+        setFlaggedContent((prev) => ({
+          ...prev,
+          [contentType]: prev[contentType].filter((item) => item.id !== contentId),
+        }));
+        toast.success('Content removed successfully');
+      } else {
+        toast.error(response.message || 'Failed to remove content');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to remove content');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleWarn = async (contentType, contentId) => {
+    setActionLoading(`warn-${contentId}`);
+    try {
+      const response = await adminService.warnAuthor(contentId, contentType, 'Policy violation');
+      if (response.success) {
+        toast.success('Warning sent to user');
+      } else {
+        toast.error(response.message || 'Failed to send warning');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send warning');
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   const getContentIcon = (type) => {
@@ -127,9 +159,14 @@ const AdminModeration = () => {
               variant="outline"
               className="text-green-600 border-green-600 hover:bg-green-50"
               onClick={() => handleApprove(contentType, item.id)}
+              disabled={actionLoading === `approve-${item.id}`}
               data-testid={`approve-btn-${item.id}`}
             >
-              <CheckCircle className="w-4 h-4 mr-1" />
+              {actionLoading === `approve-${item.id}` ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <CheckCircle className="w-4 h-4 mr-1" />
+              )}
               Approve
             </Button>
             <Button
@@ -137,9 +174,14 @@ const AdminModeration = () => {
               variant="outline"
               className="text-yellow-600 border-yellow-600 hover:bg-yellow-50"
               onClick={() => handleWarn(contentType, item.id)}
+              disabled={actionLoading === `warn-${item.id}`}
               data-testid={`warn-btn-${item.id}`}
             >
-              <AlertTriangle className="w-4 h-4 mr-1" />
+              {actionLoading === `warn-${item.id}` ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 mr-1" />
+              )}
               Warn Author
             </Button>
             <Button
@@ -147,9 +189,14 @@ const AdminModeration = () => {
               variant="outline"
               className="text-red-600 border-red-600 hover:bg-red-50"
               onClick={() => handleRemove(contentType, item.id)}
+              disabled={actionLoading === `remove-${item.id}`}
               data-testid={`remove-btn-${item.id}`}
             >
-              <XCircle className="w-4 h-4 mr-1" />
+              {actionLoading === `remove-${item.id}` ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <XCircle className="w-4 h-4 mr-1" />
+              )}
               Remove
             </Button>
           </div>
@@ -173,14 +220,47 @@ const AdminModeration = () => {
               <p className="mt-2 opacity-90">Review and moderate flagged content on the platform</p>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Loading State */}
+            {loading && (
               <Card>
-                <CardContent className="pt-6">
-                  <div className="text-2xl font-bold text-red-600">{totalFlagged}</div>
-                  <p className="text-sm text-gray-600 mt-1">Total Flagged</p>
+                <CardContent className="py-12">
+                  <div className="flex flex-col items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+                    <p className="text-gray-600">Loading flagged content...</p>
+                  </div>
                 </CardContent>
               </Card>
+            )}
+
+            {/* Error State */}
+            {error && !loading && (
+              <Card className="border-red-200 bg-red-50">
+                <CardContent className="py-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <XCircle className="w-6 h-6 text-red-600" />
+                      <div>
+                        <p className="font-medium text-red-900">Failed to load flagged content</p>
+                        <p className="text-sm text-red-700 mt-1">{error}</p>
+                      </div>
+                    </div>
+                    <Button onClick={loadFlaggedContent} variant="outline" size="sm">
+                      Retry
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Stats */}
+            {!loading && !error && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold text-red-600">{totalFlagged}</div>
+                    <p className="text-sm text-gray-600 mt-1">Total Flagged</p>
+                  </CardContent>
+                </Card>
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold text-orange-600">{flaggedContent.posts.length}</div>
@@ -199,10 +279,12 @@ const AdminModeration = () => {
                   <p className="text-sm text-gray-600 mt-1">Comments</p>
                 </CardContent>
               </Card>
-            </div>
+              </div>
+            )}
 
             {/* Flagged Content */}
-            <Card>
+            {!loading && !error && (
+              <Card>
               <CardHeader>
                 <CardTitle>Flagged Content</CardTitle>
                 <CardDescription>Review reported content and take appropriate action</CardDescription>
@@ -269,6 +351,7 @@ const AdminModeration = () => {
                 </Tabs>
               </CardContent>
             </Card>
+            )}
           </div>
         </main>
       </div>

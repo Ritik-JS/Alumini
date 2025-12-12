@@ -39,6 +39,7 @@ import { mockEngagementAIService } from './mockEngagementAIService';
 import mockSkillRecommendationService from './mockSkillRecommendationService';
 import mockBadgeService from './mockBadgeService';
 import mockAnalyticsService from './mockAnalyticsService';
+import mockAdminService from './mockAdminService';
 
 // Import real API services
 import { apiAuth } from './apiAuth';
@@ -86,7 +87,7 @@ export const engagementAIService = USE_MOCK_DATA ? mockEngagementAIService : api
 export const skillRecommendationService = USE_MOCK_DATA ? mockSkillRecommendationService : apiSkillRecommendationService;
 export const badgeService = USE_MOCK_DATA ? mockBadgeService : apiBadgeService;
 export const analyticsService = USE_MOCK_DATA ? mockAnalyticsService : apiAnalyticsService;
-export const adminService = apiAdminService; // Admin service always uses real API (no mock)
+export const adminService = USE_MOCK_DATA ? mockAdminService : apiAdminService;
 
 // Export service mode for debugging
 export const isUsingMockData = USE_MOCK_DATA;

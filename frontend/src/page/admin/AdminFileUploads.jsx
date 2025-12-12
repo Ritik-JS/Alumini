@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, File, Image, FileText, Trash2, Download, ExternalLink } from 'lucide-react';
+import { Search, File, Image, FileText, Trash2, Download, ExternalLink, Loader2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { adminService } from '@/services';
 
 const AdminFileUploads = () => {
   const { user } = useAuth();
@@ -16,81 +17,41 @@ const AdminFileUploads = () => {
   const [filteredFiles, setFilteredFiles] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [fileTypeFilter, setFileTypeFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(null);
 
   useEffect(() => {
-    // Mock file uploads data
-    const mockFiles = [
-      {
-        id: '1',
-        user_id: '660e8400-e29b-41d4-a716-446655440001',
-        user_email: 'sarah.johnson@alumni.edu',
-        file_name: 'sarah-johnson-cv.pdf',
-        file_url: 'https://storage.example.com/cvs/sarah-johnson-cv.pdf',
-        file_type: 'cv',
-        file_size_kb: 256,
-        mime_type: 'application/pdf',
-        uploaded_at: new Date(Date.now() - 86400000).toISOString(),
-      },
-      {
-        id: '2',
-        user_id: '770e8400-e29b-41d4-a716-446655440002',
-        user_email: 'michael.chen@alumni.edu',
-        file_name: 'profile-photo.jpg',
-        file_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Michael',
-        file_type: 'photo',
-        file_size_kb: 128,
-        mime_type: 'image/jpeg',
-        uploaded_at: new Date(Date.now() - 172800000).toISOString(),
-      },
-      {
-        id: '3',
-        user_id: 'aa0e8400-e29b-41d4-a716-446655440005',
-        user_email: 'priya.patel@alumni.edu',
-        file_name: 'design-portfolio.pdf',
-        file_url: 'https://storage.example.com/cvs/priya-patel-portfolio.pdf',
-        file_type: 'cv',
-        file_size_kb: 1024,
-        mime_type: 'application/pdf',
-        uploaded_at: new Date(Date.now() - 259200000).toISOString(),
-      },
-      {
-        id: '4',
-        user_id: 'event-banner-1',
-        user_email: 'admin@alumni.edu',
-        file_name: 'career-fair-banner.png',
-        file_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87',
-        file_type: 'banner',
-        file_size_kb: 512,
-        mime_type: 'image/png',
-        uploaded_at: new Date(Date.now() - 345600000).toISOString(),
-      },
-      {
-        id: '5',
-        user_id: 'cc0e8400-e29b-41d4-a716-446655440007',
-        user_email: 'lisa.anderson@alumni.edu',
-        file_name: 'lisa-anderson-cv.pdf',
-        file_url: 'https://storage.example.com/cvs/lisa-anderson-cv.pdf',
-        file_type: 'cv',
-        file_size_kb: 384,
-        mime_type: 'application/pdf',
-        uploaded_at: new Date(Date.now() - 432000000).toISOString(),
-      },
-      {
-        id: '6',
-        user_id: 'capsule-img-1',
-        user_email: 'sarah.johnson@alumni.edu',
-        file_name: 'fullstack-tutorial.png',
-        file_url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085',
-        file_type: 'document',
-        file_size_kb: 256,
-        mime_type: 'image/png',
-        uploaded_at: new Date(Date.now() - 518400000).toISOString(),
-      },
-    ];
-
-    setFiles(mockFiles);
-    setFilteredFiles(mockFiles);
+    loadFiles();
   }, []);
+
+  const loadFiles = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await adminService.getAllFiles({ file_type: fileTypeFilter, search: searchQuery });
+      if (response.success) {
+        const filesData = response.data || [];
+        setFiles(filesData);
+        setFilteredFiles(filesData);
+      } else {
+        setError(response.message || 'Failed to load files');
+        toast.error(response.message || 'Failed to load files');
+      }
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to load files';
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!loading) {
+      loadFiles();
+    }
+  }, [searchQuery, fileTypeFilter]);
 
   useEffect(() => {
     let filtered = files;
@@ -110,10 +71,25 @@ const AdminFileUploads = () => {
     setFilteredFiles(filtered);
   }, [searchQuery, fileTypeFilter, files]);
 
-  const handleDeleteFile = (fileId) => {
-    if (window.confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
-      setFiles(files.filter((f) => f.id !== fileId));
-      toast.success('File deleted successfully');
+  const handleDeleteFile = async (fileId) => {
+    if (!window.confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeleteLoading(fileId);
+    try {
+      const response = await adminService.deleteFile(fileId);
+      if (response.success) {
+        setFiles(files.filter((f) => f.id !== fileId));
+        setFilteredFiles(filteredFiles.filter((f) => f.id !== fileId));
+        toast.success('File deleted successfully');
+      } else {
+        toast.error(response.message || 'Failed to delete file');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete file');
+    } finally {
+      setDeleteLoading(null);
     }
   };
 
@@ -187,8 +163,41 @@ const AdminFileUploads = () => {
               <p className="mt-2 opacity-90">Track and manage all uploaded files</p>
             </div>
 
+            {/* Loading State */}
+            {loading && (
+              <Card>
+                <CardContent className="py-12">
+                  <div className="flex flex-col items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+                    <p className="text-gray-600">Loading files...</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Error State */}
+            {error && !loading && (
+              <Card className="border-red-200 bg-red-50">
+                <CardContent className="py-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <XCircle className="w-6 h-6 text-red-600" />
+                      <div>
+                        <p className="font-medium text-red-900">Failed to load files</p>
+                        <p className="text-sm text-red-700 mt-1">{error}</p>
+                      </div>
+                    </div>
+                    <Button onClick={loadFiles} variant="outline" size="sm">
+                      Retry
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {!loading && !error && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {stats.map((stat, index) => {
                 const Icon = stat.icon;
                 return (
@@ -205,10 +214,12 @@ const AdminFileUploads = () => {
                   </Card>
                 );
               })}
-            </div>
+              </div>
+            )}
 
             {/* Files List */}
-            <Card>
+            {!loading && !error && (
+              <Card>
               <CardHeader>
                 <CardTitle>Uploaded Files</CardTitle>
                 <CardDescription>All files uploaded to the platform</CardDescription>
@@ -295,9 +306,14 @@ const AdminFileUploads = () => {
                                   variant="outline"
                                   className="text-red-600"
                                   onClick={() => handleDeleteFile(file.id)}
+                                  disabled={deleteLoading === file.id}
                                   data-testid={`delete-file-${file.id}`}
                                 >
-                                  <Trash2 className="w-4 h-4" />
+                                  {deleteLoading === file.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="w-4 h-4" />
+                                  )}
                                 </Button>
                               </div>
                             </td>
@@ -316,6 +332,7 @@ const AdminFileUploads = () => {
                 </div>
               </CardContent>
             </Card>
+            )}
           </div>
         </main>
       </div>
