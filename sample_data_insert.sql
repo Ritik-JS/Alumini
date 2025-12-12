@@ -16,9 +16,10 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ============================================================================
 
 -- Insert Users (10 users: 1 admin, 4 alumni, 3 students, 2 recruiters)
+-- NOTE: Admin default password is "Admin@123" - CHANGE THIS IN PRODUCTION!
 INSERT INTO users (id, email, password_hash, role, is_verified, is_active, last_login, created_at, updated_at) VALUES
--- Admin
-('550e8400-e29b-41d4-a716-446655440000', 'admin@alumni.edu', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO', 'admin', TRUE, TRUE, '2024-12-28 10:30:00', '2023-01-15 08:00:00', '2024-12-28 10:30:00'),
+-- Admin (email: admin@alumni.edu, password: Admin@123)
+('550e8400-e29b-41d4-a716-446655440000', 'admin@alumni.edu', '$2b$12$PUNLRB75H1i0LQRbF1BPFeYR8ZMdAL6muXyddDD2zA8xAccQtEaxq', 'admin', TRUE, TRUE, '2024-12-28 10:30:00', '2023-01-15 08:00:00', '2024-12-28 10:30:00'),
 
 -- Alumni (4 users)
 ('660e8400-e29b-41d4-a716-446655440001', 'sarah.johnson@alumni.edu', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYzS.d7FMUO', 'alumni', TRUE, TRUE, '2024-12-27 14:20:00', '2023-03-20 09:15:00', '2024-12-27 14:20:00'),
