@@ -46,8 +46,8 @@ const AdminEvents = () => {
       setLoading(true);
       setError(null);
       const result = await adminService.getAllEvents();
-      setEvents(result.events || []);
-      setFilteredEvents(result.events || []);
+      setEvents(result.data || []);
+      setFilteredEvents(result.data || []);
     } catch (error) {
       console.error('Error loading events:', error);
       setError('Unable to connect to server. Please try again later.');
