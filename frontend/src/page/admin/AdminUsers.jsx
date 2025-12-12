@@ -257,7 +257,7 @@ const AdminUsers = () => {
               {stats.map((stat, index) => (
                 <Card key={index}>
                   <CardContent className="pt-6">
-                    <div className="text-2xl font-bold {stat.color}">{stat.value}</div>
+                    <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
                     <p className="text-sm text-gray-600 mt-1">{stat.label}</p>
                   </CardContent>
                 </Card>
