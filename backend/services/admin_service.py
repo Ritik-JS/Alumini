@@ -552,6 +552,48 @@ class AdminService:
                 
                 return {"message": "User deleted successfully", "user_id": user_id}
     
+    @staticmethod
+    async def ban_user(user_id: str, admin_id: str, reason: str = "") -> Dict[str, Any]:
+        """Ban a user account (alias for suspend)"""
+        return await AdminService.suspend_user(user_id, admin_id, reason)
+    
+    @staticmethod
+    async def reset_password(user_id: str, admin_id: str) -> Dict[str, Any]:
+        """Send password reset email to user"""
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cursor:
+                # Check if user exists
+                await cursor.execute("SELECT id, email FROM users WHERE id = %s", (user_id,))
+                user = await cursor.fetchone()
+                if not user:
+                    raise ValueError("User not found")
+                
+                # Log admin action
+                await cursor.execute("""
+                    INSERT INTO admin_actions (
+                        admin_id, action_type, target_type, target_id, description
+                    ) VALUES (%s, %s, %s, %s, %s)
+                """, (
+                    admin_id, 'user_management', 'user', user_id,
+                    'Triggered password reset'
+                ))
+                await conn.commit()
+                
+                # Send notification to user
+                await cursor.callproc('send_notification', (
+                    user_id, 'system', 'Password Reset Requested',
+                    'A password reset has been requested for your account by admin. Please check your email for reset instructions.',
+                    '/auth/reset-password', 'high'
+                ))
+                await conn.commit()
+                
+                return {
+                    "message": "Password reset email sent successfully",
+                    "user_id": user_id,
+                    "email": user['email']
+                }
+    
     # ========================================================================
     # CONTENT MODERATION METHODS
     # ========================================================================

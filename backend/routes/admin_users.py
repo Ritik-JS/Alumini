@@ -168,3 +168,54 @@ async def activate_user(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{user_id}/ban")
+async def ban_user(
+    user_id: str,
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Ban a user account
+    
+    **Admin only**
+    
+    Similar to suspend but specifically for banning users
+    """
+    try:
+        # Extract reason if provided in request body
+        reason = "Banned by administrator"
+        result = await AdminService.ban_user(
+            user_id=user_id,
+            admin_id=current_user['id'],
+            reason=reason
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{user_id}/reset-password")
+async def reset_user_password(
+    user_id: str,
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Trigger password reset for a user
+    
+    **Admin only**
+    
+    Sends a password reset notification to the user
+    """
+    try:
+        result = await AdminService.reset_password(
+            user_id=user_id,
+            admin_id=current_user['id']
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

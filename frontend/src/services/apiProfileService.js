@@ -191,7 +191,7 @@ class ApiProfileService {
   // Ban user (Admin only)
   async banUser(userId, reason = '') {
     try {
-      const response = await axios.put(`/api/admin/users/${userId}/ban`, { reason });
+      const response = await axios.post(`/api/admin/users/${userId}/ban`, { reason });
       return response.data;
     } catch (error) {
       console.error('Error banning user:', error);
