@@ -47,8 +47,8 @@ const AdminUsers = () => {
       setLoading(true);
       setError(null);
       const result = await adminService.getAllUsers();
-      setUsers(result.users || []);
-      setFilteredUsers(result.users || []);
+      setUsers(result.data || []);
+      setFilteredUsers(result.data || []);
     } catch (error) {
       console.error('Error loading users:', error);
       setError('Unable to connect to server. Please try again later.');
@@ -166,7 +166,7 @@ const AdminUsers = () => {
   const handleViewUserDetails = async (userId) => {
     try {
       const result = await adminService.getUserDetails(userId);
-      setSelectedUserDetails(result.user);
+      setSelectedUserDetails(result.data);
       setShowUserModal(true);
     } catch (error) {
       console.error('Error loading user details:', error);
