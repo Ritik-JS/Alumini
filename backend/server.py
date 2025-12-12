@@ -48,6 +48,12 @@ from routes.analytics import router as analytics_router
 from routes.admin_users import router as admin_users_router
 from routes.admin_content import router as admin_content_router
 from routes.admin_settings import router as admin_settings_router
+from routes.admin_jobs import router as admin_jobs_router
+from routes.admin_events import router as admin_events_router
+from routes.admin_analytics import router as admin_analytics_router
+from routes.admin_mentorship import router as admin_mentorship_router
+from routes.admin_badges import router as admin_badges_router
+from routes.admin_notifications import router as admin_notifications_router
 
 # Import Phase 8 routes - Smart Algorithms & Matching
 from routes.matching import router as matching_router
@@ -226,6 +232,12 @@ app.include_router(analytics_router)
 app.include_router(admin_users_router)
 app.include_router(admin_content_router)
 app.include_router(admin_settings_router)
+app.include_router(admin_jobs_router)
+app.include_router(admin_events_router)
+app.include_router(admin_analytics_router)
+app.include_router(admin_mentorship_router)
+app.include_router(admin_badges_router)
+app.include_router(admin_notifications_router)
 
 # Include Phase 8 routes - Smart Algorithms & Recommendations
 app.include_router(matching_router)
