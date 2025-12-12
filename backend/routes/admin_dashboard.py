@@ -20,7 +20,7 @@ async def list_all_users(
     search: Optional[str] = Query(None, description="Search by email or name"),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    current_user: UserResponse = Depends(require_admin)
+    current_user: dict = Depends(require_admin)
 ):
     """
     Get all users with filters and pagination
@@ -50,7 +50,7 @@ async def list_all_users(
 @router.get("/{user_id}")
 async def get_user_detail(
     user_id: str,
-    current_user: UserResponse = Depends(require_admin)
+    current_user: dict = Depends(require_admin)
 ):
     """
     Get detailed information for a specific user
@@ -74,7 +74,7 @@ async def get_user_detail(
 async def update_user(
     user_id: str,
     updates: UserUpdateRequest,
-    current_user: UserResponse = Depends(require_admin)
+    current_user: dict = Depends(require_admin)
 ):
     """
     Update user information
@@ -90,7 +90,7 @@ async def update_user(
         updates_dict = updates.dict(exclude_unset=True)
         result = await AdminService.update_user(
             user_id=user_id,
-            admin_id=current_user.id,
+            admin_id=current_user['id'],
             updates=updates_dict
         )
         return result
@@ -103,7 +103,7 @@ async def update_user(
 @router.delete("/{user_id}")
 async def delete_user(
     user_id: str,
-    current_user: UserResponse = Depends(require_admin)
+    current_user: dict = Depends(require_admin)
 ):
     """
     Delete user account (soft delete - deactivates account)
@@ -113,7 +113,7 @@ async def delete_user(
     try:
         result = await AdminService.delete_user(
             user_id=user_id,
-            admin_id=current_user.id
+            admin_id=current_user['id']
         )
         return result
     except ValueError as e:
@@ -126,7 +126,7 @@ async def delete_user(
 async def suspend_user(
     user_id: str,
     request: UserSuspendRequest,
-    current_user: UserResponse = Depends(require_admin)
+    current_user: dict = Depends(require_admin)
 ):
     """
     Suspend a user account
@@ -138,7 +138,7 @@ async def suspend_user(
     try:
         result = await AdminService.suspend_user(
             user_id=user_id,
-            admin_id=current_user.id,
+            admin_id=current_user['id'],
             reason=request.reason
         )
         return result
@@ -151,7 +151,7 @@ async def suspend_user(
 @router.post("/{user_id}/activate")
 async def activate_user(
     user_id: str,
-    current_user: UserResponse = Depends(require_admin)
+    current_user: dict = Depends(require_admin)
 ):
     """
     Activate a suspended user account
@@ -161,7 +161,7 @@ async def activate_user(
     try:
         result = await AdminService.activate_user(
             user_id=user_id,
-            admin_id=current_user.id
+            admin_id=current_user['id']
         )
         return result
     except ValueError as e:

@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/admin/settings", tags=["Admin - System Settings"
 
 @router.get("", response_model=SystemConfigListResponse)
 async def get_system_settings(
-    current_user: UserResponse = Depends(require_admin)
+    current_user: dict = Depends(require_admin)
 ):
     """
     Get all system configuration settings
@@ -40,7 +40,7 @@ async def get_system_settings(
 @router.put("")
 async def update_system_setting(
     update: SystemConfigUpdate,
-    current_user: UserResponse = Depends(require_admin)
+    current_user: dict = Depends(require_admin)
 ):
     """
     Update a system configuration setting
@@ -53,7 +53,7 @@ async def update_system_setting(
         result = await AdminService.update_system_setting(
             config_key=update.config_key,
             config_value=update.config_value,
-            admin_id=current_user.id,
+            admin_id=current_user['id'],
             description=update.description
         )
         return result
