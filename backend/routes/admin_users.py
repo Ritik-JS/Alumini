@@ -272,42 +272,127 @@ async def reset_user_password(user_id: str, current_user: dict = Depends(get_cur
 
 
 @router.post("/{user_id}/issue-card", dependencies=[Depends(require_admin)])
-async def issue_alumni_card(user_id: str, current_user: dict = Depends(get_current_user)):
+def issue_alumni_card(user_id: str, current_user: dict = Depends(get_current_user)):
     """Issue/generate alumni card for a specific user (Admin only)"""
     try:
-        from database.connection import get_db_pool
-        from services.alumni_card_service import AlumniCardService
+        import hashlib
+        import secrets
+        from datetime import datetime, timedelta
         
-        pool = await get_db_pool()
-        card_service = AlumniCardService()
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
         
-        async with pool.acquire() as conn:
-            # Check if user exists
-            async with conn.cursor() as cursor:
-                await cursor.execute("SELECT id, email, role FROM users WHERE id = %s", (user_id,))
-                user = await cursor.fetchone()
-                
-                if not user:
-                    raise HTTPException(status_code=404, detail="User not found")
-            
-            # Generate card
-            card = await card_service.generate_alumni_card(conn, user_id)
-            
-            # Log admin action
-            async with conn.cursor() as cursor:
-                await cursor.execute("""
-                    INSERT INTO admin_actions (admin_id, action_type, target_type, target_id, description)
-                    VALUES (%s, 'card_management', 'alumni_card', %s, 'Issued alumni card')
-                """, (current_user['id'], card['card_id']))
-                await conn.commit()
-            
-            logger.info(f"Admin {current_user['id']} issued alumni card for user {user_id}")
-            
+        # Check if user exists
+        cursor.execute("SELECT id, email, role FROM users WHERE id = %s", (user_id,))
+        user = cursor.fetchone()
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Check if card already exists
+        cursor.execute("""
+            SELECT id, card_number, qr_code_data, is_active
+            FROM alumni_cards
+            WHERE user_id = %s
+        """, (user_id,))
+        existing_card = cursor.fetchone()
+        
+        if existing_card and existing_card['is_active']:
+            # Card already exists and is active
+            cursor.close()
+            connection.close()
             return {
                 "success": True,
-                "message": "Alumni card issued successfully",
-                "data": card
+                "message": "Alumni card already exists",
+                "data": {
+                    "card_id": existing_card['id'],
+                    "card_number": existing_card['card_number'],
+                    "user_id": user_id
+                }
             }
+        
+        # Get user profile details
+        cursor.execute("""
+            SELECT 
+                u.email, u.role,
+                ap.name, ap.photo_url, ap.batch_year
+            FROM users u
+            LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
+            WHERE u.id = %s
+        """, (user_id,))
+        user_data = cursor.fetchone()
+        
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User profile not found")
+        
+        batch_year = user_data['batch_year'] or datetime.now().year
+        
+        # Generate unique card number
+        card_number = f"ALU{batch_year}{secrets.token_hex(4).upper()}"
+        
+        # Ensure card number is unique
+        cursor.execute("SELECT id FROM alumni_cards WHERE card_number = %s", (card_number,))
+        while cursor.fetchone():
+            card_number = f"ALU{batch_year}{secrets.token_hex(4).upper()}"
+            cursor.execute("SELECT id FROM alumni_cards WHERE card_number = %s", (card_number,))
+        
+        # Generate QR code data
+        qr_data = {
+            "user_id": user_id,
+            "card_number": card_number,
+            "email": user_data['email'],
+            "issued": datetime.now().isoformat()
+        }
+        import json
+        qr_code_data = json.dumps(qr_data)
+        
+        # Set dates
+        issue_date = datetime.now().date()
+        expiry_date = issue_date + timedelta(days=5*365)
+        
+        # Insert or update card
+        if existing_card:
+            # Update existing card
+            cursor.execute("""
+                UPDATE alumni_cards
+                SET card_number = %s, qr_code_data = %s,
+                    issue_date = %s, expiry_date = %s, is_active = TRUE,
+                    updated_at = NOW()
+                WHERE user_id = %s
+            """, (card_number, qr_code_data, issue_date, expiry_date, user_id))
+            card_id = existing_card['id']
+        else:
+            # Insert new card
+            card_id = str(secrets.token_hex(16))
+            cursor.execute("""
+                INSERT INTO alumni_cards 
+                (id, user_id, card_number, qr_code_data, issue_date, expiry_date, is_active)
+                VALUES (%s, %s, %s, %s, %s, %s, TRUE)
+            """, (card_id, user_id, card_number, qr_code_data, issue_date, expiry_date))
+        
+        # Log admin action
+        cursor.execute("""
+            INSERT INTO admin_actions (admin_id, action_type, target_type, target_id, description)
+            VALUES (%s, 'card_management', 'alumni_card', %s, 'Issued alumni card')
+        """, (current_user['id'], card_id))
+        
+        connection.commit()
+        cursor.close()
+        connection.close()
+        
+        logger.info(f"Admin {current_user['id']} issued alumni card for user {user_id}")
+        
+        return {
+            "success": True,
+            "message": "Alumni card issued successfully",
+            "data": {
+                "card_id": card_id,
+                "card_number": card_number,
+                "user_id": user_id,
+                "issue_date": issue_date.isoformat(),
+                "expiry_date": expiry_date.isoformat()
+            }
+        }
     
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
@@ -316,44 +401,44 @@ async def issue_alumni_card(user_id: str, current_user: dict = Depends(get_curre
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{user_id}/card-status", dependencies=[Depends(require_admin)])
-async def get_user_card_status(user_id: str):
+def get_user_card_status(user_id: str):
     """Get alumni card status for a specific user"""
     try:
-        from database.connection import get_db_pool
+        connection = get_db_connection()
+        cursor = connection.cursor()
         
-        pool = await get_db_pool()
+        cursor.execute("""
+            SELECT 
+                id, card_number, issue_date, expiry_date, 
+                is_active, verification_count, last_verified
+            FROM alumni_cards
+            WHERE user_id = %s
+        """, (user_id,))
+        card = cursor.fetchone()
         
-        async with pool.acquire() as conn:
-            async with conn.cursor() as cursor:
-                await cursor.execute("""
-                    SELECT 
-                        id, card_number, issue_date, expiry_date, 
-                        is_active, verification_count, last_verified
-                    FROM alumni_cards
-                    WHERE user_id = %s
-                """, (user_id,))
-                card = await cursor.fetchone()
-                
-                if not card:
-                    return {
-                        "success": True,
-                        "has_card": False,
-                        "data": None
-                    }
-                
-                return {
-                    "success": True,
-                    "has_card": True,
-                    "data": {
-                        "card_id": str(card[0]),
-                        "card_number": card[1],
-                        "issue_date": card[2].isoformat() if card[2] else None,
-                        "expiry_date": card[3].isoformat() if card[3] else None,
-                        "is_active": card[4],
-                        "verification_count": card[5],
-                        "last_verified": card[6].isoformat() if card[6] else None
-                    }
-                }
+        cursor.close()
+        connection.close()
+        
+        if not card:
+            return {
+                "success": True,
+                "has_card": False,
+                "data": None
+            }
+        
+        return {
+            "success": True,
+            "has_card": True,
+            "data": {
+                "card_id": str(card[0]),
+                "card_number": card[1],
+                "issue_date": card[2].isoformat() if card[2] else None,
+                "expiry_date": card[3].isoformat() if card[3] else None,
+                "is_active": card[4],
+                "verification_count": card[5],
+                "last_verified": card[6].isoformat() if card[6] else None
+            }
+        }
     
     except Exception as e:
         logger.error(f"Error getting card status for user {user_id}: {str(e)}")
