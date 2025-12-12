@@ -5,7 +5,7 @@ class ApiLeaderboardService {
   // Get leaderboard
   async getLeaderboard(filters = {}) {
     try {
-      const response = await axios.get('/api/leaderboard', { params: filters });
+      const response = await axios.get('/api/engagement/leaderboard', { params: filters });
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -25,7 +25,7 @@ class ApiLeaderboardService {
   // Get all badges
   async getAllBadges() {
     try {
-      const response = await axios.get('/api/badges');
+      const response = await axios.get('/api/engagement/badges');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
@@ -35,7 +35,7 @@ class ApiLeaderboardService {
   // Get user badges
   async getUserBadges(userId) {
     try {
-      const response = await axios.get(`/api/badges/user/${userId}`);
+      const response = await axios.get('/api/engagement/my-badges');
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
