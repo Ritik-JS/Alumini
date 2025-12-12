@@ -50,7 +50,7 @@ const AdminBadges = () => {
       setLoading(true);
       setError(null);
       const result = await adminService.getAllBadges();
-      setBadges(result.badges || []);
+      setBadges(result.data || []);
     } catch (error) {
       console.error('Error loading badges:', error);
       setError('Unable to connect to server. Please try again later.');

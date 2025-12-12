@@ -64,8 +64,8 @@ const AdminNotifications = () => {
       setLoading(true);
       setError(null);
       const result = await adminService.getAllNotifications();
-      setNotifications(result.notifications || []);
-      setFilteredNotifications(result.notifications || []);
+      setNotifications(result.data || []);
+      setFilteredNotifications(result.data || []);
     } catch (error) {
       console.error('Error loading notifications:', error);
       setError('Unable to connect to server. Please try again later.');
