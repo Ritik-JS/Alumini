@@ -1,5 +1,5 @@
 """Mentorship management routes"""
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from typing import Optional
 import aiomysql
 
@@ -234,6 +234,15 @@ async def send_mentorship_request(
         )
 
 
+# Compatibility: frontend expects plural '/mentorship/requests' (POST)
+@router.post("/mentorship/requests", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def create_mentorship_request_alias(
+    request_data: MentorshipRequestCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    return await send_mentorship_request(request_data, current_user)
+
+
 @router.post("/mentorship/{request_id}/accept", response_model=dict)
 async def accept_mentorship_request(
     request_id: str,
@@ -262,6 +271,15 @@ async def accept_mentorship_request(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to accept mentorship request"
         )
+
+
+# Compatibility: frontend uses PUT on '/mentorship/requests/{requestId}/accept'
+@router.put("/mentorship/requests/{request_id}/accept", response_model=dict)
+async def accept_mentorship_request_alias(
+    request_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    return await accept_mentorship_request(request_id, current_user)
 
 
 @router.post("/mentorship/{request_id}/reject", response_model=dict)
@@ -297,6 +315,16 @@ async def reject_mentorship_request(
         )
 
 
+# Compatibility: frontend uses PUT on '/mentorship/requests/{requestId}/reject'
+@router.put("/mentorship/requests/{request_id}/reject", response_model=dict)
+async def reject_mentorship_request_alias(
+    request_id: str,
+    rejection_data: RejectMentorshipRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    return await reject_mentorship_request(request_id, rejection_data, current_user)
+
+
 @router.get("/mentorship/requests/received", response_model=dict)
 async def get_received_requests(
     status: Optional[str] = Query(None, description="Filter by status: pending, accepted, rejected"),
@@ -320,6 +348,15 @@ async def get_received_requests(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch received requests"
         )
+
+
+# Compatibility: frontend expects '/mentorship/received-requests'
+@router.get("/mentorship/received-requests", response_model=dict)
+async def get_received_requests_alias(
+    status: Optional[str] = Query(None, description="Filter by status: pending, accepted, rejected"),
+    current_user: dict = Depends(get_current_user)
+):
+    return await get_received_requests(status, current_user)
 
 
 @router.get("/mentorship/requests/sent", response_model=dict)
@@ -448,6 +485,31 @@ async def schedule_session(
         )
 
 
+# Compatibility: frontend posts to '/mentorship/sessions' with mentorship_id in body
+@router.post("/mentorship/sessions", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def create_session_alias(
+    session_payload: dict = Body(...),
+    current_user: dict = Depends(get_current_user)
+):
+    mentorship_id = (
+        session_payload.get('mentorship_id')
+        or session_payload.get('mentorshipId')
+        or session_payload.get('mentorship_request_id')
+        or session_payload.get('mentorshipRequestId')
+    )
+    if not mentorship_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="mentorship_id is required in payload")
+
+    # Build Pydantic model if possible
+    try:
+        session_obj = MentorshipSessionCreate(**session_payload)
+    except Exception:
+        # Fallback: pass payload directly if model construction fails
+        session_obj = session_payload
+
+    return await schedule_session(mentorship_id, session_obj, current_user)
+
+
 @router.get("/mentorship/sessions", response_model=dict)
 async def get_sessions(
     status: Optional[str] = Query(None, description="Filter by status: scheduled, completed, cancelled, missed"),
@@ -541,6 +603,15 @@ async def complete_session(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to complete session"
         )
+
+
+# Compatibility: frontend uses PUT for completing sessions
+@router.put("/mentorship/sessions/{session_id}/complete", response_model=dict)
+async def complete_session_alias(
+    session_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    return await complete_session(session_id, current_user)
 
 
 @router.post("/mentorship/sessions/{session_id}/feedback", response_model=dict)

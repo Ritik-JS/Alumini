@@ -66,7 +66,7 @@ class ApiMentorshipService {
   async rejectRequest(requestId, reason = '') {
     try {
       const response = await axios.put(`/api/mentorship/requests/${requestId}/reject`, {
-        reason,
+        rejection_reason: reason,
       });
       return response.data;
     } catch (error) {
@@ -128,6 +128,116 @@ class ApiMentorshipService {
     } catch (error) {
       return { success: false, message: error.message };
     }
+  }
+
+  // ========== WRAPPER METHODS (For Dashboard Compatibility) ==========
+
+  // Get mentor by user ID (wrapper for checking mentor status)
+  async getMentorByUserId(userId) {
+    try {
+      const response = await axios.get(`/api/mentors/${userId}`);
+      return { success: response.status === 200, data: response.data };
+    } catch (error) {
+      return { success: false, data: null };
+    }
+  }
+
+  // Get student requests (wrapper for getMyRequests)
+  async getStudentRequests(userId) {
+    try {
+      const response = await axios.get('/api/mentorship/my-requests');
+      return {
+        success: response.data.success,
+        data: response.data.data?.sent || response.data.data || [],
+      };
+    } catch (error) {
+      return { success: false, data: [], message: error.message };
+    }
+  }
+
+  // Get active mentees (wrapper for mentor view)
+  async getActiveMentees(userId) {
+    try {
+      const response = await axios.get('/api/mentorship/active');
+      return {
+        success: response.data.success,
+        data: response.data.data || [],
+      };
+    } catch (error) {
+      return { success: false, data: [], message: error.message };
+    }
+  }
+
+  // Get mentor requests received (wrapper)
+  async getMentorRequests(userId) {
+    try {
+      const response = await axios.get('/api/mentorship/received-requests');
+      return {
+        success: response.data.success,
+        data: response.data.data || [],
+      };
+    } catch (error) {
+      return { success: false, data: [], message: error.message };
+    }
+  }
+
+  // Get active mentorships
+  async getActiveMentorships(userId) {
+    try {
+      const response = await axios.get('/api/mentorship/active');
+      return {
+        success: response.data.success,
+        data: response.data.data || [],
+      };
+    } catch (error) {
+      return { success: false, data: [], message: error.message };
+    }
+  }
+
+  // Get upcoming sessions
+  async getUpcomingSessions(userId) {
+    try {
+      const response = await axios.get('/api/mentorship/sessions?status=scheduled');
+      return {
+        success: response.data.success,
+        data: response.data.data || [],
+      };
+    } catch (error) {
+      return { success: false, data: [], message: error.message };
+    }
+  }
+
+  // Get past sessions
+  async getPastSessions(userId) {
+    try {
+      const response = await axios.get('/api/mentorship/sessions?status=completed');
+      return {
+        success: response.data.success,
+        data: response.data.data || [],
+      };
+    } catch (error) {
+      return { success: false, data: [], message: error.message };
+    }
+  }
+
+  // Cancel mentorship request
+  async cancelMentorshipRequest(requestId) {
+    try {
+      // Backend doesn't have a cancel endpoint, return error
+      return { success: false, message: 'Cancel not implemented on backend' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  // Acceptance mentorship request
+  async acceptMentorshipRequest(requestId) {
+    return this.acceptRequest(requestId);
+  }
+
+  // Reject mentorship request
+  async rejectMentorshipRequest(requestId, reason) {
+    return this.rejectRequest(requestId, reason);
   }
 
   // ========== ADMIN METHODS ==========

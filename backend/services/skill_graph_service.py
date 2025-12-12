@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 # AI/ML imports for Phase 10.3
 try:
+    # Import libraries but DO NOT load large models at import-time
     from sentence_transformers import SentenceTransformer
     import faiss
     EMBEDDINGS_AVAILABLE = True
@@ -30,25 +31,28 @@ class SkillGraphService:
         self.embedding_model = None
         self.faiss_index = None
         self.dimension = 384  # MiniLM embedding dimension
-        
-        if EMBEDDINGS_AVAILABLE:
-            try:
-                # Load sentence transformer model for embeddings
-                self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-                logger.info("Sentence transformer model loaded successfully")
-            except Exception as e:
-                logger.error(f"Failed to load embedding model: {str(e)}")
-                self.embedding_model = None
+        # Note: model instantiation is intentionally deferred to avoid
+        # blocking application startup while downloading model files.
+        # The model will be initialized lazily when embeddings are first needed.
     
     async def generate_embeddings(self, db_conn, skills: List[str]) -> Dict[str, List[float]]:
         """
         Generate 384-dimensional embeddings for skills using sentence-transformers
         Phase 10.3: Core embedding generation
         """
-        if not self.embedding_model:
-            logger.warning("Embedding model not available, skipping embedding generation")
+        # Initialize embedding model lazily if libraries are available
+        if not EMBEDDINGS_AVAILABLE:
+            logger.warning("Embedding libraries not available, skipping embedding generation")
             return {}
-        
+
+        if self.embedding_model is None:
+            try:
+                self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+                logger.info("Sentence transformer model loaded successfully (lazy)")
+            except Exception as e:
+                logger.error(f"Failed to load embedding model lazily: {str(e)}")
+                return {}
+
         try:
             # Generate embeddings
             embeddings = self.embedding_model.encode(skills, show_progress_bar=False)

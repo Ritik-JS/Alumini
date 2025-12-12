@@ -16,18 +16,14 @@ class EmailService:
     
     def __init__(self):
         self.use_mock = USE_MOCK_EMAIL
-        if not self.use_mock:
-            try:
-                from sendgrid import SendGridAPIClient
-                from sendgrid.helpers.mail import Mail
-                self.sg_client = SendGridAPIClient(SENDGRID_API_KEY)
-                self.Mail = Mail
-                logger.info("SendGrid email service initialized")
-            except ImportError:
-                logger.warning("SendGrid not installed, using mock email service")
-                self.use_mock = True
-        else:
+        # Defer SendGrid import/initialization until first use to avoid
+        # blocking during application startup if SendGrid import hangs.
+        self.sg_client = None
+        self.Mail = None
+        if self.use_mock:
             logger.info("Mock email service initialized (no SendGrid API key)")
+        else:
+            logger.info("SendGrid client will be initialized on first send")
     
     async def send_verification_email(self, to_email: str, otp_code: str) -> bool:
         """Send email verification OTP"""
@@ -90,6 +86,18 @@ class EmailService:
     async def _send_sendgrid_email(self, to_email: str, subject: str, html_content: str) -> bool:
         """Send email using SendGrid"""
         try:
+            # Initialize SendGrid client lazily
+            if not self.sg_client or not self.Mail:
+                try:
+                    from sendgrid import SendGridAPIClient
+                    from sendgrid.helpers.mail import Mail
+                    self.sg_client = SendGridAPIClient(SENDGRID_API_KEY)
+                    self.Mail = Mail
+                    logger.info("SendGrid client initialized")
+                except Exception as e:
+                    logger.error(f"Failed to initialize SendGrid client: {e}")
+                    return False
+
             message = self.Mail(
                 from_email=FROM_EMAIL,
                 to_emails=to_email,

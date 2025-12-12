@@ -460,20 +460,21 @@ class MentorshipService:
                     where_clause += " AND mr.status = %s"
                     values.append(status)
                 
+                # Use LEFT JOINs since students may not have alumni_profiles
                 query = f"""
                 SELECT 
                     mr.*,
-                    ap_student.name as student_name,
+                    COALESCE(ap_student.name, u_student.email) as student_name,
                     u_student.email as student_email,
                     ap_student.photo_url as student_photo,
                     ap_mentor.name as mentor_name,
                     u_mentor.email as mentor_email,
                     ap_mentor.photo_url as mentor_photo
                 FROM mentorship_requests mr
-                JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
-                JOIN users u_student ON mr.student_id = u_student.id
-                JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
-                JOIN users u_mentor ON mr.mentor_id = u_mentor.id
+                LEFT JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
+                LEFT JOIN users u_student ON mr.student_id = u_student.id
+                LEFT JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
+                LEFT JOIN users u_mentor ON mr.mentor_id = u_mentor.id
                 {where_clause}
                 ORDER BY mr.requested_at DESC
                 """
@@ -496,20 +497,21 @@ class MentorshipService:
                     where_clause += " AND mr.status = %s"
                     values.append(status)
                 
+                # Use LEFT JOINs since both students and mentors may not have alumni_profiles
                 query = f"""
                 SELECT 
                     mr.*,
-                    ap_student.name as student_name,
+                    COALESCE(ap_student.name, u_student.email) as student_name,
                     u_student.email as student_email,
                     ap_student.photo_url as student_photo,
-                    ap_mentor.name as mentor_name,
+                    COALESCE(ap_mentor.name, u_mentor.email) as mentor_name,
                     u_mentor.email as mentor_email,
                     ap_mentor.photo_url as mentor_photo
                 FROM mentorship_requests mr
-                JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
-                JOIN users u_student ON mr.student_id = u_student.id
-                JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
-                JOIN users u_mentor ON mr.mentor_id = u_mentor.id
+                LEFT JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
+                LEFT JOIN users u_student ON mr.student_id = u_student.id
+                LEFT JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
+                LEFT JOIN users u_mentor ON mr.mentor_id = u_mentor.id
                 {where_clause}
                 ORDER BY mr.requested_at DESC
                 """
@@ -525,20 +527,21 @@ class MentorshipService:
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
+                # Use LEFT JOINs to support both alumni and student users
                 query = """
                 SELECT 
                     mr.*,
-                    ap_student.name as student_name,
+                    COALESCE(ap_student.name, u_student.email) as student_name,
                     u_student.email as student_email,
                     ap_student.photo_url as student_photo,
-                    ap_mentor.name as mentor_name,
+                    COALESCE(ap_mentor.name, u_mentor.email) as mentor_name,
                     u_mentor.email as mentor_email,
                     ap_mentor.photo_url as mentor_photo
                 FROM mentorship_requests mr
-                JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
-                JOIN users u_student ON mr.student_id = u_student.id
-                JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
-                JOIN users u_mentor ON mr.mentor_id = u_mentor.id
+                LEFT JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
+                LEFT JOIN users u_student ON mr.student_id = u_student.id
+                LEFT JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
+                LEFT JOIN users u_mentor ON mr.mentor_id = u_mentor.id
                 WHERE (mr.student_id = %s OR mr.mentor_id = %s) AND mr.status = 'accepted'
                 ORDER BY mr.accepted_at DESC
                 """
@@ -554,20 +557,21 @@ class MentorshipService:
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
+                # Use LEFT JOINs to support both alumni and student users
                 query = """
                 SELECT 
                     mr.*,
-                    ap_student.name as student_name,
+                    COALESCE(ap_student.name, u_student.email) as student_name,
                     u_student.email as student_email,
                     ap_student.photo_url as student_photo,
-                    ap_mentor.name as mentor_name,
+                    COALESCE(ap_mentor.name, u_mentor.email) as mentor_name,
                     u_mentor.email as mentor_email,
                     ap_mentor.photo_url as mentor_photo
                 FROM mentorship_requests mr
-                JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
-                JOIN users u_student ON mr.student_id = u_student.id
-                JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
-                JOIN users u_mentor ON mr.mentor_id = u_mentor.id
+                LEFT JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
+                LEFT JOIN users u_student ON mr.student_id = u_student.id
+                LEFT JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
+                LEFT JOIN users u_mentor ON mr.mentor_id = u_mentor.id
                 WHERE mr.id = %s
                 """
                 
