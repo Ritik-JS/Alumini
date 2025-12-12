@@ -38,9 +38,16 @@ const CareerPaths = () => {
         setCareerPaths(pathsRes.data?.career_paths || pathsRes.data || []);
       }
       if (rolesRes.success) {
-        // Extract role names from array of objects {role, alumni_count}
-        const roleNames = (rolesRes.data?.roles || []).map(r => r.role);
-        setRoles(roleNames);
+        // Extract role names from proper nested structure
+        let roleNames = [];
+        
+        if (rolesRes.data?.roles && Array.isArray(rolesRes.data.roles)) {
+          roleNames = rolesRes.data.roles.map(r => r.role || r);
+        } else if (Array.isArray(rolesRes.data)) {
+          roleNames = rolesRes.data.map(r => r.role || r);
+        }
+        
+        setRoles(roleNames || []);
       }
     } catch (error) {
       toast.error('Failed to load career paths');

@@ -51,19 +51,29 @@ const TalentHeatmap = () => {
         setSkills(skillNames);
       }
       if (industriesRes.success) {
-        // Extract industry list - backend returns complex nested structure
         const industryData = industriesRes.data || {};
-        // If data is array, extract names; if object, get top-level keys
         let industryNames = [];
-        if (Array.isArray(industryData)) {
-          industryNames = industryData.map(ind => ind.name || ind);
-        } else if (typeof industryData === 'object') {
-          // Extract unique industries from nested structure
-          industryNames = Object.values(industryData)
-            .flatMap(locations => Array.isArray(locations) ? locations.map(l => l.industry) : [])
-            .filter((v, i, a) => v && a.indexOf(v) === i);
+        
+        // Extract from top_industries_global array first (primary source)
+        if (industryData.top_industries_global && Array.isArray(industryData.top_industries_global)) {
+          industryNames = industryData.top_industries_global.map(item => item.industry);
+        } 
+        // Fallback: extract from by_location
+        else if (industryData.by_location && Array.isArray(industryData.by_location)) {
+          const allIndustries = new Set();
+          industryData.by_location.forEach(loc => {
+            if (loc.industries && Array.isArray(loc.industries)) {
+              loc.industries.forEach(ind => allIndustries.add(ind));
+            }
+          });
+          industryNames = Array.from(allIndustries);
         }
-        setIndustries(industryNames);
+        // Final fallback: if data is directly an array
+        else if (Array.isArray(industryData)) {
+          industryNames = industryData.map(ind => ind.name || ind.industry || ind);
+        }
+        
+        setIndustries(industryNames || []);
       }
       if (clustersRes.success) {
         // Extract clusters array from nested data structure

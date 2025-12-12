@@ -82,6 +82,33 @@ class ApiSkillGraphService {
       return { success: false, message: error.message, data: [] };
     }
   }
+
+  // Get alumni profiles by skill (using profiles search endpoint)
+  async getAlumniBySkill(skillName, limit = 20) {
+    try {
+      const response = await axios.get('/api/profiles/search', {
+        params: {
+          skills: skillName,
+          limit: limit,
+          page: 1
+        }
+      });
+      return {
+        success: true,
+        data: response.data?.data?.profiles || [],
+        count: response.data?.data?.total || 0,
+        message: `Found ${response.data?.data?.total || 0} alumni with ${skillName}`
+      };
+    } catch (error) {
+      console.error('Error fetching alumni by skill:', error);
+      return { 
+        success: false, 
+        message: error.message, 
+        data: [],
+        count: 0
+      };
+    }
+  }
 }
 
 export default new ApiSkillGraphService();
