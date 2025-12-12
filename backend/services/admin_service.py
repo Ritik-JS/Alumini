@@ -344,7 +344,7 @@ class AdminService:
                 users = await cursor.fetchall()
                 
                 return {
-                    "users": users,
+                    "data": users,
                     "total": total,
                     "page": page,
                     "limit": limit,
