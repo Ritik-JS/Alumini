@@ -38,12 +38,41 @@ const SkillGraph = () => {
         skillRecommendationService.getTopTrendingSkills(10)
       ]);
 
-      if (skillsRes.success) setSkills(skillsRes.data);
-      if (industriesRes.success) setIndustries(industriesRes.data);
-      if (recommendationsRes.success) setRecommendations(recommendationsRes.data);
-      if (trendsRes.success) setTrendingSkills(trendsRes.data);
+      // Handle skills response - ensure it's an array
+      if (skillsRes?.success && Array.isArray(skillsRes.data)) {
+        setSkills(skillsRes.data);
+      } else {
+        setSkills([]);
+      }
+      
+      // Handle industries response - ensure it's an array
+      if (industriesRes?.success && Array.isArray(industriesRes.data)) {
+        setIndustries(industriesRes.data);
+      } else {
+        setIndustries([]);
+      }
+      
+      // Handle recommendations response - ensure it's an array
+      if (recommendationsRes?.success && Array.isArray(recommendationsRes.data)) {
+        setRecommendations(recommendationsRes.data);
+      } else {
+        setRecommendations([]);
+      }
+      
+      // Handle trends response - ensure it's an array
+      if (trendsRes?.success && Array.isArray(trendsRes.data)) {
+        setTrendingSkills(trendsRes.data);
+      } else {
+        setTrendingSkills([]);
+      }
     } catch (error) {
+      console.error('Error loading skill graph data:', error);
       toast.error('Failed to load skill graph data');
+      // Set empty arrays on error
+      setSkills([]);
+      setIndustries([]);
+      setRecommendations([]);
+      setTrendingSkills([]);
     } finally {
       setLoading(false);
     }
@@ -53,14 +82,18 @@ const SkillGraph = () => {
     try {
       setLoading(true);
       const res = await skillGraphService.getSkillGraph(filters);
-      if (res.success) {
+      if (res?.success && Array.isArray(res.data)) {
         setSkills(res.data);
         if (res.data.length === 0) {
           toast.info('No skills found matching your criteria');
         }
+      } else {
+        setSkills([]);
       }
     } catch (error) {
+      console.error('Search error:', error);
       toast.error('Search failed');
+      setSkills([]);
     } finally {
       setLoading(false);
     }
@@ -331,7 +364,7 @@ const SkillGraph = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-4 justify-center p-8 bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg min-h-[400px]" data-testid="skill-nodes-container">
-                  {skills.map(skill => (
+                  {Array.isArray(skills) && skills.map(skill => (
                     <button
                       key={skill.id}
                       onClick={() => handleSkillClick(skill)}
@@ -382,31 +415,35 @@ const SkillGraph = () => {
                   </div>
 
                   {/* Related Skills */}
-                  <div>
-                    <h3 className="font-semibold mb-3 flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" />
-                      Related Skills
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedSkill.related_skills.map(skill => (
-                        <Badge key={skill} variant="outline" className="text-sm">
-                          {skill}
-                        </Badge>
-                      ))}
+                  {selectedSkill.related_skills && Array.isArray(selectedSkill.related_skills) && selectedSkill.related_skills.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold mb-3 flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5" />
+                        Related Skills
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedSkill.related_skills.map(skill => (
+                          <Badge key={skill} variant="outline" className="text-sm">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Industry Connections */}
-                  <div>
-                    <h3 className="font-semibold mb-3">Industry Connections</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedSkill.industry_connections.map(industry => (
-                        <Badge key={industry} className="text-sm">
-                          {industry}
-                        </Badge>
-                      ))}
+                  {selectedSkill.industry_connections && Array.isArray(selectedSkill.industry_connections) && selectedSkill.industry_connections.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold mb-3">Industry Connections</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedSkill.industry_connections.map(industry => (
+                          <Badge key={industry} className="text-sm">
+                            {industry}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             )}

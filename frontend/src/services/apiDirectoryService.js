@@ -66,10 +66,27 @@ class ApiDirectoryService {
   }
 
   // Filter alumni based on multiple criteria
-  async filterAlumni(filters) {
+  filterAlumni(filters) {
     try {
-      const profiles = await this.getAllAlumniProfiles();
-      let filtered = profiles;
+      const profiles = this.getAllAlumniProfiles();
+      
+      // Handle promise if getAllAlumniProfiles returns a promise
+      if (profiles instanceof Promise) {
+        return profiles.then(profilesData => {
+          return this._filterProfilesSync(profilesData, filters);
+        });
+      }
+      
+      return this._filterProfilesSync(profiles, filters);
+    } catch (error) {
+      console.error('Error filtering alumni:', error);
+      return [];
+    }
+  }
+
+  // Synchronous filter helper
+  _filterProfilesSync(profiles, filters) {
+    let filtered = Array.isArray(profiles) ? profiles : [];
 
       // Search query
       if (filters.search && filters.search.trim()) {
@@ -135,14 +152,14 @@ class ApiDirectoryService {
       }
 
       return filtered;
-    } catch (error) {
-      console.error('Error filtering alumni:', error);
-      return [];
-    }
   }
 
   // Sort alumni
-  async sortAlumni(profiles, sortBy) {
+  sortAlumni(profiles, sortBy) {
+    if (!Array.isArray(profiles)) {
+      console.error('sortAlumni: profiles is not an array', profiles);
+      return [];
+    }
     const sorted = [...profiles];
 
     switch (sortBy) {
@@ -170,7 +187,18 @@ class ApiDirectoryService {
   }
 
   // Paginate results
-  async paginateResults(profiles, page = 1, pageSize = 12) {
+  paginateResults(profiles, page = 1, pageSize = 12) {
+    if (!Array.isArray(profiles)) {
+      console.error('paginateResults: profiles is not an array', profiles);
+      return {
+        data: [],
+        totalPages: 0,
+        totalResults: 0,
+        currentPage: page,
+        hasMore: false
+      };
+    }
+    
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
 
