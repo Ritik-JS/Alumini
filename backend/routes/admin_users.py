@@ -108,50 +108,74 @@ async def get_user_with_profile(user_id: str):
             WHERE u.id = %s
         """, (user_id,))
         
-        user = cursor.fetchone()
+        user_data = cursor.fetchone()
         
-        if not user:
+        if not user_data:
             raise HTTPException(status_code=404, detail="User not found")
         
-        # Parse JSON fields
-        if user.get('skills'):
-            import json
-            try:
-                user['skills'] = json.loads(user['skills']) if isinstance(user['skills'], str) else user['skills']
-            except:
-                user['skills'] = []
+        import json
         
-        if user.get('achievements'):
-            import json
+        # Parse JSON fields for profile
+        skills = []
+        if user_data.get('skills'):
             try:
-                user['achievements'] = json.loads(user['achievements']) if isinstance(user['achievements'], str) else user['achievements']
+                skills = json.loads(user_data['skills']) if isinstance(user_data['skills'], str) else user_data['skills']
             except:
-                user['achievements'] = []
+                skills = []
         
-        if user.get('social_links'):
-            import json
+        achievements = []
+        if user_data.get('achievements'):
             try:
-                user['social_links'] = json.loads(user['social_links']) if isinstance(user['social_links'], str) else user['social_links']
+                achievements = json.loads(user_data['achievements']) if isinstance(user_data['achievements'], str) else user_data['achievements']
             except:
-                user['social_links'] = {}
+                achievements = []
+        
+        social_links = {}
+        if user_data.get('social_links'):
+            try:
+                social_links = json.loads(user_data['social_links']) if isinstance(user_data['social_links'], str) else user_data['social_links']
+            except:
+                social_links = {}
         
         # Format timestamps
-        if user['last_login']:
-            user['last_login'] = user['last_login'].isoformat()
-        user['created_at'] = user['created_at'].isoformat()
-        user['updated_at'] = user['updated_at'].isoformat()
+        last_login = user_data['last_login'].isoformat() if user_data['last_login'] else None
+        created_at = user_data['created_at'].isoformat()
+        updated_at = user_data['updated_at'].isoformat()
         
-        # Add card status
-        user['has_card'] = user['card_id'] is not None
-        user['card_status'] = {
-            'has_card': user['card_id'] is not None,
-            'card_number': user['card_number'],
-            'is_active': user['card_active']
+        # Build nested structure with profile object
+        user = {
+            'id': user_data['id'],
+            'email': user_data['email'],
+            'role': user_data['role'],
+            'is_verified': user_data['is_verified'],
+            'is_active': user_data['is_active'],
+            'last_login': last_login,
+            'created_at': created_at,
+            'updated_at': updated_at,
+            'has_card': user_data['card_id'] is not None,
+            'card_status': {
+                'has_card': user_data['card_id'] is not None,
+                'card_number': user_data['card_number'],
+                'is_active': user_data['card_active']
+            },
+            'profile': {
+                'name': user_data['name'],
+                'photo_url': user_data['photo_url'],
+                'bio': user_data['bio'],
+                'headline': user_data['headline'],
+                'current_company': user_data['current_company'],
+                'current_role': user_data['current_role'],
+                'location': user_data['location'],
+                'batch_year': user_data['batch_year'],
+                'skills': skills,
+                'achievements': achievements,
+                'social_links': social_links,
+                'education_details': user_data['education_details'],
+                'experience_timeline': user_data['experience_timeline'],
+                'profile_completion_percentage': user_data['profile_completion_percentage'],
+                'is_verified': user_data['profile_verified']
+            }
         }
-        # Remove redundant fields
-        del user['card_id']
-        del user['card_number']
-        del user['card_active']
         
         cursor.close()
         connection.close()
@@ -373,7 +397,7 @@ def issue_alumni_card(user_id: str, current_user: dict = Depends(get_current_use
         # Log admin action
         cursor.execute("""
             INSERT INTO admin_actions (admin_id, action_type, target_type, target_id, description)
-            VALUES (%s, 'card_management', 'alumni_card', %s, 'Issued alumni card')
+            VALUES (%s, 'verification', 'alumni_card', %s, 'Issued alumni card')
         """, (current_user['id'], card_id))
         
         connection.commit()
