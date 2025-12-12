@@ -20,15 +20,17 @@ async def get_all_users(
         connection = get_db_connection()
         cursor = connection.cursor(dictionary=True)
         
-        # Base query with LEFT JOIN to get profiles
+        # Base query with LEFT JOIN to get profiles and card status
         query = """
             SELECT 
                 u.id, u.email, u.role, u.is_verified, u.is_active,
                 u.last_login, u.created_at, u.updated_at,
                 ap.name, ap.photo_url, ap.current_company, ap.current_role,
-                ap.location, ap.batch_year, ap.profile_completion_percentage
+                ap.location, ap.batch_year, ap.profile_completion_percentage,
+                ac.id as card_id, ac.card_number, ac.is_active as card_active
             FROM users u
             LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
+            LEFT JOIN alumni_cards ac ON u.id = ac.user_id
             WHERE 1=1
         """
         
@@ -56,6 +58,18 @@ async def get_all_users(
                 user['last_login'] = user['last_login'].isoformat()
             user['created_at'] = user['created_at'].isoformat()
             user['updated_at'] = user['updated_at'].isoformat()
+            
+            # Add card status
+            user['has_card'] = user['card_id'] is not None
+            user['card_status'] = {
+                'has_card': user['card_id'] is not None,
+                'card_number': user['card_number'],
+                'is_active': user['card_active']
+            }
+            # Remove redundant fields
+            del user['card_id']
+            del user['card_number']
+            del user['card_active']
         
         cursor.close()
         connection.close()
@@ -77,7 +91,7 @@ async def get_user_with_profile(user_id: str):
         connection = get_db_connection()
         cursor = connection.cursor(dictionary=True)
         
-        # Get user details
+        # Get user details with card status
         cursor.execute("""
             SELECT 
                 u.id, u.email, u.role, u.is_verified, u.is_active,
@@ -86,9 +100,11 @@ async def get_user_with_profile(user_id: str):
                 ap.current_company, ap.current_role, ap.location,
                 ap.batch_year, ap.skills, ap.achievements,
                 ap.social_links, ap.education_details, ap.experience_timeline,
-                ap.profile_completion_percentage, ap.is_verified as profile_verified
+                ap.profile_completion_percentage, ap.is_verified as profile_verified,
+                ac.id as card_id, ac.card_number, ac.is_active as card_active
             FROM users u
             LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
+            LEFT JOIN alumni_cards ac ON u.id = ac.user_id
             WHERE u.id = %s
         """, (user_id,))
         
@@ -124,6 +140,18 @@ async def get_user_with_profile(user_id: str):
             user['last_login'] = user['last_login'].isoformat()
         user['created_at'] = user['created_at'].isoformat()
         user['updated_at'] = user['updated_at'].isoformat()
+        
+        # Add card status
+        user['has_card'] = user['card_id'] is not None
+        user['card_status'] = {
+            'has_card': user['card_id'] is not None,
+            'card_number': user['card_number'],
+            'is_active': user['card_active']
+        }
+        # Remove redundant fields
+        del user['card_id']
+        del user['card_number']
+        del user['card_active']
         
         cursor.close()
         connection.close()
@@ -240,4 +268,93 @@ async def reset_user_password(user_id: str, current_user: dict = Depends(get_cur
         raise
     except Exception as e:
         logger.error(f"Error resetting password for user {user_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{user_id}/issue-card", dependencies=[Depends(require_admin)])
+async def issue_alumni_card(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Issue/generate alumni card for a specific user (Admin only)"""
+    try:
+        from database.connection import get_db_pool
+        from services.alumni_card_service import AlumniCardService
+        
+        pool = await get_db_pool()
+        card_service = AlumniCardService()
+        
+        async with pool.acquire() as conn:
+            # Check if user exists
+            async with conn.cursor() as cursor:
+                await cursor.execute("SELECT id, email, role FROM users WHERE id = %s", (user_id,))
+                user = await cursor.fetchone()
+                
+                if not user:
+                    raise HTTPException(status_code=404, detail="User not found")
+            
+            # Generate card
+            card = await card_service.generate_alumni_card(conn, user_id)
+            
+            # Log admin action
+            async with conn.cursor() as cursor:
+                await cursor.execute("""
+                    INSERT INTO admin_actions (admin_id, action_type, target_type, target_id, description)
+                    VALUES (%s, 'card_management', 'alumni_card', %s, 'Issued alumni card')
+                """, (current_user['id'], card['card_id']))
+                await conn.commit()
+            
+            logger.info(f"Admin {current_user['id']} issued alumni card for user {user_id}")
+            
+            return {
+                "success": True,
+                "message": "Alumni card issued successfully",
+                "data": card
+            }
+    
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Error issuing alumni card for user {user_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/{user_id}/card-status", dependencies=[Depends(require_admin)])
+async def get_user_card_status(user_id: str):
+    """Get alumni card status for a specific user"""
+    try:
+        from database.connection import get_db_pool
+        
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT 
+                        id, card_number, issue_date, expiry_date, 
+                        is_active, verification_count, last_verified
+                    FROM alumni_cards
+                    WHERE user_id = %s
+                """, (user_id,))
+                card = await cursor.fetchone()
+                
+                if not card:
+                    return {
+                        "success": True,
+                        "has_card": False,
+                        "data": None
+                    }
+                
+                return {
+                    "success": True,
+                    "has_card": True,
+                    "data": {
+                        "card_id": str(card[0]),
+                        "card_number": card[1],
+                        "issue_date": card[2].isoformat() if card[2] else None,
+                        "expiry_date": card[3].isoformat() if card[3] else None,
+                        "is_active": card[4],
+                        "verification_count": card[5],
+                        "last_verified": card[6].isoformat() if card[6] else None
+                    }
+                }
+    
+    except Exception as e:
+        logger.error(f"Error getting card status for user {user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

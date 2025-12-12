@@ -24,7 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Search, MoreVertical, UserCheck, UserX, Mail, Shield, Trash2, Download, Eye } from 'lucide-react';
+import { Search, MoreVertical, UserCheck, UserX, Mail, Shield, Trash2, Download, Eye, CreditCard, CheckCircle, XCircle } from 'lucide-react';
 import { adminService } from '@/services';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
@@ -111,6 +111,17 @@ const AdminUsers = () => {
     } catch (error) {
       console.error('Error sending password reset:', error);
       toast.error('Unable to send password reset email. Please try again.');
+    }
+  };
+
+  const handleIssueCard = async (userId) => {
+    try {
+      await adminService.issueAlumniCard(userId);
+      toast.success('Alumni card issued successfully');
+      loadUsers(); // Reload to update card status
+    } catch (error) {
+      console.error('Error issuing alumni card:', error);
+      toast.error(error.response?.data?.detail || 'Unable to issue alumni card. Please try again.');
     }
   };
 
@@ -337,6 +348,7 @@ const AdminUsers = () => {
                         <th className="pb-3 font-medium text-gray-700">Email</th>
                         <th className="pb-3 font-medium text-gray-700">Role</th>
                         <th className="pb-3 font-medium text-gray-700">Status</th>
+                        <th className="pb-3 font-medium text-gray-700">Card Status</th>
                         <th className="pb-3 font-medium text-gray-700">Joined</th>
                         <th className="pb-3 font-medium text-gray-700">Actions</th>
                       </tr>
@@ -371,6 +383,19 @@ const AdminUsers = () => {
                               Active
                             </Badge>
                           </td>
+                          <td className="py-4">
+                            {u.has_card ? (
+                              <Badge className="bg-green-100 text-green-800 flex items-center gap-1 w-fit">
+                                <CheckCircle className="w-3 h-3" />
+                                Has Card
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-gray-600 border-gray-400 flex items-center gap-1 w-fit">
+                                <XCircle className="w-3 h-3" />
+                                No Card
+                              </Badge>
+                            )}
+                          </td>
                           <td className="py-4 text-sm text-gray-600">
                             {new Date(u.created_at).toLocaleDateString()}
                           </td>
@@ -388,6 +413,12 @@ const AdminUsers = () => {
                                   <Eye className="mr-2 h-4 w-4" />
                                   View Details
                                 </DropdownMenuItem>
+                                {!u.has_card && (
+                                  <DropdownMenuItem onClick={() => handleIssueCard(u.id)}>
+                                    <CreditCard className="mr-2 h-4 w-4" />
+                                    Issue Alumni Card
+                                  </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem onClick={() => handleResetPassword(u.id)}>
                                   <Mail className="mr-2 h-4 w-4" />
                                   Reset Password
@@ -555,7 +586,69 @@ const AdminUsers = () => {
                 </>
               )}
 
+              {/* Alumni Card Status */}
+              {selectedUserDetails.card_status && (
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-blue-600" />
+                    Alumni Card Status
+                  </h4>
+                  {selectedUserDetails.card_status.has_card ? (
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-2 mb-3">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <span className="font-medium text-green-800">Card Issued</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-gray-600">Card Number:</p>
+                          <p className="font-medium">{selectedUserDetails.card_status.card_number}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Status:</p>
+                          <Badge className={selectedUserDetails.card_status.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                            {selectedUserDetails.card_status.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <XCircle className="h-5 w-5 text-gray-500" />
+                          <span className="text-gray-700">No alumni card issued yet</span>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          onClick={() => {
+                            handleIssueCard(selectedUserDetails.id);
+                            setShowUserModal(false);
+                          }}
+                        >
+                          <CreditCard className="w-4 h-4 mr-1" />
+                          Issue Card
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="border-t pt-4 flex gap-2">
+                {!selectedUserDetails.has_card && (
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={() => {
+                      handleIssueCard(selectedUserDetails.id);
+                      setShowUserModal(false);
+                    }}
+                  >
+                    <CreditCard className="w-4 h-4 mr-1" />
+                    Issue Card
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" onClick={() => handleResetPassword(selectedUserDetails.id)}>
                   <Mail className="w-4 h-4 mr-1" />
                   Reset Password

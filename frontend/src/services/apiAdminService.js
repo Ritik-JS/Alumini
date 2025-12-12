@@ -56,6 +56,22 @@ const apiAdminService = {
     return response.data;
   },
 
+  /**
+   * Issue alumni card for a user
+   */
+  async issueAlumniCard(userId) {
+    const response = await axios.post(`/api/admin/users/${userId}/issue-card`);
+    return response.data;
+  },
+
+  /**
+   * Get card status for a user
+   */
+  async getUserCardStatus(userId) {
+    const response = await axios.get(`/api/admin/users/${userId}/card-status`);
+    return response.data;
+  },
+
   // ==================== JOBS MANAGEMENT ====================
   
   /**
