@@ -46,8 +46,8 @@ const AdminJobs = () => {
       setLoading(true);
       setError(null);
       const result = await adminService.getAllJobs();
-      setJobs(result.jobs || []);
-      setFilteredJobs(result.jobs || []);
+      setJobs(result.data || []);
+      setFilteredJobs(result.data || []);
     } catch (error) {
       console.error('Error loading jobs:', error);
       setError('Unable to connect to server. Please try again later.');
@@ -82,7 +82,7 @@ const AdminJobs = () => {
   const handleViewJob = async (jobId) => {
     try {
       const result = await adminService.getJobDetails(jobId);
-      setSelectedJob(result.job);
+      setSelectedJob(result.data);
       setShowJobModal(true);
     } catch (error) {
       console.error('Error loading job:', error);
