@@ -358,6 +358,99 @@ const apiAdminService = {
     const response = await axios.post(`/api/admin/notifications/${notificationId}/resend`);
     return response.data;
   },
+
+  // ==================== CONTENT MODERATION ====================
+  
+  /**
+   * Get all flagged content
+   */
+  async getFlaggedContent(params = {}) {
+    const { type, limit = 100, offset = 0 } = params;
+    const queryParams = new URLSearchParams();
+    
+    if (type) queryParams.append('type', type);
+    queryParams.append('limit', limit);
+    queryParams.append('offset', offset);
+    
+    const response = await axios.get(`/api/admin/moderation/flagged?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  /**
+   * Approve flagged content (remove flag)
+   */
+  async approveContent(contentId, contentType) {
+    const response = await axios.post('/api/admin/moderation/approve', {
+      content_id: contentId,
+      content_type: contentType,
+    });
+    return response.data;
+  },
+
+  /**
+   * Remove flagged content
+   */
+  async removeContent(contentId, contentType) {
+    const response = await axios.post('/api/admin/moderation/remove', {
+      content_id: contentId,
+      content_type: contentType,
+    });
+    return response.data;
+  },
+
+  /**
+   * Warn content author
+   */
+  async warnAuthor(contentId, contentType, reason) {
+    const response = await axios.post('/api/admin/moderation/warn', {
+      content_id: contentId,
+      content_type: contentType,
+      reason,
+    });
+    return response.data;
+  },
+
+  // ==================== FILE UPLOADS MANAGEMENT ====================
+  
+  /**
+   * Get all uploaded files
+   */
+  async getAllFiles(params = {}) {
+    const { file_type, search, limit = 100, offset = 0 } = params;
+    const queryParams = new URLSearchParams();
+    
+    if (file_type) queryParams.append('file_type', file_type);
+    if (search) queryParams.append('search', search);
+    queryParams.append('limit', limit);
+    queryParams.append('offset', offset);
+    
+    const response = await axios.get(`/api/admin/files?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  /**
+   * Get file details
+   */
+  async getFileDetails(fileId) {
+    const response = await axios.get(`/api/admin/files/${fileId}`);
+    return response.data;
+  },
+
+  /**
+   * Delete a file
+   */
+  async deleteFile(fileId) {
+    const response = await axios.delete(`/api/admin/files/${fileId}`);
+    return response.data;
+  },
+
+  /**
+   * Get file statistics
+   */
+  async getFileStats() {
+    const response = await axios.get('/api/admin/files/stats');
+    return response.data;
+  },
 };
 
 export default apiAdminService;
