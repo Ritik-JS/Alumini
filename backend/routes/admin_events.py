@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional
 import logging
-from database.connection import get_db_connection
+from database.connection import get_sync_db_connection
 from middleware.auth_middleware import require_admin, get_current_user
 
 logger = logging.getLogger(__name__)
@@ -16,8 +16,8 @@ async def get_all_events(
 ):
     """Get all events with attendee counts"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         query = """
             SELECT 
@@ -72,8 +72,8 @@ async def get_all_events(
 async def get_event_by_id(event_id: str):
     """Get detailed event information"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         cursor.execute("""
             SELECT 
@@ -134,8 +134,8 @@ async def get_event_by_id(event_id: str):
 async def get_event_attendees(event_id: str):
     """Get list of attendees for an event"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         cursor.execute("""
             SELECT 
@@ -177,7 +177,7 @@ async def get_event_attendees(event_id: str):
 async def update_event(event_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
     """Update event details"""
     try:
-        connection = get_db_connection()
+        connection = get_sync_db_connection()
         cursor = connection.cursor()
         
         update_fields = []
@@ -225,7 +225,7 @@ async def update_event(event_id: str, update_data: dict, current_user: dict = De
 async def delete_event(event_id: str, current_user: dict = Depends(get_current_user)):
     """Delete an event"""
     try:
-        connection = get_db_connection()
+        connection = get_sync_db_connection()
         cursor = connection.cursor()
         
         # Log before deletion

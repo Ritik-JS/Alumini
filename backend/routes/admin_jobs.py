@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional
 import logging
-from database.connection import get_db_connection
+from database.connection import get_sync_db_connection
 from middleware.auth_middleware import require_admin, get_current_user
 
 logger = logging.getLogger(__name__)
@@ -16,8 +16,8 @@ async def get_all_jobs(
 ):
     """Get all jobs with application counts"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         query = """
             SELECT 
@@ -77,8 +77,8 @@ async def get_all_jobs(
 async def get_job_by_id(job_id: str):
     """Get detailed job information"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         cursor.execute("""
             SELECT 
@@ -129,7 +129,7 @@ async def get_job_by_id(job_id: str):
 async def update_job(job_id: str, update_data: dict, current_user: dict = Depends(get_current_user)):
     """Update job details (typically status)"""
     try:
-        connection = get_db_connection()
+        connection = get_sync_db_connection()
         cursor = connection.cursor()
         
         # Build dynamic update query
@@ -182,7 +182,7 @@ async def update_job(job_id: str, update_data: dict, current_user: dict = Depend
 async def delete_job(job_id: str, current_user: dict = Depends(get_current_user)):
     """Delete a job posting"""
     try:
-        connection = get_db_connection()
+        connection = get_sync_db_connection()
         cursor = connection.cursor()
         
         # Log before deletion
@@ -215,8 +215,8 @@ async def delete_job(job_id: str, current_user: dict = Depends(get_current_user)
 async def get_job_applications(job_id: str):
     """Get all applications for a specific job"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         cursor.execute("""
             SELECT 

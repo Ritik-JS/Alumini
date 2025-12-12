@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional
 import logging
-from database.connection import get_db_connection
+from database.connection import get_sync_db_connection
 from middleware.auth_middleware import require_admin
 
 logger = logging.getLogger(__name__)
@@ -11,8 +11,8 @@ router = APIRouter(prefix="/api/admin/analytics", tags=["admin-analytics"])
 async def get_dashboard_stats():
     """Get overall dashboard statistics"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         # Total users by role
         cursor.execute("""
@@ -74,8 +74,8 @@ async def get_dashboard_stats():
 async def get_user_growth(period: str = "monthly"):
     """Get user growth data over time"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         if period == "monthly":
             cursor.execute("""
@@ -115,8 +115,8 @@ async def get_user_growth(period: str = "monthly"):
 async def get_top_contributors(limit: int = 5):
     """Get top contributing users"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         cursor.execute("""
             SELECT 
@@ -150,8 +150,8 @@ async def get_top_contributors(limit: int = 5):
 async def get_platform_activity(days: int = 30):
     """Get recent platform activity metrics"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         activities = []
         
@@ -223,8 +223,8 @@ async def get_platform_activity(days: int = 30):
 async def get_alumni_analytics():
     """Get detailed alumni analytics"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         # Location distribution
         cursor.execute("""
@@ -309,8 +309,8 @@ async def get_alumni_analytics():
 async def get_job_analytics():
     """Get job analytics data"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         # Basic stats
         cursor.execute("""
@@ -404,8 +404,8 @@ async def get_job_analytics():
 async def get_mentorship_analytics():
     """Get mentorship analytics"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         # Basic stats
         cursor.execute("""
@@ -504,8 +504,8 @@ async def get_mentorship_analytics():
 async def get_event_analytics():
     """Get event analytics"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         # Basic stats
         cursor.execute("""
@@ -583,8 +583,8 @@ async def get_event_analytics():
 async def get_engagement_metrics():
     """Get user engagement metrics"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         # Active users calculation
         cursor.execute("""

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from typing import List, Optional
 import logging
 from datetime import datetime
-from database.connection import get_db_connection
+from database.connection import get_sync_db_connection
 from middleware.auth_middleware import get_current_user, require_admin
 
 logger = logging.getLogger(__name__)
@@ -17,8 +17,8 @@ async def get_all_users(
 ):
     """Get all users with their profiles"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         # Base query with LEFT JOIN to get profiles and card status
         query = """
@@ -88,8 +88,8 @@ async def get_all_users(
 async def get_user_with_profile(user_id: str):
     """Get detailed user information with full profile"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         # Get user details with card status
         cursor.execute("""
@@ -171,7 +171,7 @@ async def get_user_with_profile(user_id: str):
 async def ban_user(user_id: str, current_user: dict = Depends(get_current_user)):
     """Ban a user by setting is_active to FALSE"""
     try:
-        connection = get_db_connection()
+        connection = get_sync_db_connection()
         cursor = connection.cursor()
         
         # Update user status
@@ -204,7 +204,7 @@ async def ban_user(user_id: str, current_user: dict = Depends(get_current_user))
 async def delete_user(user_id: str, current_user: dict = Depends(get_current_user)):
     """Delete a user (CASCADE will handle related records)"""
     try:
-        connection = get_db_connection()
+        connection = get_sync_db_connection()
         cursor = connection.cursor()
         
         # Log before deletion
@@ -238,8 +238,8 @@ async def delete_user(user_id: str, current_user: dict = Depends(get_current_use
 async def reset_user_password(user_id: str, current_user: dict = Depends(get_current_user)):
     """Trigger password reset for a user"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         # Get user email
         cursor.execute("SELECT email FROM users WHERE id = %s", (user_id,))
@@ -279,8 +279,8 @@ def issue_alumni_card(user_id: str, current_user: dict = Depends(get_current_use
         import secrets
         from datetime import datetime, timedelta
         
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         # Check if user exists
         cursor.execute("SELECT id, email, role FROM users WHERE id = %s", (user_id,))
@@ -404,7 +404,7 @@ def issue_alumni_card(user_id: str, current_user: dict = Depends(get_current_use
 def get_user_card_status(user_id: str):
     """Get alumni card status for a specific user"""
     try:
-        connection = get_db_connection()
+        connection = get_sync_db_connection()
         cursor = connection.cursor()
         
         cursor.execute("""

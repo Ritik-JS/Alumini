@@ -1,5 +1,6 @@
 """Database connection management"""
 import aiomysql
+import pymysql
 import os
 from typing import Optional
 import logging
@@ -39,7 +40,25 @@ async def close_db_pool():
 
 
 async def get_db_connection():
-    """Get database connection from pool (context manager)"""
+    """Get database connection from pool (context manager) - FOR ASYNC USE ONLY"""
     pool = await get_db_pool()
     async with pool.acquire() as conn:
         yield conn
+
+
+def get_sync_db_connection():
+    """Get synchronous database connection - FOR SYNC ROUTES"""
+    try:
+        connection = pymysql.connect(
+            host=os.environ.get('DB_HOST', 'localhost'),
+            port=int(os.environ.get('DB_PORT', 3306)),
+            user=os.environ.get('DB_USER', 'alumni_user'),
+            password=os.environ.get('DB_PASSWORD', 'alumni_pass_123'),
+            database=os.environ.get('DB_NAME', 'AlumUnity'),
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        return connection
+    except Exception as e:
+        logger.error(f"Failed to create sync database connection: {str(e)}")
+        raise

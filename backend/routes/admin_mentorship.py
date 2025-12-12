@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 import logging
-from database.connection import get_db_connection
+from database.connection import get_sync_db_connection
 from middleware.auth_middleware import require_admin
 
 logger = logging.getLogger(__name__)
@@ -10,8 +10,8 @@ router = APIRouter(prefix="/api/admin/mentorship", tags=["admin-mentorship"])
 async def get_all_mentorship_requests():
     """Get all mentorship requests with user details"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         cursor.execute("""
             SELECT 
@@ -79,8 +79,8 @@ async def get_all_mentorship_requests():
 async def get_all_sessions():
     """Get all mentorship sessions"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         cursor.execute("""
             SELECT 
@@ -116,8 +116,8 @@ async def get_all_sessions():
 async def get_mentors():
     """Get all mentors with their stats"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         cursor.execute("""
             SELECT 

@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Optional
 import logging
 import json
-from database.connection import get_db_connection
+from database.connection import get_sync_db_connection
 from middleware.auth_middleware import require_admin, get_current_user
 
 logger = logging.getLogger(__name__)
@@ -20,8 +20,8 @@ class BadgeCreate(BaseModel):
 async def get_all_badges():
     """Get all badges with earned counts"""
     try:
-        connection = get_db_connection()
-        cursor = connection.cursor(dictionary=True)
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
         
         cursor.execute("""
             SELECT 
@@ -61,7 +61,7 @@ async def get_all_badges():
 async def create_badge(badge_data: BadgeCreate, current_user: dict = Depends(get_current_user)):
     """Create a new badge"""
     try:
-        connection = get_db_connection()
+        connection = get_sync_db_connection()
         cursor = connection.cursor()
         
         cursor.execute("""
@@ -102,7 +102,7 @@ async def create_badge(badge_data: BadgeCreate, current_user: dict = Depends(get
 async def update_badge(badge_id: str, badge_data: BadgeCreate, current_user: dict = Depends(get_current_user)):
     """Update a badge"""
     try:
-        connection = get_db_connection()
+        connection = get_sync_db_connection()
         cursor = connection.cursor()
         
         cursor.execute("""
@@ -146,7 +146,7 @@ async def update_badge(badge_id: str, badge_data: BadgeCreate, current_user: dic
 async def delete_badge(badge_id: str, current_user: dict = Depends(get_current_user)):
     """Delete a badge"""
     try:
-        connection = get_db_connection()
+        connection = get_sync_db_connection()
         cursor = connection.cursor()
         
         # Log before deletion
