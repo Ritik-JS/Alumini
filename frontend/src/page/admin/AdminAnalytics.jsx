@@ -86,10 +86,10 @@ const AdminAnalytics = () => {
       setUserGrowthData(userGrowthResult?.data || []);
 
       // Set top contributors
-      setTopContributors(contributorsResult?.contributors || []);
+      setTopContributors(contributorsResult?.data || []);
 
       // Set platform activity
-      setPlatformActivity(activityResult?.activity || []);
+      setPlatformActivity(activityResult?.data || []);
 
       // Set alumni analytics
       setAlumniData(alumniResult);
