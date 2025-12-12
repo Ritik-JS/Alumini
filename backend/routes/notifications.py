@@ -29,7 +29,7 @@ async def get_notifications(
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(20, ge=1, le=100, description="Items per page"),
     unread_only: bool = Query(False, description="Show only unread notifications"),
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get user's notifications with pagination
@@ -42,7 +42,7 @@ async def get_notifications(
     """
     try:
         result = await notification_service.get_user_notifications(
-            user_id=current_user.id,
+            user_id=current_user['id'],
             page=page,
             limit=limit,
             unread_only=unread_only
@@ -56,7 +56,7 @@ async def get_notifications(
 
 @router.get("/unread-count", response_model=UnreadCountResponse)
 async def get_unread_count(
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get count of unread notifications for current user
@@ -64,7 +64,7 @@ async def get_unread_count(
     Returns the number of unread notifications
     """
     try:
-        count = await notification_service.get_unread_count(current_user.id)
+        count = await notification_service.get_unread_count(current_user['id'])
         return UnreadCountResponse(unread_count=count)
         
     except Exception as e:
@@ -75,7 +75,7 @@ async def get_unread_count(
 @router.put("/{notification_id}/read", response_model=MarkReadResponse)
 async def mark_notification_as_read(
     notification_id: str,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Mark a specific notification as read
@@ -87,7 +87,7 @@ async def mark_notification_as_read(
     try:
         success = await notification_service.mark_as_read(
             notification_id=notification_id,
-            user_id=current_user.id
+            user_id=current_user['id']
         )
         
         if success:
@@ -110,7 +110,7 @@ async def mark_notification_as_read(
 
 @router.put("/read-all", response_model=MarkReadResponse)
 async def mark_all_notifications_as_read(
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Mark all notifications as read for current user
@@ -118,7 +118,7 @@ async def mark_all_notifications_as_read(
     Returns success status and message
     """
     try:
-        success = await notification_service.mark_all_as_read(current_user.id)
+        success = await notification_service.mark_all_as_read(current_user['id'])
         
         if success:
             return MarkReadResponse(
@@ -173,7 +173,7 @@ async def delete_notification(
 
 @router.get("/preferences", response_model=NotificationPreferencesResponse)
 async def get_notification_preferences(
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get user's notification preferences
@@ -185,7 +185,7 @@ async def get_notification_preferences(
     - Quiet hours settings
     """
     try:
-        preferences = await notification_service.get_user_preferences(current_user.id)
+        preferences = await notification_service.get_user_preferences(current_user['id'])
         
         if preferences:
             return preferences
@@ -193,7 +193,7 @@ async def get_notification_preferences(
         # Return default preferences if none exist
         return NotificationPreferencesResponse(
             id="",
-            user_id=current_user.id,
+            user_id=current_user['id'],
             email_notifications=True,
             push_notifications=True,
             notification_types={
@@ -220,7 +220,7 @@ async def get_notification_preferences(
 @router.put("/preferences", response_model=NotificationPreferencesResponse)
 async def update_notification_preferences(
     preferences: NotificationPreferencesUpdate,
-    current_user: UserResponse = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Update user's notification preferences
@@ -237,7 +237,7 @@ async def update_notification_preferences(
     """
     try:
         updated_preferences = await notification_service.update_user_preferences(
-            user_id=current_user.id,
+            user_id=current_user['id'],
             preferences=preferences
         )
         
