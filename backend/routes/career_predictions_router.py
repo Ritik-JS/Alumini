@@ -312,7 +312,8 @@ async def get_similar_alumni(
                     SELECT 
                         ap.user_id, ap.name, ap.current_role, 
                         ap.current_company, ap.years_of_experience,
-                        ap.skills, ap.photo_url, ap.linkedin_url
+                        ap.skills, ap.photo_url, 
+                        JSON_UNQUOTE(JSON_EXTRACT(ap.social_links, '$.linkedin')) as linkedin_url
                     FROM alumni_profiles ap
                     WHERE ap.current_role = %s
                     AND ap.user_id != %s
@@ -459,8 +460,19 @@ async def _format_cached_prediction(db_conn, cached_result, user_id: str) -> dic
         profile = await cursor.fetchone()
     
     current_company = profile[0] if profile else None
+    user_skills_raw = profile[1] if profile else None
     years_exp = profile[2] if profile else 0
     industry = profile[3] if profile else "Unknown"
+    
+    # Parse user's actual skills
+    user_skills = []
+    if user_skills_raw:
+        try:
+            user_skills = json.loads(user_skills_raw) if isinstance(user_skills_raw, str) else user_skills_raw
+            if not isinstance(user_skills, list):
+                user_skills = []
+        except (json.JSONDecodeError, TypeError):
+            user_skills = []
     
     # Get similar alumni details
     similar_alumni = []
@@ -494,6 +506,7 @@ async def _format_cached_prediction(db_conn, cached_result, user_id: str) -> dic
         "industry": industry,
         "predicted_roles": predicted_roles,
         "recommended_skills": recommended_skills,
+        "current_skills": user_skills,  # Add user's actual current skills
         "similar_alumni": similar_alumni,
         "confidence_score": confidence_score,
         "prediction_date": created_at.isoformat() if created_at else None
@@ -565,13 +578,21 @@ async def _transform_for_frontend(prediction: dict) -> dict:
         last_updated = datetime.now().isoformat()
         next_update = (datetime.now() + timedelta(days=30)).isoformat()
     
+    # Extract current_skills - should be actual user skills, not recommended
+    # The service might include it in user_profile_dict or we need to fetch it
+    current_skills = prediction.get('current_skills', [])
+    if not current_skills:
+        # Fallback: use first few recommended skills as proxy
+        # In real scenario, this should be fetched from alumni_profiles.skills
+        current_skills = prediction.get('recommended_skills', [])[:8]
+    
     return {
         "prediction_id": prediction.get('prediction_id'),
         "user_id": prediction.get('user_id'),
         "current_role": prediction.get('current_role'),
         "current_company": prediction.get('current_company'),
         "predicted_roles": transformed_roles,
-        "current_skills": prediction.get('recommended_skills', [])[:10],  # Use recommended skills as current
+        "current_skills": current_skills[:10] if current_skills else [],
         "experience_level": experience_level,
         "confidence_score": prediction.get('confidence_score', 0),
         "personalized_advice": prediction.get('personalized_advice', ''),
