@@ -45,14 +45,16 @@ async def get_geographic_data(
             all_locations = {}
             
             for loc in talent_data:
-                location_name = loc['location']
+                # Use location_name field (primary) with fallback to location for backward compatibility
+                location_name = loc.get('location_name') or loc.get('location', 'Unknown')
                 all_locations[location_name] = {
                     **loc,
                     'type': 'talent'
                 }
             
             for loc in opportunity_data:
-                location_name = loc['location']
+                # Use location_name field (primary) with fallback to location for backward compatibility
+                location_name = loc.get('location_name') or loc.get('location', 'Unknown')
                 if location_name in all_locations:
                     # Merge data
                     all_locations[location_name].update({
@@ -297,14 +299,16 @@ async def get_combined_heatmap(
             all_locations = {}
             
             for loc in talent_data:
-                location_name = loc['location']
+                # Use location_name field (primary) with fallback to location for backward compatibility
+                location_name = loc.get('location_name') or loc.get('location', 'Unknown')
                 all_locations[location_name] = {
                     **loc,
                     'type': 'talent'
                 }
             
             for loc in opportunity_data:
-                location_name = loc['location']
+                # Use location_name field (primary) with fallback to location for backward compatibility
+                location_name = loc.get('location_name') or loc.get('location', 'Unknown')
                 if location_name in all_locations:
                     # Merge data
                     all_locations[location_name].update({
