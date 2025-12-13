@@ -657,24 +657,46 @@ class CareerPredictionService:
     async def get_common_career_paths(
         self,
         db_conn,
-        limit: int = 20
+        limit: int = 20,
+        starting_role: Optional[str] = None,
+        target_role: Optional[str] = None
     ) -> List[Dict]:
         """
         Get most common career transitions across all alumni
         Returns data formatted for frontend consumption
+        
+        Args:
+            db_conn: Database connection
+            limit: Maximum number of paths to return
+            starting_role: Filter by starting role (from_role)
+            target_role: Filter by target role (to_role)
         """
         try:
+            # Build dynamic query with filters
+            query = """
+                SELECT 
+                    from_role, to_role, transition_count,
+                    transition_probability, avg_duration_months, 
+                    success_rate, required_skills
+                FROM career_transition_matrix
+                WHERE transition_count > 0
+            """
+            params = []
+            
+            # Add filters if provided
+            if starting_role:
+                query += " AND from_role = %s"
+                params.append(starting_role)
+            
+            if target_role:
+                query += " AND to_role = %s"
+                params.append(target_role)
+            
+            query += " ORDER BY transition_count DESC, transition_probability DESC LIMIT %s"
+            params.append(limit)
+            
             async with db_conn.cursor() as cursor:
-                await cursor.execute("""
-                    SELECT 
-                        from_role, to_role, transition_count,
-                        transition_probability, avg_duration_months, 
-                        success_rate, required_skills
-                    FROM career_transition_matrix
-                    WHERE transition_count > 0
-                    ORDER BY transition_count DESC, transition_probability DESC
-                    LIMIT %s
-                """, (limit,))
+                await cursor.execute(query, tuple(params))
                 paths = await cursor.fetchall()
             
             result = []

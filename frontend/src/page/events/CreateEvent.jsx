@@ -55,6 +55,10 @@ const CreateEvent = () => {
       toast.error('Start date is required');
       return;
     }
+    if (!formData.end_date) {
+      toast.error('End date is required');
+      return;
+    }
     if (!formData.is_virtual && !formData.location.trim()) {
       toast.error('Location is required for non-virtual events');
       return;
@@ -66,15 +70,26 @@ const CreateEvent = () => {
 
     setSubmitting(true);
     try {
-      const response = await eventService.createEvent(formData);
+      // Prepare data: convert empty strings to null for optional fields
+      const payload = {
+        ...formData,
+        meeting_link: formData.meeting_link.trim() || null,
+        location: formData.location.trim() || null,
+        banner_image: formData.banner_image.trim() || null,
+        registration_deadline: formData.registration_deadline || null,
+        max_attendees: formData.max_attendees ? parseInt(formData.max_attendees) : null
+      };
+      
+      const response = await eventService.createEvent(payload);
       
       if (response.success) {
         toast.success('Event created successfully!');
         navigate(`/events/${response.data.id}`);
       } else {
-        toast.error(response.message);
+        toast.error(response.error || response.message || 'Failed to create event');
       }
     } catch (error) {
+      console.error('Event creation error:', error);
       toast.error('Failed to create event');
     } finally {
       setSubmitting(false);
@@ -240,6 +255,7 @@ const CreateEvent = () => {
                   type="datetime-local"
                   value={formData.end_date}
                   onChange={(e) => handleChange('end_date', e.target.value)}
+                  min={formData.start_date}
                   required
                   data-testid="end-date-input"
                 />
@@ -247,13 +263,12 @@ const CreateEvent = () => {
 
               {/* Registration Deadline */}
               <div className="space-y-2">
-                <Label htmlFor="registration_deadline">Registration Deadline *</Label>
+                <Label htmlFor="registration_deadline">Registration Deadline (Optional)</Label>
                 <Input
                   id="registration_deadline"
                   type="datetime-local"
                   value={formData.registration_deadline}
                   onChange={(e) => handleChange('registration_deadline', e.target.value)}
-                  required
                   data-testid="registration-deadline-input"
                 />
               </div>

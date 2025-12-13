@@ -652,37 +652,47 @@ class EventCreate(BaseModel):
     banner_image: Optional[str] = Field(None, max_length=500)
     status: EventStatus = EventStatus.PUBLISHED
     
-    @field_validator('end_date')
+    @field_validator('meeting_link', 'banner_image', 'location', mode='before')
     @classmethod
-    def validate_end_date(cls, v, info):
-        """Ensure end_date is after start_date"""
-        if 'start_date' in info.data and v < info.data['start_date']:
+    def empty_string_to_none(cls, v):
+        """Convert empty strings to None for optional fields"""
+        if isinstance(v, str) and v.strip() == '':
+            return None
+        return v
+    
+    @field_validator('registration_deadline', mode='before')
+    @classmethod
+    def empty_string_deadline_to_none(cls, v):
+        """Convert empty string to None for registration_deadline"""
+        if isinstance(v, str) and v.strip() == '':
+            return None
+        return v
+    
+    @field_validator('title', 'description', mode='after')
+    @classmethod
+    def strip_whitespace(cls, v):
+        """Strip whitespace from string fields"""
+        if isinstance(v, str):
+            return v.strip()
+        return v
+    
+    def model_post_init(self, __context):
+        """Validate model after all fields are initialized"""
+        # Validate end_date
+        if self.end_date < self.start_date:
             raise ValueError('end_date must be after start_date')
-        return v
-    
-    @field_validator('registration_deadline')
-    @classmethod
-    def validate_registration_deadline(cls, v, info):
-        """Ensure registration_deadline is before start_date"""
-        if v and 'start_date' in info.data and v > info.data['start_date']:
+        
+        # Validate registration_deadline
+        if self.registration_deadline and self.registration_deadline > self.start_date:
             raise ValueError('registration_deadline must be before start_date')
-        return v
-    
-    @field_validator('meeting_link')
-    @classmethod
-    def validate_virtual_event(cls, v, info):
-        """Require meeting_link for virtual events"""
-        if info.data.get('is_virtual') and not v:
+        
+        # Validate virtual event
+        if self.is_virtual and not self.meeting_link:
             raise ValueError('meeting_link is required for virtual events')
-        return v
-    
-    @field_validator('location')
-    @classmethod
-    def validate_physical_event(cls, v, info):
-        """Require location for non-virtual events"""
-        if not info.data.get('is_virtual', False) and not v:
+        
+        # Validate physical event
+        if not self.is_virtual and not self.location:
             raise ValueError('location is required for non-virtual events')
-        return v
 
 
 class EventUpdate(BaseModel):

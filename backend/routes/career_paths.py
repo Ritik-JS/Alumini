@@ -101,11 +101,14 @@ async def predict_career_path_for_user(
 @router.get("/paths")
 async def get_common_career_paths(
     limit: int = Query(20, ge=1, le=100),
+    startingRole: Optional[str] = Query(None, alias="startingRole"),
+    targetRole: Optional[str] = Query(None, alias="targetRole"),
     current_user: dict = Depends(get_current_user)
 ):
     """
     Get most common career transitions
     Shows popular career progressions across alumni
+    Supports filtering by starting role and/or target role
     """
     try:
         pool = await get_db_pool()
@@ -113,7 +116,9 @@ async def get_common_career_paths(
         async with pool.acquire() as conn:
             paths = await career_service.get_common_career_paths(
                 conn,
-                limit=limit
+                limit=limit,
+                starting_role=startingRole,
+                target_role=targetRole
             )
             
             return {
@@ -267,11 +272,14 @@ async def get_my_latest_prediction(
 @career_paths_router.get("")
 async def get_career_paths_wrapper(
     limit: int = Query(20, ge=1, le=100),
+    startingRole: Optional[str] = Query(None, alias="startingRole"),
+    targetRole: Optional[str] = Query(None, alias="targetRole"),
     current_user: dict = Depends(get_current_user)
 ):
     """
     Wrapper for GET /api/career/paths
     Get most common career transitions
+    Supports filtering by starting role and/or target role
     """
     try:
         pool = await get_db_pool()
@@ -279,7 +287,9 @@ async def get_career_paths_wrapper(
         async with pool.acquire() as conn:
             paths = await career_service.get_common_career_paths(
                 conn,
-                limit=limit
+                limit=limit,
+                starting_role=startingRole,
+                target_role=targetRole
             )
             
             return {
