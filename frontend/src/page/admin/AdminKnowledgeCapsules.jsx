@@ -48,14 +48,20 @@ const AdminKnowledgeCapsules = () => {
       const result = await knowledgeService.getCapsules();
       
       if (result.success) {
-        setCapsules(result.data || []);
-        setFilteredCapsules(result.data || []);
+        // Ensure we always set an array
+        const capsulesData = Array.isArray(result.data) ? result.data : [];
+        setCapsules(capsulesData);
+        setFilteredCapsules(capsulesData);
       } else {
         setError(result.error || 'Failed to load knowledge capsules');
+        setCapsules([]);
+        setFilteredCapsules([]);
       }
     } catch (error) {
       console.error('Error loading capsules:', error);
       setError('Unable to connect to server. Please try again later.');
+      setCapsules([]);
+      setFilteredCapsules([]);
     } finally {
       setLoading(false);
     }
@@ -66,13 +72,14 @@ const AdminKnowledgeCapsules = () => {
   }, []);
 
   useEffect(() => {
-    let filtered = capsules;
+    // Ensure capsules is an array before filtering
+    let filtered = Array.isArray(capsules) ? [...capsules] : [];
 
     if (searchQuery) {
       filtered = filtered.filter(
         (c) =>
-          c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          c.content.toLowerCase().includes(searchQuery.toLowerCase())
+          c.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.content?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -84,19 +91,27 @@ const AdminKnowledgeCapsules = () => {
   }, [searchQuery, categoryFilter, capsules]);
 
   const handleViewCapsule = (capsuleId) => {
-    const capsule = capsules.find((c) => c.id === capsuleId);
+    const capsulesArray = Array.isArray(capsules) ? capsules : [];
+    const capsule = capsulesArray.find((c) => c.id === capsuleId);
     setSelectedCapsule(capsule);
     setShowCapsuleModal(true);
   };
 
   const handleToggleFeatured = async (capsuleId) => {
     try {
-      const capsule = capsules.find(c => c.id === capsuleId);
+      const capsulesArray = Array.isArray(capsules) ? capsules : [];
+      const capsule = capsulesArray.find(c => c.id === capsuleId);
+      
+      if (!capsule) {
+        toast.error('Capsule not found');
+        return;
+      }
+      
       const result = await knowledgeService.updateCapsule(capsuleId, { is_featured: !capsule.is_featured });
       
       if (result.success) {
         setCapsules(
-          capsules.map((c) =>
+          capsulesArray.map((c) =>
             c.id === capsuleId ? { ...c, is_featured: !c.is_featured } : c
           )
         );
@@ -116,7 +131,8 @@ const AdminKnowledgeCapsules = () => {
         const result = await knowledgeService.deleteCapsule(capsuleId);
         
         if (result.success) {
-          setCapsules(capsules.filter((c) => c.id !== capsuleId));
+          const capsulesArray = Array.isArray(capsules) ? capsules : [];
+          setCapsules(capsulesArray.filter((c) => c.id !== capsuleId));
           toast.success('Capsule deleted successfully');
         } else {
           toast.error(result.error || 'Failed to delete capsule');
@@ -145,11 +161,14 @@ const AdminKnowledgeCapsules = () => {
     }
   };
 
+  // Ensure capsules is always an array before using array methods
+  const capsulesArray = Array.isArray(capsules) ? capsules : [];
+  
   const stats = [
-    { label: 'Total Capsules', value: capsules.length, color: 'text-blue-600', icon: BookOpen },
-    { label: 'Featured', value: capsules.filter((c) => c.is_featured).length, color: 'text-yellow-600', icon: Star },
-    { label: 'Total Views', value: capsules.reduce((sum, c) => sum + (c.views_count || 0), 0), color: 'text-green-600', icon: TrendingUp },
-    { label: 'Total Likes', value: capsules.reduce((sum, c) => sum + (c.likes_count || 0), 0), color: 'text-red-600', icon: Heart },
+    { label: 'Total Capsules', value: capsulesArray.length, color: 'text-blue-600', icon: BookOpen },
+    { label: 'Featured', value: capsulesArray.filter((c) => c.is_featured).length, color: 'text-yellow-600', icon: Star },
+    { label: 'Total Views', value: capsulesArray.reduce((sum, c) => sum + (c.views_count || 0), 0), color: 'text-green-600', icon: TrendingUp },
+    { label: 'Total Likes', value: capsulesArray.reduce((sum, c) => sum + (c.likes_count || 0), 0), color: 'text-red-600', icon: Heart },
   ];
 
   const categories = ['all', 'technical', 'career', 'entrepreneurship', 'life_lessons', 'industry_insights', 'other'];
