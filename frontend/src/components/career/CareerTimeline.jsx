@@ -1,81 +1,114 @@
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Circle, Clock } from 'lucide-react';
+import { ArrowRight, MapPin, Flag } from 'lucide-react';
 
 const CareerTimeline = ({ currentRole, predictions }) => {
-  const sortedPredictions = [...predictions].sort((a, b) => {
-    const getMonths = (timeframe) => {
-      const match = timeframe.match(/\d+/);
-      return match ? parseInt(match[0]) : 0;
-    };
-    return getMonths(a.timeframe) - getMonths(b.timeframe);
-  });
-
-  const timelineItems = [
-    {
-      title: currentRole,
-      status: 'current',
-      timeframe: 'Now',
-      icon: CheckCircle2,
-      color: 'green'
-    },
-    ...sortedPredictions.slice(0, 3).map((pred, idx) => ({
-      title: pred.role_name,
-      status: 'predicted',
-      timeframe: pred.timeframe,
-      probability: pred.probability,
-      icon: idx === 0 ? Clock : Circle,
-      color: idx === 0 ? 'blue' : 'gray'
-    }))
-  ];
+  // Sort predictions by probability
+  const sortedPredictions = [...predictions]
+    .sort((a, b) => b.probability - a.probability)
+    .slice(0, 3); // Top 3 predictions
 
   return (
-    <Card data-testid="career-timeline">
+    <Card className="h-full" data-testid="career-timeline">
+      <CardHeader className="bg-gradient-to-br from-purple-50 to-pink-50">
+        <CardTitle className="flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-purple-600" />
+          Career Trajectory
+        </CardTitle>
+      </CardHeader>
       <CardContent className="pt-6">
-        <h3 className="text-lg font-semibold mb-6">Career Growth Timeline</h3>
         <div className="relative">
           {/* Timeline Line */}
-          <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gradient-to-b from-green-500 via-blue-500 to-gray-300" />
-          
-          {/* Timeline Items */}
-          <div className="space-y-8">
-            {timelineItems.map((item, idx) => {
-              const Icon = item.icon;
-              const colorClasses = {
-                green: 'bg-green-500 text-white',
-                blue: 'bg-blue-500 text-white',
-                gray: 'bg-gray-300 text-gray-600'
-              };
-              
-              return (
-                <div key={idx} className="relative flex items-start gap-4" data-testid={`timeline-item-${idx}`}>
-                  {/* Icon */}
-                  <div className={`relative z-10 flex items-center justify-center w-12 h-12 rounded-full ${colorClasses[item.color]} shadow-lg`}>
-                    <Icon className="h-6 w-6" />
+          <div className="absolute left-6 top-8 bottom-8 w-0.5 bg-gradient-to-b from-blue-400 via-purple-400 to-pink-400" />
+
+          {/* Current Position */}
+          <div className="relative flex items-start gap-4 mb-8">
+            <div className="relative z-10 flex-shrink-0">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                <MapPin className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <div className="flex-1 pt-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-bold text-lg">{currentRole}</h3>
+                <Badge variant="default">Current</Badge>
+              </div>
+              <p className="text-sm text-gray-600">Your current position</p>
+            </div>
+          </div>
+
+          {/* Predicted Roles */}
+          {sortedPredictions.map((pred, index) => {
+            const monthsFromNow = pred.timeframe_months || 24;
+            const yearsFromNow = Math.floor(monthsFromNow / 12);
+            const remainingMonths = monthsFromNow % 12;
+            
+            const timeLabel = yearsFromNow > 0
+              ? `${yearsFromNow}y ${remainingMonths > 0 ? remainingMonths + 'm' : ''}`
+              : `${remainingMonths}m`;
+
+            const isLast = index === sortedPredictions.length - 1;
+
+            return (
+              <div key={index} className="relative flex items-start gap-4 mb-8">
+                {/* Timeline Node */}
+                <div className="relative z-10 flex-shrink-0">
+                  {isLast ? (
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg">
+                      <Flag className="h-6 w-6 text-white" />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
+                      <ArrowRight className="h-6 w-6 text-white" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 pt-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <h3 className="font-bold text-lg">{pred.role_name}</h3>
+                    <Badge variant="secondary" className="text-xs">
+                      {Math.round(pred.probability * 100)}% match
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-gray-600 mb-2">
+                    <span className="flex items-center gap-1">
+                      <span className="font-medium">~{timeLabel}</span>
+                    </span>
+                    {pred.skill_match_percentage && (
+                      <span className="text-xs">
+                        • {Math.round(pred.skill_match_percentage)}% skills ready
+                      </span>
+                    )}
                   </div>
                   
-                  {/* Content */}
-                  <div className="flex-1 pt-1">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-semibold text-lg">{item.title}</h4>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {item.status === 'current' ? 'Current Position' : `Target in ${item.timeframe}`}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        {item.status === 'current' ? (
-                          <Badge className="bg-green-100 text-green-800">Current</Badge>
-                        ) : (
-                          <Badge variant="secondary">{item.probability}% match</Badge>
-                        )}
-                      </div>
+                  {/* Skills Preview */}
+                  {pred.skills_gap && pred.skills_gap.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {pred.skills_gap.slice(0, 4).map((skill, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs bg-white">
+                          {skill}
+                        </Badge>
+                      ))}
+                      {pred.skills_gap.length > 4 && (
+                        <Badge variant="outline" className="text-xs bg-white">
+                          +{pred.skills_gap.length - 4}
+                        </Badge>
+                      )}
                     </div>
-                  </div>
+                  )}
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer Note */}
+        <div className="mt-6 pt-4 border-t">
+          <p className="text-xs text-gray-500 text-center">
+            Timeline based on historical data and career transition patterns
+          </p>
         </div>
       </CardContent>
     </Card>
