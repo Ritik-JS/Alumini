@@ -6,7 +6,25 @@ class ApiEventService {
   // Get all events with optional filters
   async getEvents(filters = {}) {
     try {
-      const response = await axios.get('/api/events', { params: filters });
+      // Map frontend filter parameters to backend parameters
+      const params = { ...filters };
+      
+      // Map status: "upcoming"/"past" to is_upcoming: boolean
+      if (filters.status === 'upcoming') {
+        params.is_upcoming = true;
+        delete params.status;
+      } else if (filters.status === 'past') {
+        params.is_upcoming = false;
+        delete params.status;
+      }
+      
+      // Map type to event_type
+      if (filters.type) {
+        params.event_type = filters.type;
+        delete params.type;
+      }
+      
+      const response = await axios.get('/api/events', { params });
       return response.data;
     } catch (error) {
       return handleApiError(error, []);
@@ -88,7 +106,7 @@ class ApiEventService {
   // Get events created by current user
   async getMyEvents() {
     try {
-      const response = await axios.get('/api/events/my-events');
+      const response = await axios.get('/api/events/user/my-events');
       return response.data;
     } catch (error) {
       return handleApiError(error, []);

@@ -75,6 +75,20 @@ async def get_all_events(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/user/my-events", response_model=dict)
+async def get_my_events(current_user: dict = Depends(get_current_user)):
+    """Get events created by current user"""
+    try:
+        events = await EventService.get_events_by_creator(current_user["id"])
+        return {
+            "success": True,
+            "data": [event.model_dump() for event in events]
+        }
+    except Exception as e:
+        logger.error(f"Error fetching user events: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/{event_id}", response_model=dict)
 async def get_event(event_id: str):
     """Get event details by ID"""
@@ -152,20 +166,6 @@ async def delete_event(
         raise
     except Exception as e:
         logger.error(f"Error deleting event: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/my-events", response_model=dict)
-async def get_my_events(current_user: dict = Depends(get_current_user)):
-    """Get events created by current user"""
-    try:
-        events = await EventService.get_events_by_creator(current_user["id"])
-        return {
-            "success": True,
-            "data": [event.model_dump() for event in events]
-        }
-    except Exception as e:
-        logger.error(f"Error fetching user events: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

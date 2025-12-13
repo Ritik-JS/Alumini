@@ -721,16 +721,38 @@ class EventWithRSVP(BaseModel):
     user_rsvp: Optional[EventRSVPResponse] = None
 
 
+class EventAttendeeUser(BaseModel):
+    """User details for event attendee"""
+    id: str
+    email: str
+    role: str
+    is_verified: bool
+    is_active: bool
+
+
+class EventAttendeeProfile(BaseModel):
+    """Profile details for event attendee"""
+    id: Optional[str] = None
+    name: Optional[str] = None
+    photo_url: Optional[str] = None
+    headline: Optional[str] = None
+    current_company: Optional[str] = None
+    current_role: Optional[str] = None
+    location: Optional[str] = None
+    batch_year: Optional[int] = None
+    skills: Optional[list[str]] = None
+    bio: Optional[str] = None
+
+
 class EventAttendee(BaseModel):
-    """Event attendee details"""
+    """Event attendee details with nested user and profile"""
     id: str
     event_id: str
     user_id: str
     status: str
     rsvp_date: datetime
-    user_name: str
-    user_email: str
-    user_photo_url: Optional[str] = None
+    user: EventAttendeeUser
+    profile: Optional[EventAttendeeProfile] = None
 
 
 # Forum Models

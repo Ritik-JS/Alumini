@@ -98,11 +98,15 @@ class EventService:
                 query = "SELECT * FROM events WHERE 1=1"
                 params = []
                 
+                # Default to published events only (exclude drafts)
+                query += " AND status = 'published'"
+                
                 if event_type:
                     query += " AND event_type = %s"
                     params.append(event_type)
                 
-                if status:
+                # Only filter by status if it's a valid event status (not "upcoming" or "past")
+                if status and status in ['draft', 'published', 'cancelled', 'completed']:
                     query += " AND status = %s"
                     params.append(status)
                 
@@ -301,16 +305,17 @@ class EventService:
     
     @staticmethod
     async def get_event_attendees(event_id: str) -> list[EventAttendee]:
-        """Get all attendees for an event"""
+        """Get all attendees for an event with complete user and profile data"""
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 query = """
                 SELECT 
                     r.id, r.event_id, r.user_id, r.status, r.rsvp_date,
-                    u.email as user_email,
-                    COALESCE(ap.name, u.email) as user_name,
-                    ap.photo_url as user_photo_url
+                    u.id as user_id_inner, u.email, u.role, u.is_verified, u.is_active,
+                    ap.id as profile_id, ap.name, ap.photo_url, ap.headline, 
+                    ap.current_company, ap.current_role, ap.location, ap.batch_year,
+                    ap.skills, ap.bio
                 FROM event_rsvps r
                 INNER JOIN users u ON r.user_id = u.id
                 LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
@@ -321,16 +326,50 @@ class EventService:
                 rows = await cursor.fetchall()
                 
                 attendees = []
+                from database.models import EventAttendeeUser, EventAttendeeProfile
+                
                 for row in rows:
+                    # Parse skills JSON if present
+                    skills = None
+                    if row[18]:  # skills field
+                        try:
+                            skills = json.loads(row[18]) if isinstance(row[18], str) else row[18]
+                        except:
+                            skills = None
+                    
+                    # Create user object
+                    user = EventAttendeeUser(
+                        id=row[5],  # user_id_inner
+                        email=row[6],
+                        role=row[7],
+                        is_verified=row[8],
+                        is_active=row[9]
+                    )
+                    
+                    # Create profile object (may be None for non-alumni)
+                    profile = None
+                    if row[10]:  # profile_id exists
+                        profile = EventAttendeeProfile(
+                            id=row[10],
+                            name=row[11],
+                            photo_url=row[12],
+                            headline=row[13],
+                            current_company=row[14],
+                            current_role=row[15],
+                            location=row[16],
+                            batch_year=row[17],
+                            skills=skills,
+                            bio=row[19]
+                        )
+                    
                     attendees.append(EventAttendee(
                         id=row[0],
                         event_id=row[1],
                         user_id=row[2],
                         status=row[3],
                         rsvp_date=row[4],
-                        user_email=row[5],
-                        user_name=row[6],
-                        user_photo_url=row[7]
+                        user=user,
+                        profile=profile
                     ))
                 
                 return attendees
