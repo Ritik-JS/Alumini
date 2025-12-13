@@ -15,7 +15,6 @@ const ManageJobs = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [postedJobs, setPostedJobs] = useState([]);
-  const [jobApplicationsMap, setJobApplicationsMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -27,6 +26,7 @@ const ManageJobs = () => {
 
   const loadJobs = async () => {
     setError(null);
+    setLoading(true);
     try {
       // Load jobs posted by this recruiter
       const jobsResponse = await jobService.getMyJobs(user.id);
@@ -35,23 +35,8 @@ const ManageJobs = () => {
       }
       const jobs = jobsResponse.data || [];
       setPostedJobs(jobs);
-
-      // Load applications for each job
-      const applicationsMap = {};
-      for (const job of jobs) {
-        try {
-          const appsResponse = await jobService.getJobApplications(job.id);
-          if (appsResponse.success) {
-            applicationsMap[job.id] = appsResponse.data || [];
-          } else {
-            applicationsMap[job.id] = [];
-          }
-        } catch (error) {
-          console.error(`Error loading applications for job ${job.id}:`, error);
-          applicationsMap[job.id] = [];
-        }
-      }
-      setJobApplicationsMap(applicationsMap);
+      
+      // No need to load applications separately - use applications_count from jobs table
     } catch (error) {
       console.error('Error loading jobs:', error);
       setError(error.message || 'Failed to load jobs');
@@ -92,27 +77,34 @@ const ManageJobs = () => {
   });
 
   // Show error state
-  if (error) {
+  if (error && !loading) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
         <MainNavbar />
         <div className="flex flex-1">
           <Sidebar />
           <main className="flex-1 p-6">
-            <Card className="border-red-200 bg-red-50">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-red-800">
-                  <AlertCircle className="h-5 w-5" />
-                  <div>
-                    <h3 className="font-semibold">Error Loading Jobs</h3>
-                    <p className="text-sm mt-1">{error}</p>
-                    <Button onClick={loadJobs} variant="outline" size="sm" className="mt-3">
-                      Try Again
-                    </Button>
+            <div className="max-w-7xl mx-auto">
+              <Card className="border-red-200 bg-red-50">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3 text-red-800">
+                    <AlertCircle className="h-6 w-6 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">Error Loading Jobs</h3>
+                      <p className="text-sm mt-1">{error}</p>
+                      <div className="flex gap-2 mt-4">
+                        <Button onClick={loadJobs} variant="outline" size="sm" className="bg-white">
+                          Try Again
+                        </Button>
+                        <Button onClick={() => navigate('/jobs')} variant="ghost" size="sm">
+                          Browse Jobs
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </main>
         </div>
         <Footer />
@@ -217,7 +209,8 @@ const ManageJobs = () => {
             ) : (
               <div className="space-y-4">
                 {filteredJobs.map(job => {
-                  const applicationsCount = (jobApplicationsMap[job.id] || []).length;
+                  // Use applications_count from jobs table directly
+                  const applicationsCount = job.applications_count || 0;
 
                   return (
                     <Card key={job.id} data-testid={`job-card-${job.id}`}>

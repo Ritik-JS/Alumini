@@ -31,41 +31,20 @@ const MyApplications = () => {
     setLoading(true);
     setError(null);
     try {
-      // Get user's applications
+      // Get user's applications - backend already includes nested job data
       const response = await jobService.getMyApplications(user.id);
       if (!response.success) {
         throw new Error(response.error || 'Failed to load applications');
       }
       const userApplications = response.data || [];
       
-      // OPTIMIZED: Batch load job details to avoid N+1 query problem
-      const uniqueJobIds = [...new Set(userApplications.map(app => app.job_id))];
-      const jobPromises = uniqueJobIds.map(jobId => 
-        jobService.getJobById(jobId).catch(error => {
-          console.error(`Error loading job ${jobId}:`, error);
-          return { success: false, data: null };
-        })
-      );
+      // Backend already returns applications with nested job object
+      // No need to load jobs separately - this was causing N+1 query problem
       
-      const jobResponses = await Promise.all(jobPromises);
-      const jobsMap = {};
-      jobResponses.forEach((response, index) => {
-        const jobId = uniqueJobIds[index];
-        jobsMap[jobId] = response.success && response.data 
-          ? response.data 
-          : { title: 'Unknown Job', company: 'Unknown Company' };
-      });
-      
-      // Enrich applications with job data
-      const enriched = userApplications.map(app => ({
-        ...app,
-        job: jobsMap[app.job_id] || { title: 'Unknown Job', company: 'Unknown Company' },
-      }));
-
       // Sort by applied date (most recent first)
-      enriched.sort((a, b) => new Date(b.applied_at) - new Date(a.applied_at));
+      userApplications.sort((a, b) => new Date(b.applied_at) - new Date(a.applied_at));
       
-      setApplications(enriched);
+      setApplications(userApplications);
     } catch (error) {
       console.error('Error loading applications:', error);
       setError(error.message || 'Failed to load applications');
@@ -104,22 +83,27 @@ const MyApplications = () => {
   const filteredApplications = filterApplications(activeTab);
 
   // Show error state
-  if (error) {
+  if (error && !loading) {
     return (
       <div className="min-h-screen flex flex-col" data-testid="my-applications-page">
         <MainNavbar />
         <main className="flex-1 bg-gray-50 dark:bg-gray-900">
           <div className="container mx-auto px-4 py-8">
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
               <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-red-800">
-                  <AlertCircle className="h-5 w-5" />
-                  <div>
-                    <h3 className="font-semibold">Error Loading Applications</h3>
+                <div className="flex items-center gap-3 text-red-800 dark:text-red-300">
+                  <AlertCircle className="h-6 w-6 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg">Error Loading Applications</h3>
                     <p className="text-sm mt-1">{error}</p>
-                    <Button onClick={loadApplications} variant="outline" size="sm" className="mt-3">
-                      Try Again
-                    </Button>
+                    <div className="flex gap-2 mt-4">
+                      <Button onClick={loadApplications} variant="outline" size="sm" className="bg-white dark:bg-gray-800">
+                        Try Again
+                      </Button>
+                      <Button onClick={() => navigate('/jobs')} variant="ghost" size="sm">
+                        Browse Jobs
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>

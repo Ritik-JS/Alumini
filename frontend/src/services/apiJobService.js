@@ -119,7 +119,7 @@ export const apiJobService = {
     }
   },
 
-  // Filter jobs - NOW OPTIMIZED: Use backend filtering instead of client-side
+  // Filter jobs - OPTIMIZED: Primarily uses backend filtering with minimal client-side filtering
   async filterJobs(filters = {}) {
     try {
       // Build query params for backend filtering
@@ -129,15 +129,22 @@ export const apiJobService = {
         params.search = filters.search;
       }
       
-      if (filters.location) {
+      // Handle location filters
+      if (filters.locations && filters.locations.length > 0) {
+        params.location = filters.locations[0]; // Use first location for backend filter
+      } else if (filters.location) {
         params.location = filters.location;
       }
       
+      // Handle job type filters
       if (filters.jobTypes && filters.jobTypes.length > 0) {
         params.job_type = filters.jobTypes[0]; // Backend supports single job_type
       }
       
-      if (filters.company) {
+      // Handle company filters
+      if (filters.companies && filters.companies.length > 0) {
+        params.company = filters.companies[0]; // Use first company for backend filter
+      } else if (filters.company) {
         params.company = filters.company;
       }
       
@@ -145,8 +152,8 @@ export const apiJobService = {
       const response = await this.getAllJobs(params);
       let jobs = response.data || [];
       
-      // Apply additional client-side filters if needed (for complex filters not supported by backend)
-      if (filters.locations && filters.locations.length > 0) {
+      // Apply additional client-side filters only for multiple selections
+      if (filters.locations && filters.locations.length > 1) {
         jobs = jobs.filter(job => 
           filters.locations.some(loc => job.location?.toLowerCase().includes(loc.toLowerCase()))
         );
@@ -156,7 +163,7 @@ export const apiJobService = {
         jobs = jobs.filter(job => filters.jobTypes.includes(job.job_type));
       }
       
-      if (filters.companies && filters.companies.length > 0) {
+      if (filters.companies && filters.companies.length > 1) {
         jobs = jobs.filter(job => 
           filters.companies.some(comp => job.company?.toLowerCase().includes(comp.toLowerCase()))
         );
@@ -248,15 +255,45 @@ export const apiJobService = {
     }
   },
 
-  // Check if user has applied to a job (used by JobDetails.jsx)
+  // Cache for user applications (to avoid repeated API calls)
+  _applicationCache: {},
+
+  // Check if user has applied to a job (used by JobDetails.jsx) - OPTIMIZED with caching
   async hasUserApplied(jobId, userId) {
     try {
-      const response = await this.getMyApplications(userId);
-      const applications = response.data || [];
+      // Check if cache exists and is fresh (less than 2 minutes old)
+      const cached = this._applicationCache[userId];
+      const cacheAge = cached ? Date.now() - cached.timestamp : Infinity;
+      const isCacheFresh = cacheAge < 120000; // 2 minutes
+      
+      let applications;
+      
+      if (cached && isCacheFresh) {
+        // Use cached data
+        applications = cached.applications;
+      } else {
+        // Fetch fresh data and cache it
+        const response = await this.getMyApplications(userId);
+        applications = response.data || [];
+        this._applicationCache[userId] = {
+          applications,
+          timestamp: Date.now()
+        };
+      }
+      
       return applications.some(app => app.job_id === jobId);
     } catch (error) {
       console.error('Error checking application status:', error);
       return false;
+    }
+  },
+
+  // Clear application cache for a user (call after new application submitted)
+  clearApplicationCache(userId) {
+    if (userId) {
+      delete this._applicationCache[userId];
+    } else {
+      this._applicationCache = {};
     }
   },
 
@@ -268,6 +305,12 @@ export const apiJobService = {
   // Alias for getJobApplications (used by ApplicationsManager.jsx)
   async getApplicationsForJob(jobId) {
     return await this.getJobApplications(jobId);
+  },
+
+  // Alias for applyForJob (used by ApplicationModal.jsx)
+  async submitApplication(applicationData) {
+    const { job_id, ...restData } = applicationData;
+    return await this.applyForJob(job_id, restData);
   },
 
   // Normalize response to ensure consistent format
