@@ -114,7 +114,19 @@ const SkillGraph = () => {
 
   const handleSkillClick = async (skill) => {
     const skillName = skill.skill_name || skill.id || skill.label;
-    setSelectedSkill(skill);
+    
+    // Ensure the skill object has all necessary properties with defaults
+    const normalizedSkill = {
+      id: skill.id,
+      skill_name: skillName,
+      popularity_score: skill.popularity_score || skill.popularity || 0,
+      alumni_count: skill.alumni_count || 0,
+      job_count: skill.job_count || 0,
+      related_skills: skill.related_skills || [],
+      industry_connections: skill.industry_connections || []
+    };
+    
+    setSelectedSkill(normalizedSkill);
     
     // Load focused network for this skill
     await loadFocusedNetwork(skillName);
@@ -124,11 +136,11 @@ const SkillGraph = () => {
       if (res.success) {
         toast.success(`Found ${res.count} alumni with ${skillName}`);
       } else {
-        toast.info(`${skill.alumni_count || 0} alumni have ${skillName} skill`);
+        toast.info(`${normalizedSkill.alumni_count} alumni have ${skillName} skill`);
       }
     } catch (error) {
       console.error('Error loading alumni data:', error);
-      toast.info(`${skill.alumni_count || 0} alumni have ${skillName} skill`);
+      toast.info(`${normalizedSkill.alumni_count} alumni have ${skillName} skill`);
     }
   };
 
@@ -516,9 +528,11 @@ const SkillGraph = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     {selectedSkill.skill_name}
-                    <Badge variant="secondary" className="ml-2">
-                      Popularity: {selectedSkill.popularity_score.toFixed(1)}
-                    </Badge>
+                    {selectedSkill.popularity_score !== undefined && selectedSkill.popularity_score !== null && (
+                      <Badge variant="secondary" className="ml-2">
+                        Popularity: {selectedSkill.popularity_score.toFixed(1)}
+                      </Badge>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">

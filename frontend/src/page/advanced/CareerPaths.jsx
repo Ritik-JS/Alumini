@@ -36,7 +36,10 @@ const CareerPaths = () => {
       if (pathsRes.success) {
         // Extract career_paths array from nested data structure
         setCareerPaths(pathsRes.data?.career_paths || pathsRes.data || []);
+      } else {
+        setCareerPaths([]);
       }
+      
       if (rolesRes.success) {
         // Extract role names from proper nested structure
         let roleNames = [];
@@ -48,9 +51,15 @@ const CareerPaths = () => {
         }
         
         setRoles(roleNames || []);
+      } else {
+        setRoles([]);
       }
     } catch (error) {
+      console.error('Error loading career paths:', error);
       toast.error('Failed to load career paths');
+      // Set empty arrays on error to prevent undefined errors
+      setCareerPaths([]);
+      setRoles([]);
     } finally {
       setLoading(false);
     }
@@ -66,9 +75,13 @@ const CareerPaths = () => {
         if (paths.length === 0) {
           toast.info('No career paths found matching your criteria');
         }
+      } else {
+        setCareerPaths([]);
       }
     } catch (error) {
+      console.error('Search error:', error);
       toast.error('Search failed');
+      setCareerPaths([]);
     } finally {
       setLoading(false);
     }
@@ -105,7 +118,7 @@ const CareerPaths = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">Any Role</SelectItem>
-                  {roles.map(role => (
+                  {Array.isArray(roles) && roles.map(role => (
                     <SelectItem key={role} value={role}>{role}</SelectItem>
                   ))}
                 </SelectContent>
@@ -120,7 +133,7 @@ const CareerPaths = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">Any Role</SelectItem>
-                  {roles.map(role => (
+                  {Array.isArray(roles) && roles.map(role => (
                     <SelectItem key={role} value={role}>{role}</SelectItem>
                   ))}
                 </SelectContent>
@@ -238,7 +251,7 @@ const CareerPaths = () => {
                   <div>
                     <h3 className="font-semibold mb-3">Skills to Develop</h3>
                     <div className="flex flex-wrap gap-2">
-                      {path.common_skills.map(skill => (
+                      {Array.isArray(path.common_skills) && path.common_skills.map(skill => (
                         <Badge key={skill} variant="outline" className="text-sm">
                           {skill}
                         </Badge>
@@ -247,7 +260,7 @@ const CareerPaths = () => {
                   </div>
 
                   {/* Success Stories */}
-                  {path.success_stories.length > 0 && (
+                  {Array.isArray(path.success_stories) && path.success_stories.length > 0 && (
                     <div>
                       <h3 className="font-semibold mb-3">Success Stories</h3>
                       <div className="space-y-3">
