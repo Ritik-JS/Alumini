@@ -1,0 +1,85 @@
+email,from_role,to_role,from_company,to_company,transition_date,skills_acquired,success_rating
+sarah.johnson@alumni.edu,Junior Developer,Software Engineer,Startup Inc,Microsoft,2019-07-01,JavaScript|React|Git|Code Review,4
+sarah.johnson@alumni.edu,Software Engineer,Senior Software Engineer,Microsoft,Google,2022-03-01,System Design|Leadership|Kubernetes|Mentoring,5
+michael.chen@alumni.edu,Software Engineer,Senior Software Engineer,Facebook,Meta,2019-09-01,Scalability|Architecture|Performance Optimization,4
+michael.chen@alumni.edu,Senior Software Engineer,Product Manager,Meta,Amazon,2021-08-01,Product Strategy|Stakeholder Management|Agile|Data Analysis,5
+priya.patel@alumni.edu,UX Designer,Senior UX Designer,Adobe,Dropbox,2019-08-01,User Research|Prototyping|Design Systems|Figma,4
+priya.patel@alumni.edu,Senior UX Designer,Lead UX Designer,Dropbox,Airbnb,2023-01-01,Team Leadership|Design Strategy|Accessibility|Mentoring,5
+lisa.anderson@alumni.edu,Data Analyst,Data Scientist,LinkedIn,Uber,2019-07-01,Python|Machine Learning|Statistics|SQL,4
+lisa.anderson@alumni.edu,Data Scientist,Senior Data Scientist,Uber,Netflix,2022-06-01,Deep Learning|MLOps|TensorFlow|Recommendation Systems,5
+robert.taylor@startupventures.com,Business Analyst,Product Manager,Accenture,Startup Inc,2019-01-01,Product Strategy|Agile|User Stories|Roadmapping,4
+robert.taylor@startupventures.com,Product Manager,Senior Product Manager,Startup Inc,StartupVentures,2022-01-01,Leadership|Business Development|Strategy|Fundraising,5
+sarah.johnson@alumni.edu,Intern,Junior Developer,Tech University,Startup Inc,2018-06-01,HTML|CSS|JavaScript|Python,3
+michael.chen@alumni.edu,Intern,Software Engineer,Stanford,Facebook,2018-07-01,Java|Data Structures|Algorithms|System Design,4
+priya.patel@alumni.edu,Design Intern,UX Designer,Freelance,Adobe,2018-08-01,Sketch|Wireframing|User Research|Prototyping,3
+lisa.anderson@alumni.edu,Junior Analyst,Data Analyst,Consulting Firm,LinkedIn,2018-07-01,Excel|SQL|Data Visualization|Tableau,4
+sarah.johnson@alumni.edu,Senior Software Engineer,Tech Lead,Google,Google,2024-06-01,Architecture|Team Management|Strategic Planning|Mentoring,5
+michael.chen@alumni.edu,Product Manager,Senior Product Manager,Amazon,Amazon,2023-12-01,Product Vision|Go-to-Market|Cross-functional Leadership,4
+priya.patel@alumni.edu,Lead UX Designer,Design Manager,Airbnb,Airbnb,2024-08-01,People Management|Hiring|Design Operations|Strategy,5
+lisa.anderson@alumni.edu,Senior Data Scientist,ML Engineer,Netflix,Netflix,2024-09-01,MLOps|Model Deployment|Kubernetes|Production ML,4
+admin@alumni.edu,Junior Developer,Software Engineer,Small Startup,Medium Corp,2019-01-15,React|Node.js|MongoDB|REST APIs,4
+admin@alumni.edu,Software Engineer,Senior Software Engineer,Medium Corp,Tech Giant,2021-06-01,Microservices|Docker|CI/CD|System Design,5
+admin@alumni.edu,Senior Software Engineer,Engineering Manager,Tech Giant,Tech Giant,2023-11-01,Leadership|Team Building|Hiring|Project Management,4
+emily.rodriguez@alumni.edu,Junior Frontend Developer,Frontend Developer,Agency,Shopify,2019-03-01,React|TypeScript|CSS|Responsive Design,4
+emily.rodriguez@alumni.edu,Frontend Developer,Senior Frontend Developer,Shopify,Stripe,2021-09-01,Performance|Accessibility|Testing|Webpack,5
+emily.rodriguez@alumni.edu,Senior Frontend Developer,Frontend Lead,Stripe,Vercel,2024-01-01,Team Leadership|Architecture|Mentoring|Code Review,5
+james.wilson@alumni.edu,QA Tester,QA Engineer,Startup,Microsoft,2018-10-01,Test Automation|Selenium|CI/CD|Bug Tracking,3
+james.wilson@alumni.edu,QA Engineer,Senior QA Engineer,Microsoft,Amazon,2021-03-01,Performance Testing|Security Testing|Test Strategy,4
+james.wilson@alumni.edu,Senior QA Engineer,QA Manager,Amazon,Amazon,2023-08-01,Team Management|Process Improvement|Test Planning,5
+maria.garcia@alumni.edu,Junior Backend Developer,Backend Developer,Consulting,Salesforce,2019-05-01,Python|Django|PostgreSQL|REST APIs,4
+maria.garcia@alumni.edu,Backend Developer,Senior Backend Developer,Salesforce,Databricks,2022-02-01,Distributed Systems|Apache Spark|Data Engineering,5
+maria.garcia@alumni.edu,Senior Backend Developer,Staff Engineer,Databricks,Databricks,2024-06-01,Technical Leadership|Architecture|Mentoring|Innovation,5
+john.doe@alumni.edu,Data Analyst,Senior Data Analyst,Bank,JPMorgan,2019-02-01,SQL|Python|Data Visualization|Business Intelligence,4
+john.doe@alumni.edu,Senior Data Analyst,Data Scientist,JPMorgan,Capital One,2021-07-01,Machine Learning|Statistical Analysis|Feature Engineering,5
+john.doe@alumni.edu,Data Scientist,Senior Data Scientist,Capital One,Bloomberg,2023-12-01,Deep Learning|NLP|Time Series|Production ML,4
+jane.smith@alumni.edu,Junior Product Manager,Product Manager,Startup,Atlassian,2019-04-01,Agile|User Stories|Roadmapping|Prioritization,4
+jane.smith@alumni.edu,Product Manager,Senior Product Manager,Atlassian,Notion,2021-11-01,Product Vision|Go-to-Market|OKRs|Data-Driven Decisions,5
+jane.smith@alumni.edu,Senior Product Manager,Director of Product,Notion,Notion,2024-03-01,Leadership|Strategy|Team Building|Executive Communication,5
+alex.brown@alumni.edu,Junior DevOps Engineer,DevOps Engineer,Hosting Company,DigitalOcean,2019-01-01,Linux|Docker|Kubernetes|CI/CD,4
+alex.brown@alumni.edu,DevOps Engineer,Senior DevOps Engineer,DigitalOcean,HashiCorp,2021-08-01,Infrastructure as Code|Terraform|AWS|Monitoring,5
+alex.brown@alumni.edu,Senior DevOps Engineer,Platform Engineer,HashiCorp,Datadog,2023-10-01,Platform Architecture|SRE|Observability|Automation,5
+samantha.lee@alumni.edu,Mobile Developer,Senior Mobile Developer,Agency,Spotify,2019-06-01,iOS|Swift|Mobile Architecture|Performance,4
+samantha.lee@alumni.edu,Senior Mobile Developer,Mobile Tech Lead,Spotify,DoorDash,2022-04-01,Team Leadership|Cross-platform|Mobile Strategy,5
+samantha.lee@alumni.edu,Mobile Tech Lead,Engineering Manager,DoorDash,DoorDash,2024-07-01,People Management|Hiring|Technical Direction|Roadmapping,4
+david.kim@techcorp.com,Junior Security Engineer,Security Engineer,Cybersecurity Firm,Palo Alto Networks,2019-02-01,Network Security|Penetration Testing|Security Audits,4
+david.kim@techcorp.com,Security Engineer,Senior Security Engineer,Palo Alto Networks,CrowdStrike,2021-10-01,Threat Detection|Incident Response|Security Architecture,5
+david.kim@techcorp.com,Senior Security Engineer,Security Architect,CrowdStrike,Cloudflare,2023-12-01,Zero Trust|Cloud Security|Security Strategy|Compliance,5
+rachel.green@alumni.edu,Junior Designer,UI/UX Designer,Design Studio,Pinterest,2019-03-01,Figma|Prototyping|Visual Design|Design Systems,4
+rachel.green@alumni.edu,UI/UX Designer,Senior UI/UX Designer,Pinterest,Instagram,2021-09-01,User Research|Interaction Design|Mobile Design|A/B Testing,5
+rachel.green@alumni.edu,Senior UI/UX Designer,Design Lead,Instagram,TikTok,2024-02-01,Design Leadership|Team Management|Design Operations,5
+chris.martin@alumni.edu,Junior ML Engineer,ML Engineer,Research Lab,OpenAI,2019-08-01,Python|TensorFlow|PyTorch|Deep Learning,4
+chris.martin@alumni.edu,ML Engineer,Senior ML Engineer,OpenAI,Anthropic,2022-05-01,LLM Training|Model Optimization|Research|Production ML,5
+chris.martin@alumni.edu,Senior ML Engineer,ML Research Scientist,Anthropic,Anthropic,2024-04-01,AI Research|Model Architecture|Safety|Ethics,5
+sophia.williams@alumni.edu,Technical Writer,Senior Technical Writer,Software Company,GitLab,2019-04-01,Documentation|API Documentation|Markdown|Git,3
+sophia.williams@alumni.edu,Senior Technical Writer,Documentation Lead,GitLab,MongoDB,2021-12-01,Content Strategy|Team Leadership|Developer Relations,4
+sophia.williams@alumni.edu,Documentation Lead,Developer Advocate,MongoDB,Vercel,2023-11-01,Public Speaking|Community Building|Technical Marketing,5
+noah.thompson@alumni.edu,Sales Engineer,Senior Sales Engineer,SaaS Startup,Salesforce,2019-05-01,Technical Demos|Solution Architecture|Customer Success,4
+noah.thompson@alumni.edu,Senior Sales Engineer,Solutions Architect,Salesforce,AWS,2022-01-01,Cloud Architecture|Enterprise Solutions|Technical Strategy,5
+noah.thompson@alumni.edu,Solutions Architect,Principal Solutions Architect,AWS,AWS,2024-05-01,Enterprise Architecture|Strategic Consulting|Thought Leadership,5
+olivia.davis@alumni.edu,Customer Support,Customer Success Manager,SaaS Startup,HubSpot,2019-06-01,Customer Relations|Product Knowledge|Communication,3
+olivia.davis@alumni.edu,Customer Success Manager,Senior Customer Success Manager,HubSpot,Zendesk,2021-10-01,Account Management|Upselling|Customer Strategy,4
+olivia.davis@alumni.edu,Senior Customer Success Manager,Director of Customer Success,Zendesk,Intercom,2023-12-01,Team Leadership|Strategy|Customer Experience|Data Analysis,5
+liam.johnson@alumni.edu,Junior Data Engineer,Data Engineer,Analytics Firm,Snowflake,2019-07-01,SQL|Python|ETL|Data Pipelines,4
+liam.johnson@alumni.edu,Data Engineer,Senior Data Engineer,Snowflake,Databricks,2022-02-01,Apache Spark|Data Warehousing|Data Modeling|Optimization,5
+liam.johnson@alumni.edu,Senior Data Engineer,Staff Data Engineer,Databricks,Databricks,2024-03-01,Platform Architecture|Technical Leadership|Data Strategy,5
+emma.martinez@alumni.edu,Junior Product Designer,Product Designer,Design Agency,Figma,2019-08-01,UI Design|Prototyping|User Flows|Design Systems,4
+emma.martinez@alumni.edu,Product Designer,Senior Product Designer,Figma,Canva,2021-11-01,Design Leadership|Product Thinking|Cross-functional Collaboration,5
+emma.martinez@alumni.edu,Senior Product Designer,Design Manager,Canva,Notion,2024-01-01,People Management|Design Operations|Strategy|Hiring,5
+william.anderson@alumni.edu,Junior System Administrator,System Administrator,IT Company,Red Hat,2019-01-01,Linux|Networking|System Management|Troubleshooting,3
+william.anderson@alumni.edu,System Administrator,Senior System Administrator,Red Hat,IBM,2021-06-01,Enterprise Systems|Automation|Security|Cloud Infrastructure,4
+william.anderson@alumni.edu,Senior System Administrator,Infrastructure Architect,IBM,Oracle,2023-09-01,Architecture Design|Cloud Strategy|Migration Planning|Team Leadership,5
+ava.thomas@alumni.edu,Junior Business Analyst,Business Analyst,Consulting,Deloitte,2019-03-01,Requirements Gathering|Stakeholder Management|Process Mapping,4
+ava.thomas@alumni.edu,Business Analyst,Senior Business Analyst,Deloitte,McKinsey,2021-08-01,Strategic Analysis|Business Strategy|Data Analytics|Presentation,5
+ava.thomas@alumni.edu,Senior Business Analyst,Management Consultant,McKinsey,Bain,2023-10-01,Leadership|Client Management|Strategy|Executive Communication,5
+mason.jackson@alumni.edu,Junior Software Engineer,Software Engineer,Tech Startup,Uber,2019-04-01,Python|Go|Distributed Systems|APIs,4
+mason.jackson@alumni.edu,Software Engineer,Senior Software Engineer,Uber,Lyft,2021-09-01,System Architecture|Performance|Scalability|Mentoring,5
+mason.jackson@alumni.edu,Senior Software Engineer,Staff Software Engineer,Lyft,Airbnb,2024-02-01,Technical Leadership|Architecture|Innovation|Cross-team Collaboration,5
+isabella.white@alumni.edu,Junior Recruiter,Technical Recruiter,Staffing Agency,LinkedIn,2019-05-01,Sourcing|Interviewing|Candidate Management|ATS,3
+isabella.white@alumni.edu,Technical Recruiter,Senior Technical Recruiter,LinkedIn,Meta,2021-11-01,Hiring Strategy|Employer Branding|Pipeline Building|Negotiation,4
+isabella.white@alumni.edu,Senior Technical Recruiter,Recruiting Manager,Meta,Google,2023-12-01,Team Management|Recruiting Operations|Strategy|Leadership,5
+ethan.harris@alumni.edu,Junior Game Developer,Game Developer,Indie Studio,Unity Technologies,2019-06-01,Unity|C#|Game Design|3D Graphics,4
+ethan.harris@alumni.edu,Game Developer,Senior Game Developer,Unity Technologies,Epic Games,2022-01-01,Unreal Engine|Gameplay Programming|Performance Optimization,5
+ethan.harris@alumni.edu,Senior Game Developer,Lead Game Developer,Epic Games,Riot Games,2024-04-01,Technical Leadership|Game Architecture|Team Coordination,5
+mia.clark@alumni.edu,Junior Marketing Analyst,Marketing Analyst,E-commerce,Shopify,2019-07-01,Google Analytics|Marketing Campaigns|A/B Testing|SQL,3
+mia.clark@alumni.edu,Marketing Analyst,Senior Marketing Analyst,Shopify,HubSpot,2021-12-01,Growth Strategy|Attribution Modeling|Data-Driven Marketing,4
+mia.clark@alumni.edu,Senior Marketing Analyst,Marketing Manager,HubSpot,Salesforce,2023-11-01,Team Management|Marketing Strategy|Budget Management|Leadership,5
