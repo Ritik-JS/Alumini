@@ -40,11 +40,19 @@ const PostDetails = () => {
   const loadPost = async () => {
     setLoading(true);
     try {
-      const response = await forumService.getPostById(postId);
+      // Fetch post and comments separately
+      const [postResponse, commentsResponse] = await Promise.all([
+        forumService.getPostById(postId),
+        forumService.getComments(postId)
+      ]);
       
-      if (response.success) {
-        setPost(response.data);
-        setComments(response.data.comments || []);
+      if (postResponse.success) {
+        setPost(postResponse.data);
+        if (commentsResponse.success) {
+          setComments(commentsResponse.data);
+        } else {
+          setComments([]);
+        }
       } else {
         toast.error('Post not found');
         navigate('/forum');

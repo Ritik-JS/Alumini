@@ -117,6 +117,39 @@ class ApiForumService {
       return { success: false, message: error.message };
     }
   }
+
+  // Get current user's posts
+  async getMyPosts() {
+    try {
+      const response = await axios.get('/api/forum/my-posts');
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: [] };
+    }
+  }
+
+  // Get all unique tags
+  async getAllTags() {
+    try {
+      const response = await axios.get('/api/forum/tags');
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: [] };
+    }
+  }
+
+  // Create comment (alias for consistency with frontend usage)
+  async createComment(postId, commentData) {
+    try {
+      const response = await axios.post(
+        `/api/forum/posts/${postId}/comments`,
+        commentData
+      );
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  }
 }
 
 export default new ApiForumService();

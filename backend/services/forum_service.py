@@ -203,6 +203,83 @@ class ForumService:
                 return posts
     
     @staticmethod
+    async def get_posts_by_author(author_id: str) -> list[ForumPostWithAuthor]:
+        """Get all posts by a specific author"""
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                query = """
+                SELECT 
+                    p.id, p.title, p.content, p.author_id, p.tags,
+                    p.likes_count, p.comments_count, p.views_count,
+                    p.is_pinned, p.is_deleted, p.created_at, p.updated_at,
+                    u.email as author_email,
+                    COALESCE(ap.name, u.email) as author_name,
+                    ap.photo_url as author_photo_url
+                FROM forum_posts p
+                INNER JOIN users u ON p.author_id = u.id
+                LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
+                WHERE p.author_id = %s AND p.is_deleted = FALSE
+                ORDER BY p.created_at DESC
+                """
+                await cursor.execute(query, (author_id,))
+                rows = await cursor.fetchall()
+                
+                posts = []
+                for row in rows:
+                    tags = json.loads(row[4]) if row[4] else []
+                    posts.append(ForumPostWithAuthor(
+                        id=row[0],
+                        title=row[1],
+                        content=row[2],
+                        author_id=row[3],
+                        tags=tags,
+                        likes_count=row[5],
+                        comments_count=row[6],
+                        views_count=row[7],
+                        is_pinned=row[8],
+                        is_deleted=row[9],
+                        created_at=row[10],
+                        updated_at=row[11],
+                        author_email=row[12],
+                        author_name=row[13],
+                        author_photo_url=row[14],
+                        user_has_liked=False  # Not needed for own posts
+                    ))
+                
+                return posts
+    
+    @staticmethod
+    async def get_all_tags() -> list[str]:
+        """Get all unique tags from all posts"""
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                query = """
+                SELECT DISTINCT tags 
+                FROM forum_posts 
+                WHERE tags IS NOT NULL 
+                AND tags != 'null' 
+                AND tags != '[]'
+                AND is_deleted = FALSE
+                """
+                await cursor.execute(query)
+                rows = await cursor.fetchall()
+                
+                # Extract all unique tags
+                all_tags = set()
+                for row in rows:
+                    if row[0]:
+                        try:
+                            tags_list = json.loads(row[0])
+                            if isinstance(tags_list, list):
+                                all_tags.update(tags_list)
+                        except:
+                            pass
+                
+                return sorted(list(all_tags))
+    
+    @staticmethod
     async def update_post(post_id: str, post_data: ForumPostUpdate) -> Optional[ForumPostResponse]:
         """Update a forum post"""
         pool = await get_db_pool()
@@ -420,11 +497,40 @@ class ForumService:
         return None
     
     @staticmethod
-    async def delete_comment(comment_id: str) -> bool:
-        """Soft delete a comment"""
+    async def get_comment_by_id(comment_id: str) -> Optional[ForumCommentResponse]:
+        """Get comment by ID"""
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor() as cursor:
+                await cursor.execute(
+                    "SELECT * FROM forum_comments WHERE id = %s AND is_deleted = FALSE",
+                    (comment_id,)
+                )
+                row = await cursor.fetchone()
+                if row:
+                    return ForumService._comment_from_row(row, cursor)
+        return None
+    
+    @staticmethod
+    async def delete_comment(comment_id: str, user_id: Optional[str] = None, is_admin: bool = False) -> bool:
+        """Soft delete a comment with optional author verification"""
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                # Check comment exists and get author
+                await cursor.execute(
+                    "SELECT author_id FROM forum_comments WHERE id = %s AND is_deleted = FALSE",
+                    (comment_id,)
+                )
+                row = await cursor.fetchone()
+                
+                if not row:
+                    return False
+                
+                # Verify authorization if user_id provided
+                if user_id and row[0] != user_id and not is_admin:
+                    raise ValueError("Not authorized to delete this comment")
+                
                 await cursor.execute(
                     "UPDATE forum_comments SET is_deleted = TRUE WHERE id = %s",
                     (comment_id,)
