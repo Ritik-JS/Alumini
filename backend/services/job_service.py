@@ -376,28 +376,74 @@ class JobService:
                 if job['posted_by'] != poster_id:
                     raise PermissionError("You don't have permission to view these applications")
                 
-                # Get applications
+                # Get applications with applicant details
                 await cursor.execute(
                     """
-                    SELECT ja.*, u.email, u.role 
+                    SELECT 
+                        ja.*,
+                        u.email as applicant_email,
+                        u.role as applicant_role,
+                        ap.name as applicant_name,
+                        ap.photo_url as applicant_photo_url,
+                        ap.headline as applicant_headline,
+                        ap.current_company as applicant_current_company,
+                        ap.current_role as applicant_current_role
                     FROM job_applications ja
                     JOIN users u ON ja.applicant_id = u.id
+                    LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
                     WHERE ja.job_id = %s
                     ORDER BY ja.applied_at DESC
                     """,
                     (job_id,)
                 )
-                return await cursor.fetchall()
+                applications = await cursor.fetchall()
+                
+                # Restructure to include nested applicant and profile objects
+                result = []
+                for app in applications:
+                    app_dict = dict(app)
+                    # Create nested applicant object
+                    app_dict['applicant'] = {
+                        'id': app['applicant_id'],
+                        'email': app['applicant_email'],
+                        'role': app['applicant_role']
+                    }
+                    # Create nested profile object if available
+                    if app.get('applicant_name'):
+                        app_dict['profile'] = {
+                            'name': app['applicant_name'],
+                            'photo_url': app['applicant_photo_url'],
+                            'headline': app['applicant_headline'],
+                            'current_company': app['applicant_current_company'],
+                            'current_role': app['applicant_current_role']
+                        }
+                    # Remove redundant top-level fields
+                    for key in ['applicant_email', 'applicant_role', 'applicant_name', 
+                               'applicant_photo_url', 'applicant_headline', 
+                               'applicant_current_company', 'applicant_current_role']:
+                        app_dict.pop(key, None)
+                    
+                    result.append(app_dict)
+                
+                return result
     
     @staticmethod
     async def get_user_applications(user_id: str) -> List[Dict[str, Any]]:
-        """Get all applications submitted by a user"""
+        """Get all applications submitted by a user with job details"""
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
                 await cursor.execute(
                     """
-                    SELECT ja.*, j.title, j.company, j.status as job_status
+                    SELECT 
+                        ja.*,
+                        j.id as job_id,
+                        j.title as job_title,
+                        j.company as job_company,
+                        j.location as job_location,
+                        j.job_type as job_type,
+                        j.status as job_status,
+                        j.created_at as job_created_at
                     FROM job_applications ja
                     JOIN jobs j ON ja.job_id = j.id
                     WHERE ja.applicant_id = %s
@@ -405,7 +451,29 @@ class JobService:
                     """,
                     (user_id,)
                 )
-                return await cursor.fetchall()
+                applications = await cursor.fetchall()
+                
+                # Restructure to include job object for better frontend handling
+                result = []
+                for app in applications:
+                    app_dict = dict(app)
+                    # Create nested job object
+                    app_dict['job'] = {
+                        'id': app['job_id'],
+                        'title': app['job_title'],
+                        'company': app['job_company'],
+                        'location': app['job_location'],
+                        'job_type': app['job_type'],
+                        'status': app['job_status'],
+                        'created_at': app['job_created_at']
+                    }
+                    # Remove redundant top-level fields
+                    for key in ['job_title', 'job_company', 'job_location', 'job_type', 'job_status', 'job_created_at']:
+                        app_dict.pop(key, None)
+                    
+                    result.append(app_dict)
+                
+                return result
     
     @staticmethod
     async def update_application_status(
