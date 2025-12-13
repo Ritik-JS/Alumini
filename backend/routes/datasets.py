@@ -36,7 +36,7 @@ async def upload_dataset(
     """
     try:
         # Validate dataset type
-        valid_types = ['alumni', 'job_market', 'educational']
+        valid_types = ['alumni', 'job_market', 'educational', 'career_paths']
         if dataset_type not in valid_types:
             raise HTTPException(
                 status_code=400,

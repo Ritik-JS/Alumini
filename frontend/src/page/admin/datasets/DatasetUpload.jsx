@@ -39,6 +39,12 @@ const DatasetUpload = () => {
       description: 'Student records, courses, grades, and skills learned',
       schema: ['student_id', 'email', 'course_name', 'grade', 'completion_date', 'skills_learned', 'instructor'],
     },
+    {
+      value: 'career_paths',
+      label: 'Career Paths Data (ML Training)',
+      description: 'Career transition data for ML model training - helps predict career trajectories',
+      schema: ['email', 'from_role', 'to_role', 'from_company', 'to_company', 'transition_date', 'skills_acquired', 'success_rating'],
+    },
   ];
 
   const selectedTypeInfo = datasetTypes.find(t => t.value === datasetType);
