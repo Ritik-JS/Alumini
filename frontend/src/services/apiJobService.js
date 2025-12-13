@@ -7,7 +7,7 @@ export const apiJobService = {
   async getAllJobs(filters = {}) {
     try {
       const response = await axios.get('/api/jobs', { params: filters });
-      return response.data;
+      return this.normalizeResponse(response.data);
     } catch (error) {
       return handleApiError(error, []);
     }
@@ -17,7 +17,7 @@ export const apiJobService = {
   async getJobById(jobId) {
     try {
       const response = await axios.get(`/api/jobs/${jobId}`);
-      return response.data;
+      return this.normalizeResponse(response.data);
     } catch (error) {
       return handleApiError(error);
     }
@@ -27,7 +27,7 @@ export const apiJobService = {
   async createJob(jobData) {
     try {
       const response = await axios.post('/api/jobs', jobData);
-      return response.data;
+      return this.normalizeResponse(response.data);
     } catch (error) {
       return handleApiError(error);
     }
@@ -37,7 +37,7 @@ export const apiJobService = {
   async updateJob(jobId, jobData) {
     try {
       const response = await axios.put(`/api/jobs/${jobId}`, jobData);
-      return response.data;
+      return this.normalizeResponse(response.data);
     } catch (error) {
       return handleApiError(error);
     }
@@ -47,7 +47,7 @@ export const apiJobService = {
   async deleteJob(jobId) {
     try {
       const response = await axios.delete(`/api/jobs/${jobId}`);
-      return response.data;
+      return this.normalizeResponse(response.data);
     } catch (error) {
       return handleApiError(error);
     }
@@ -60,7 +60,7 @@ export const apiJobService = {
         `/api/jobs/${jobId}/apply`,
         applicationData
       );
-      return response.data;
+      return this.normalizeResponse(response.data);
     } catch (error) {
       return handleApiError(error);
     }
@@ -70,7 +70,7 @@ export const apiJobService = {
   async getMyApplications(userId) {
     try {
       const response = await axios.get(`/api/applications/user/${userId}`);
-      return response.data;
+      return this.normalizeResponse(response.data);
     } catch (error) {
       return handleApiError(error, []);
     }
@@ -80,7 +80,7 @@ export const apiJobService = {
   async getJobApplications(jobId) {
     try {
       const response = await axios.get(`/api/jobs/${jobId}/applications`);
-      return response.data;
+      return this.normalizeResponse(response.data);
     } catch (error) {
       return handleApiError(error, []);
     }
@@ -93,7 +93,7 @@ export const apiJobService = {
         `/api/applications/${applicationId}`,
         { status, response_message: message }
       );
-      return response.data;
+      return this.normalizeResponse(response.data);
     } catch (error) {
       return handleApiError(error);
     }
@@ -103,7 +103,7 @@ export const apiJobService = {
   async getMyJobs(userId) {
     try {
       const response = await axios.get(`/api/jobs/user/${userId}`);
-      return response.data;
+      return this.normalizeResponse(response.data);
     } catch (error) {
       return handleApiError(error, []);
     }
@@ -113,65 +113,68 @@ export const apiJobService = {
   async getAllRecruiterApplications(recruiterId) {
     try {
       const response = await axios.get(`/api/applications/recruiter/${recruiterId}`);
-      return response.data;
+      return this.normalizeResponse(response.data);
     } catch (error) {
       return handleApiError(error, []);
     }
   },
 
-  // Filter jobs (client-side filtering for API response)
+  // Filter jobs - NOW OPTIMIZED: Use backend filtering instead of client-side
   async filterJobs(filters = {}) {
     try {
-      const response = await this.getAllJobs();
-      const jobs = response.data || [];
+      // Build query params for backend filtering
+      const params = {};
       
-      return jobs.filter(job => {
-        // Search filter
-        if (filters.search && filters.search.trim()) {
-          const searchLower = filters.search.toLowerCase();
-          const matchTitle = job.title?.toLowerCase().includes(searchLower);
-          const matchCompany = job.company?.toLowerCase().includes(searchLower);
-          const matchDescription = job.description?.toLowerCase().includes(searchLower);
-          if (!matchTitle && !matchCompany && !matchDescription) return false;
-        }
-
-        // Location filter
-        if (filters.locations && filters.locations.length > 0) {
-          if (!filters.locations.some(loc => job.location?.toLowerCase().includes(loc.toLowerCase()))) {
-            return false;
-          }
-        }
-
-        // Job type filter
-        if (filters.jobTypes && filters.jobTypes.length > 0) {
-          if (!filters.jobTypes.includes(job.job_type)) {
-            return false;
-          }
-        }
-
-        // Company filter
-        if (filters.companies && filters.companies.length > 0) {
-          if (!filters.companies.some(comp => job.company?.toLowerCase().includes(comp.toLowerCase()))) {
-            return false;
-          }
-        }
-
-        // Skills filter
-        if (filters.skills && filters.skills.length > 0) {
-          if (!filters.skills.some(skill => job.skills_required?.includes(skill))) {
-            return false;
-          }
-        }
-
-        // Experience level filter
-        if (filters.experienceLevels && filters.experienceLevels.length > 0) {
-          if (!filters.experienceLevels.some(exp => job.experience_required?.toLowerCase().includes(exp.toLowerCase()))) {
-            return false;
-          }
-        }
-
-        return true;
-      });
+      if (filters.search) {
+        params.search = filters.search;
+      }
+      
+      if (filters.location) {
+        params.location = filters.location;
+      }
+      
+      if (filters.jobTypes && filters.jobTypes.length > 0) {
+        params.job_type = filters.jobTypes[0]; // Backend supports single job_type
+      }
+      
+      if (filters.company) {
+        params.company = filters.company;
+      }
+      
+      // Get filtered jobs from backend
+      const response = await this.getAllJobs(params);
+      let jobs = response.data || [];
+      
+      // Apply additional client-side filters if needed (for complex filters not supported by backend)
+      if (filters.locations && filters.locations.length > 0) {
+        jobs = jobs.filter(job => 
+          filters.locations.some(loc => job.location?.toLowerCase().includes(loc.toLowerCase()))
+        );
+      }
+      
+      if (filters.jobTypes && filters.jobTypes.length > 1) {
+        jobs = jobs.filter(job => filters.jobTypes.includes(job.job_type));
+      }
+      
+      if (filters.companies && filters.companies.length > 0) {
+        jobs = jobs.filter(job => 
+          filters.companies.some(comp => job.company?.toLowerCase().includes(comp.toLowerCase()))
+        );
+      }
+      
+      if (filters.skills && filters.skills.length > 0) {
+        jobs = jobs.filter(job => 
+          filters.skills.some(skill => job.skills_required?.includes(skill))
+        );
+      }
+      
+      if (filters.experienceLevels && filters.experienceLevels.length > 0) {
+        jobs = jobs.filter(job => 
+          filters.experienceLevels.some(exp => job.experience_required?.toLowerCase().includes(exp.toLowerCase()))
+        );
+      }
+      
+      return jobs;
     } catch (error) {
       console.error('Error filtering jobs:', error);
       return [];
@@ -245,18 +248,10 @@ export const apiJobService = {
     }
   },
 
-  // MISSING METHODS - Added to fix JobDetails.jsx and PostJob.jsx issues
-
   // Check if user has applied to a job (used by JobDetails.jsx)
   async hasUserApplied(jobId, userId) {
     try {
       const response = await this.getMyApplications(userId);
-      if (!response.success) {
-        // If response doesn't have success flag, check data directly
-        const applications = response.data || response || [];
-        return applications.some(app => app.job_id === jobId);
-      }
-      
       const applications = response.data || [];
       return applications.some(app => app.job_id === jobId);
     } catch (error) {
@@ -293,6 +288,55 @@ export const apiJobService = {
       data: response.data || response,
       error: null
     };
+  },
+
+  // Format date consistently across all components
+  formatDate(dateString, format = 'long') {
+    if (!dateString) return 'N/A';
+    
+    const date = new Date(dateString);
+    
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    
+    switch (format) {
+      case 'short':
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        });
+      case 'long':
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+      case 'relative':
+        return this.getRelativeTime(date);
+      default:
+        return date.toLocaleDateString('en-US');
+    }
+  },
+
+  // Get relative time (e.g., "2 days ago")
+  getRelativeTime(date) {
+    const now = new Date();
+    const diff = now - date;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const weeks = Math.floor(days / 7);
+    const months = Math.floor(days / 30);
+    const years = Math.floor(days / 365);
+
+    if (years > 0) return `${years} year${years > 1 ? 's' : ''} ago`;
+    if (months > 0) return `${months} month${months > 1 ? 's' : ''} ago`;
+    if (weeks > 0) return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    return 'Just now';
   },
 };
 

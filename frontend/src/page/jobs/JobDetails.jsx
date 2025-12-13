@@ -31,8 +31,15 @@ const JobDetails = () => {
         
         const response = await jobService.getJobById(cleanJobId);
         
-        // Handle both response formats
-        const jobData = response.success ? response.data : (response.data?.data || response);
+        // Consistent response handling
+        if (!response.success || !response.data) {
+          console.error('Job response:', response);
+          toast.error('Job not found');
+          navigate('/jobs');
+          return;
+        }
+        
+        const jobData = response.data;
         
         if (jobData && jobData.id) {
           setJob(jobData);
@@ -61,7 +68,6 @@ const JobDetails = () => {
             // Continue even if this fails
           }
         } else {
-          console.error('Job response:', response);
           toast.error('Job not found');
           navigate('/jobs');
         }
@@ -79,7 +85,10 @@ const JobDetails = () => {
   }, [jobId, user, navigate]);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

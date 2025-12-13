@@ -81,7 +81,7 @@ const ManageJobs = () => {
   };
 
   const handleViewApplications = (jobId) => {
-    navigate(`/jobs/applications/${jobId}`);
+    navigate(`/jobs/${jobId}/applications`);
   };
 
   const filteredJobs = postedJobs.filter(job => {

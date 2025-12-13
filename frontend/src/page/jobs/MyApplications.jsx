@@ -38,25 +38,29 @@ const MyApplications = () => {
       }
       const userApplications = response.data || [];
       
-      // Enrich with job data from jobService
-      const enrichedPromises = userApplications.map(async (app) => {
-        try {
-          const jobResponse = await jobService.getJobById(app.job_id);
-          const job = jobResponse.success ? jobResponse.data : null;
-          return {
-            ...app,
-            job: job || { title: 'Unknown Job', company: 'Unknown Company' },
-          };
-        } catch (error) {
-          console.error(`Error loading job ${app.job_id}:`, error);
-          return {
-            ...app,
-            job: { title: 'Unknown Job', company: 'Unknown Company' },
-          };
-        }
+      // OPTIMIZED: Batch load job details to avoid N+1 query problem
+      const uniqueJobIds = [...new Set(userApplications.map(app => app.job_id))];
+      const jobPromises = uniqueJobIds.map(jobId => 
+        jobService.getJobById(jobId).catch(error => {
+          console.error(`Error loading job ${jobId}:`, error);
+          return { success: false, data: null };
+        })
+      );
+      
+      const jobResponses = await Promise.all(jobPromises);
+      const jobsMap = {};
+      jobResponses.forEach((response, index) => {
+        const jobId = uniqueJobIds[index];
+        jobsMap[jobId] = response.success && response.data 
+          ? response.data 
+          : { title: 'Unknown Job', company: 'Unknown Company' };
       });
-
-      const enriched = await Promise.all(enrichedPromises);
+      
+      // Enrich applications with job data
+      const enriched = userApplications.map(app => ({
+        ...app,
+        job: jobsMap[app.job_id] || { title: 'Unknown Job', company: 'Unknown Company' },
+      }));
 
       // Sort by applied date (most recent first)
       enriched.sort((a, b) => new Date(b.applied_at) - new Date(a.applied_at));
@@ -71,7 +75,10 @@ const MyApplications = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

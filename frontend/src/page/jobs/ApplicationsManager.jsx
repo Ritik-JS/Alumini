@@ -58,9 +58,15 @@ const ApplicationsManager = () => {
 
       setJob(jobData);
 
-      // Load applications
-      const apps = await jobService.getApplicationsForJob(jobId);
-      setApplications(apps);
+      // Load applications with consistent response handling
+      const appsResult = await jobService.getApplicationsForJob(jobId);
+      if (appsResult.success) {
+        setApplications(appsResult.data || []);
+      } else {
+        console.error('Failed to load applications:', appsResult.error);
+        toast.error('Failed to load applications');
+        setApplications([]);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Failed to load applications');
@@ -89,7 +95,10 @@ const ApplicationsManager = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
