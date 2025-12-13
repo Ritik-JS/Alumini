@@ -123,6 +123,14 @@ export const AuthProvider = ({ children }) => {
   const verifyEmail = async (email, otpCode) => {
     try {
       const response = await authService.verifyEmail(email, otpCode);
+      
+      // If verification successful and token returned, auto-login the user
+      if (response.success && response.access_token && response.user) {
+        setUser(response.user);
+        localStorage.setItem('token', response.access_token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
+      
       return response;
     } catch (error) {
       return { success: false, message: 'Email verification failed.' };

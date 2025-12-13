@@ -50,28 +50,24 @@ async def register(
         )
 
 
-@router.post("/verify-email", response_model=Dict)
+@router.post("/verify-email", response_model=TokenResponse)
 async def verify_email(
     verification_data: EmailVerificationRequest,
     _rate_limit: None = Depends(moderate_rate_limit)
 ):
     """
-    Verify user email with OTP
+    Verify user email with OTP and auto-login
     
     - Validates OTP code
     - Activates user account
     - Sends welcome email
+    - Returns access token for automatic login
     """
     try:
         pool = await get_db_pool()
         async with pool.acquire() as conn:
-            success = await AuthService.verify_email(conn, verification_data)
-            
-            if success:
-                return {
-                    "success": True,
-                    "message": "Email verified successfully. You can now login."
-                }
+            token_response = await AuthService.verify_email(conn, verification_data)
+            return token_response
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:

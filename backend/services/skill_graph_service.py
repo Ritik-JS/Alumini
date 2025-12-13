@@ -11,16 +11,9 @@ from collections import Counter
 
 logger = logging.getLogger(__name__)
 
-# AI/ML imports for Phase 10.3
-try:
-    # Import libraries but DO NOT load large models at import-time
-    from sentence_transformers import SentenceTransformer
-    import faiss
-    EMBEDDINGS_AVAILABLE = True
-except ImportError:
-    EMBEDDINGS_AVAILABLE = False
-    logger.warning("sentence-transformers or faiss-cpu not installed. AI features disabled.")
-
+# AI/ML imports for Phase 10.3 - DEFERRED TO AVOID IMPORT BLOCKING
+# These will be imported lazily when needed
+EMBEDDINGS_AVAILABLE = True  # Assume available, check on first use
 
 
 class SkillGraphService:
@@ -47,6 +40,8 @@ class SkillGraphService:
 
         if self.embedding_model is None:
             try:
+                # Import lazily to avoid blocking on startup
+                from sentence_transformers import SentenceTransformer
                 self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
                 logger.info("Sentence transformer model loaded successfully (lazy)")
             except Exception as e:
@@ -93,6 +88,9 @@ class SkillGraphService:
             return 0
         
         try:
+            # Import lazily to avoid blocking on startup
+            import faiss
+            
             # Build FAISS index with inner product (cosine similarity after normalization)
             dimension = embeddings.shape[1]
             index = faiss.IndexFlatIP(dimension)

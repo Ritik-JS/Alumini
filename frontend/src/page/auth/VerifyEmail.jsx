@@ -102,12 +102,12 @@ const VerifyEmail = () => {
       if (result.success) {
         setSuccess(true);
         localStorage.removeItem('pendingVerificationEmail');
-        toast.success('Email verified successfully!');
+        toast.success('Email verified successfully! Logging you in...');
         
-        // Redirect to login after 2 seconds
+        // Redirect to dashboard after 1.5 seconds (user is now auto-logged in)
         setTimeout(() => {
-          navigate('/login', { state: { verified: true, email } });
-        }, 2000);
+          navigate('/dashboard');
+        }, 1500);
       } else {
         setError(result.message || 'Invalid or expired verification code');
       }
@@ -264,12 +264,12 @@ const VerifyEmail = () => {
                   Your email has been verified successfully.
                 </p>
                 <p className="text-sm text-gray-600">
-                  Redirecting you to login...
+                  Redirecting you to your dashboard...
                 </p>
               </div>
 
-              <Button onClick={() => navigate('/login')} className="w-full" data-testid="go-to-login-button">
-                Go to Login
+              <Button onClick={() => navigate('/dashboard')} className="w-full" data-testid="go-to-dashboard-button">
+                Go to Dashboard
               </Button>
             </div>
           )}

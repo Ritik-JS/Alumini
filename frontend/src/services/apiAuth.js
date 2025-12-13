@@ -81,9 +81,12 @@ export const apiAuth = {
         email,
         otp_code: otpCode,
       });
+      // Backend now returns access_token and user data for auto-login
       return {
         success: true,
-        message: response.data?.message || 'Email verified successfully',
+        message: 'Email verified successfully',
+        access_token: response.data.access_token,
+        user: response.data.user,
         data: response.data,
       };
     } catch (error) {

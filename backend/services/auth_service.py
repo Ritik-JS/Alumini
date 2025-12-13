@@ -51,8 +51,8 @@ class AuthService:
         return user, otp_code
     
     @staticmethod
-    async def verify_email(conn: aiomysql.Connection, verification_data: EmailVerificationRequest) -> bool:
-        """Verify user email with OTP"""
+    async def verify_email(conn: aiomysql.Connection, verification_data: EmailVerificationRequest) -> TokenResponse:
+        """Verify user email with OTP and auto-login"""
         # Get user
         user = await UserService.get_user_by_email(conn, verification_data.email)
         if not user:
@@ -84,10 +84,36 @@ class AuthService:
         # Update user verification status
         await UserService.update_user_verification(conn, user.id, True)
         
+        # Update last login (since we're auto-logging them in)
+        await UserService.update_last_login(conn, user.id)
+        
         # Send welcome email
         await email_service.send_welcome_email(user.email, user.email.split('@')[0])
         
-        return True
+        # Create access token for auto-login
+        token_data = {
+            "sub": user.id,
+            "email": user.email,
+            "role": user.role
+        }
+        access_token = create_access_token(token_data)
+        
+        # Prepare user response
+        user_response = UserResponse(
+            id=user.id,
+            email=user.email,
+            role=user.role,
+            is_verified=True,  # Now verified
+            is_active=user.is_active,
+            last_login=datetime.utcnow(),
+            created_at=user.created_at
+        )
+        
+        return TokenResponse(
+            access_token=access_token,
+            token_type="bearer",
+            user=user_response
+        )
     
     @staticmethod
     async def login_user(conn: aiomysql.Connection, login_data: UserLogin) -> TokenResponse:
