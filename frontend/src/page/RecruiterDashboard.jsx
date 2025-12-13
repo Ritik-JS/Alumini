@@ -222,7 +222,7 @@ const RecruiterDashboard = () => {
                                 size="sm" 
                                 variant="outline" 
                                 className="flex-1"
-                                onClick={() => navigate(`/jobs/applications/${job.id}`)}
+                                onClick={() => navigate(`/jobs/${job.id}/applications`)}
                                 data-testid={`view-applications-btn-${job.id}`}
                               >
                                 View Applications
@@ -291,7 +291,7 @@ const RecruiterDashboard = () => {
                             <Button 
                               size="sm" 
                               variant="outline"
-                              onClick={() => navigate(`/jobs/applications/${app.job_id}`)}
+                              onClick={() => navigate(`/jobs/${app.job_id}/applications`)}
                               data-testid={`review-application-btn-${app.id}`}
                             >
                               Review
