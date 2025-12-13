@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import MainNavbar from '@/components/layout/MainNavbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -7,137 +7,68 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, FileText, Shield, User, Settings, Download } from 'lucide-react';
+import { Search, FileText, Shield, User, Settings, Download, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import apiAdminService from '@/services/apiAdminService';
 
 const AdminAuditLogs = () => {
   const { user } = useAuth();
   const [logs, setLogs] = useState([]);
-  const [filteredLogs, setFilteredLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [actionTypeFilter, setActionTypeFilter] = useState('all');
+  const [total, setTotal] = useState(0);
+
+  // Fetch audit logs from API
+  const fetchAuditLogs = useCallback(async () => {
+    try {
+      setLoading(true);
+      const params = {
+        limit: 100,
+        offset: 0,
+        days: 30,
+      };
+
+      // Add filters if set
+      if (actionTypeFilter !== 'all') {
+        params.action_type = actionTypeFilter;
+      }
+      if (searchQuery) {
+        params.search = searchQuery;
+      }
+
+      const response = await apiAdminService.getAuditLogs(params);
+      
+      if (response.success) {
+        setLogs(response.data || []);
+        setTotal(response.total || 0);
+      } else {
+        toast.error('Failed to fetch audit logs');
+        setLogs([]);
+      }
+    } catch (error) {
+      console.error('Error fetching audit logs:', error);
+      toast.error(error.response?.data?.detail || 'Failed to fetch audit logs');
+      setLogs([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery, actionTypeFilter]);
 
   useEffect(() => {
-    // Mock audit logs
-    const mockLogs = [
-      {
-        id: '1',
-        admin_id: '550e8400-e29b-41d4-a716-446655440000',
-        admin_email: 'admin@alumni.edu',
-        action_type: 'user_management',
-        target_type: 'user',
-        target_id: '660e8400-e29b-41d4-a716-446655440001',
-        description: 'Verified user profile: Sarah Johnson',
-        metadata: { verified: true, previous_status: 'pending' },
-        ip_address: '192.168.1.1',
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-      },
-      {
-        id: '2',
-        admin_id: '550e8400-e29b-41d4-a716-446655440000',
-        admin_email: 'admin@alumni.edu',
-        action_type: 'content_moderation',
-        target_type: 'post',
-        target_id: 'post-123',
-        description: 'Removed flagged forum post',
-        metadata: { reason: 'spam', reported_by: 'user@alumni.edu' },
-        ip_address: '192.168.1.1',
-        timestamp: new Date(Date.now() - 7200000).toISOString(),
-      },
-      {
-        id: '3',
-        admin_id: '550e8400-e29b-41d4-a716-446655440000',
-        admin_email: 'admin@alumni.edu',
-        action_type: 'verification',
-        target_type: 'profile',
-        target_id: 'profile-456',
-        description: 'Approved alumni profile verification',
-        metadata: { profile_name: 'Michael Chen' },
-        ip_address: '192.168.1.1',
-        timestamp: new Date(Date.now() - 10800000).toISOString(),
-      },
-      {
-        id: '4',
-        admin_id: '550e8400-e29b-41d4-a716-446655440000',
-        admin_email: 'admin@alumni.edu',
-        action_type: 'system_config',
-        target_type: 'settings',
-        target_id: 'config-1',
-        description: 'Updated platform settings: Email notifications enabled',
-        metadata: { setting: 'email_notifications', value: true },
-        ip_address: '192.168.1.1',
-        timestamp: new Date(Date.now() - 14400000).toISOString(),
-      },
-      {
-        id: '5',
-        admin_id: '550e8400-e29b-41d4-a716-446655440000',
-        admin_email: 'admin@alumni.edu',
-        action_type: 'user_management',
-        target_type: 'user',
-        target_id: 'user-789',
-        description: 'Suspended user account: spam.user@example.com',
-        metadata: { reason: 'spam_violations', duration: 'permanent' },
-        ip_address: '192.168.1.1',
-        timestamp: new Date(Date.now() - 18000000).toISOString(),
-      },
-      {
-        id: '6',
-        admin_id: '550e8400-e29b-41d4-a716-446655440000',
-        admin_email: 'admin@alumni.edu',
-        action_type: 'content_moderation',
-        target_type: 'job',
-        target_id: 'job-321',
-        description: 'Removed suspicious job posting',
-        metadata: { company: 'Fake Company', reason: 'potential_scam' },
-        ip_address: '192.168.1.1',
-        timestamp: new Date(Date.now() - 21600000).toISOString(),
-      },
-      {
-        id: '7',
-        admin_id: '550e8400-e29b-41d4-a716-446655440000',
-        admin_email: 'admin@alumni.edu',
-        action_type: 'other',
-        target_type: 'badge',
-        target_id: 'badge-new-1',
-        description: 'Created new achievement badge: Super Mentor',
-        metadata: { badge_name: 'Super Mentor', points: 500 },
-        ip_address: '192.168.1.1',
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-      },
-    ];
-
-    setLogs(mockLogs);
-    setFilteredLogs(mockLogs);
-  }, []);
-
-  useEffect(() => {
-    let filtered = logs;
-
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (log) =>
-          log.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          log.admin_email.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    if (actionTypeFilter !== 'all') {
-      filtered = filtered.filter((log) => log.action_type === actionTypeFilter);
-    }
-
-    setFilteredLogs(filtered);
-  }, [searchQuery, actionTypeFilter, logs]);
+    fetchAuditLogs();
+  }, [fetchAuditLogs]);
 
   const handleExportLogs = () => {
     const csvContent = [
       ['Timestamp', 'Admin', 'Action Type', 'Target', 'Description', 'IP Address'],
-      ...filteredLogs.map((log) => [
+      ...logs.map((log) => [
         new Date(log.timestamp).toLocaleString(),
-        log.admin_email,
+        log.admin_email || 'N/A',
         log.action_type,
         `${log.target_type}:${log.target_id}`,
         log.description,
-        log.ip_address,
+        log.ip_address || 'N/A',
       ]),
     ]
       .map((row) => row.join(','))
@@ -292,55 +223,62 @@ const AdminAuditLogs = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  {filteredLogs.map((log) => {
-                    const ActionIcon = getActionTypeIcon(log.action_type);
-                    return (
-                      <div
-                        key={log.id}
-                        className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                        data-testid={`log-item-${log.id}`}
-                      >
-                        <div className="flex items-start gap-4">
-                          <div className={`p-2 rounded-lg ${getActionTypeColor(log.action_type)} bg-opacity-20`}>
-                            <ActionIcon className="w-5 h-5" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <p className="font-medium text-gray-900">{log.description}</p>
-                                <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-                                  <span>by {log.admin_email}</span>
-                                  <span>•</span>
-                                  <span>IP: {log.ip_address}</span>
-                                  <span>•</span>
-                                  <span>{new Date(log.timestamp).toLocaleString()}</span>
-                                </div>
-                              </div>
-                              <Badge className={getActionTypeColor(log.action_type)}>
-                                {log.action_type.replace('_', ' ')}
-                              </Badge>
+                {loading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                    <span className="ml-2 text-gray-600">Loading audit logs...</span>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {logs.map((log) => {
+                      const ActionIcon = getActionTypeIcon(log.action_type);
+                      return (
+                        <div
+                          key={log.id}
+                          className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                          data-testid={`log-item-${log.id}`}
+                        >
+                          <div className="flex items-start gap-4">
+                            <div className={`p-2 rounded-lg ${getActionTypeColor(log.action_type)} bg-opacity-20`}>
+                              <ActionIcon className="w-5 h-5" />
                             </div>
-                            {log.metadata && Object.keys(log.metadata).length > 0 && (
-                              <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
-                                <span className="font-medium text-gray-600">Metadata:</span>
-                                <code className="ml-2 text-gray-700">
-                                  {JSON.stringify(log.metadata)}
-                                </code>
+                            <div className="flex-1">
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <p className="font-medium text-gray-900">{log.description}</p>
+                                  <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                                    <span>by {log.admin_email || log.admin_name || 'Unknown Admin'}</span>
+                                    <span>•</span>
+                                    <span>IP: {log.ip_address || 'N/A'}</span>
+                                    <span>•</span>
+                                    <span>{new Date(log.timestamp).toLocaleString()}</span>
+                                  </div>
+                                </div>
+                                <Badge className={getActionTypeColor(log.action_type)}>
+                                  {log.action_type.replace('_', ' ')}
+                                </Badge>
                               </div>
-                            )}
+                              {log.metadata && Object.keys(log.metadata).length > 0 && (
+                                <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
+                                  <span className="font-medium text-gray-600">Metadata:</span>
+                                  <code className="ml-2 text-gray-700">
+                                    {JSON.stringify(log.metadata)}
+                                  </code>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
+                      );
+                    })}
+                    {logs.length === 0 && (
+                      <div className="text-center py-12 text-gray-500">
+                        <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>No audit logs found</p>
                       </div>
-                    );
-                  })}
-                  {filteredLogs.length === 0 && (
-                    <div className="text-center py-12 text-gray-500">
-                      <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>No audit logs found</p>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

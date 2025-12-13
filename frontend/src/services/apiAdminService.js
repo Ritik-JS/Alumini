@@ -467,6 +467,35 @@ const apiAdminService = {
     const response = await axios.get('/api/admin/files/stats');
     return response.data;
   },
+
+  // ==================== AUDIT LOGS ====================
+  
+  /**
+   * Get audit logs with filters and pagination
+   */
+  async getAuditLogs(params = {}) {
+    const { action_type, admin_id, target_type, search, days = 30, limit = 100, offset = 0 } = params;
+    const queryParams = new URLSearchParams();
+    
+    if (action_type) queryParams.append('action_type', action_type);
+    if (admin_id) queryParams.append('admin_id', admin_id);
+    if (target_type) queryParams.append('target_type', target_type);
+    if (search) queryParams.append('search', search);
+    if (days) queryParams.append('days', days);
+    queryParams.append('limit', limit);
+    queryParams.append('offset', offset);
+    
+    const response = await axios.get(`/api/admin/audit-logs?${queryParams.toString()}`);
+    return response.data;
+  },
+
+  /**
+   * Get audit log statistics
+   */
+  async getAuditStats() {
+    const response = await axios.get('/api/admin/audit-logs/stats');
+    return response.data;
+  },
 };
 
 export default apiAdminService;
