@@ -661,13 +661,15 @@ class CareerPredictionService:
     ) -> List[Dict]:
         """
         Get most common career transitions across all alumni
+        Returns data formatted for frontend consumption
         """
         try:
             async with db_conn.cursor() as cursor:
                 await cursor.execute("""
                     SELECT 
                         from_role, to_role, transition_count,
-                        transition_probability, avg_duration_months, success_rate
+                        transition_probability, avg_duration_months, 
+                        success_rate, required_skills
                     FROM career_transition_matrix
                     WHERE transition_count > 0
                     ORDER BY transition_count DESC, transition_probability DESC
@@ -675,17 +677,38 @@ class CareerPredictionService:
                 """, (limit,))
                 paths = await cursor.fetchall()
             
-            return [
-                {
+            result = []
+            for idx, p in enumerate(paths):
+                # Parse required skills
+                required_skills = []
+                if p[6]:
+                    try:
+                        required_skills = json.loads(p[6]) if isinstance(p[6], str) else p[6]
+                        if not isinstance(required_skills, list):
+                            required_skills = []
+                    except (json.JSONDecodeError, TypeError):
+                        required_skills = []
+                
+                result.append({
+                    "id": f"path-{idx}",
+                    "starting_role": p[0],
+                    "target_role": p[1],
+                    "alumni_count": p[2] or 0,
+                    "transition_percentage": round(float(p[3]) * 100, 1) if p[3] else 0,
+                    "avg_years": round((p[4] or 24) / 12, 1),
+                    "avg_duration_months": p[4] or 24,
+                    "success_rate": float(p[5]) if p[5] else 0.7,
+                    "common_skills": required_skills[:10],  # Frontend expects common_skills
+                    "required_skills": required_skills,
+                    "success_stories": [],  # Can be populated later with actual alumni stories
+                    # Also include backend field names for compatibility
                     "from_role": p[0],
                     "to_role": p[1],
                     "transition_count": p[2],
-                    "probability": float(p[3]) if p[3] else 0,
-                    "avg_duration_months": p[4] or 24,
-                    "success_rate": float(p[5]) if p[5] else 0.7
-                }
-                for p in paths
-            ]
+                    "probability": float(p[3]) if p[3] else 0
+                })
+            
+            return result
         
         except Exception as e:
             logger.error(f"Error getting common career paths: {str(e)}")

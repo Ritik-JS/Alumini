@@ -81,8 +81,16 @@ class CareerModelTrainer:
                 }
             
             # Step 3: Split data
+            # Check if stratification is possible (all classes need at least 2 samples)
+            y_counts = Counter(y)
+            min_class_count = min(y_counts.values()) if y_counts else 0
+            use_stratify = len(set(y)) > 1 and min_class_count >= 2
+            
+            if not use_stratify:
+                logger.warning(f"Stratification disabled: some classes have only {min_class_count} sample(s)")
+            
             X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.2, random_state=42, stratify=y if len(set(y)) > 1 else None
+                X, y, test_size=0.2, random_state=42, stratify=y if use_stratify else None
             )
             
             logger.info(f"Training set: {len(X_train)}, Test set: {len(X_test)}")
@@ -248,22 +256,56 @@ class CareerModelTrainer:
         """
         logger.info("Training Random Forest model...")
         
-        # Define parameter grid for GridSearchCV
-        param_grid = {
-            'n_estimators': [50, 100, 200],
-            'max_depth': [10, 20, 30, None],
-            'min_samples_split': [2, 5, 10],
-            'min_samples_leaf': [1, 2, 4]
-        }
+        # Check if dataset is large enough for cross-validation
+        # CV requires at least 2*n_splits samples per class
+        y_train_counts = Counter(y_train)
+        min_class_count = min(y_train_counts.values()) if y_train_counts else 0
+        
+        # Determine CV folds based on data distribution
+        max_cv_folds = min(3, len(X_train) // 10, min_class_count)
+        
+        # If dataset is too small or imbalanced, skip grid search
+        if max_cv_folds < 2 or len(X_train) < 20:
+            logger.warning(f"Dataset too small for grid search (train size: {len(X_train)}, min class: {min_class_count})")
+            logger.info("Training with default parameters...")
+            rf = RandomForestClassifier(
+                n_estimators=100,
+                max_depth=20,
+                min_samples_split=5,
+                min_samples_leaf=2,
+                random_state=42,
+                n_jobs=-1
+            )
+            rf.fit(X_train, y_train)
+            return rf
+        
+        # Define parameter grid for GridSearchCV (simplified for small datasets)
+        if len(X_train) < 50:
+            # Smaller grid for small datasets
+            param_grid = {
+                'n_estimators': [50, 100],
+                'max_depth': [10, 20],
+                'min_samples_split': [2, 5],
+                'min_samples_leaf': [1, 2]
+            }
+        else:
+            # Full grid for larger datasets
+            param_grid = {
+                'n_estimators': [50, 100, 200],
+                'max_depth': [10, 20, 30, None],
+                'min_samples_split': [2, 5, 10],
+                'min_samples_leaf': [1, 2, 4]
+            }
         
         # Base model
         rf = RandomForestClassifier(random_state=42, n_jobs=-1)
         
         # Grid search with cross-validation
+        logger.info(f"Running grid search with {max_cv_folds}-fold CV...")
         grid_search = GridSearchCV(
             rf,
             param_grid,
-            cv=min(3, len(X_train) // 10),  # 3-fold CV or less if dataset is small
+            cv=max_cv_folds,
             scoring='accuracy',
             n_jobs=-1,
             verbose=1
@@ -375,7 +417,7 @@ class CareerModelTrainer:
                         COUNT(*) as transition_count,
                         AVG(transition_duration_months) as avg_duration,
                         AVG(success_rating) as avg_success,
-                        JSON_ARRAYAGG(DISTINCT JSON_EXTRACT(skills_acquired, '$[*]')) as required_skills
+                        JSON_ARRAYAGG(skills_acquired) as required_skills
                     FROM career_paths
                     WHERE from_role IS NOT NULL 
                         AND to_role IS NOT NULL

@@ -21,33 +21,42 @@ const TransitionFlowDiagram = ({ careerPaths }) => {
 
     // Collect all unique roles
     careerPaths.forEach(path => {
-      if (!nodeMap.has(path.starting_role)) {
-        nodeMap.set(path.starting_role, {
-          id: path.starting_role,
-          label: path.starting_role,
+      // Support both starting_role/target_role and from_role/to_role
+      const startingRole = path.starting_role || path.from_role;
+      const targetRole = path.target_role || path.to_role;
+      const alumniCount = path.alumni_count || path.transition_count || 1;
+      const transitionRate = path.transition_percentage || (path.probability * 100) || 50;
+      
+      // Skip if roles are not defined
+      if (!startingRole || !targetRole) return;
+      
+      if (!nodeMap.has(startingRole)) {
+        nodeMap.set(startingRole, {
+          id: startingRole,
+          label: startingRole,
           count: 0
         });
       }
-      if (!nodeMap.has(path.target_role)) {
-        nodeMap.set(path.target_role, {
-          id: path.target_role,
-          label: path.target_role,
+      if (!nodeMap.has(targetRole)) {
+        nodeMap.set(targetRole, {
+          id: targetRole,
+          label: targetRole,
           count: 0
         });
       }
 
       // Increment alumni count
-      const startNode = nodeMap.get(path.starting_role);
-      const targetNode = nodeMap.get(path.target_role);
-      startNode.count += path.alumni_count;
-      targetNode.count += path.alumni_count;
+      const startNode = nodeMap.get(startingRole);
+      const targetNode = nodeMap.get(targetRole);
+      startNode.count += alumniCount;
+      targetNode.count += alumniCount;
 
       // Add link
       links.push({
-        source: path.starting_role,
-        target: path.target_role,
-        value: path.transition_percentage,
-        alumni_count: path.alumni_count
+        source: startingRole,
+        target: targetRole,
+        value: transitionRate,
+        alumni_count: alumniCount
       });
     });
 
@@ -134,7 +143,7 @@ const TransitionFlowDiagram = ({ careerPaths }) => {
 
     // Add labels
     node.append('text')
-      .text(d => d.label)
+      .text(d => d.label || 'Unknown')
       .attr('text-anchor', 'middle')
       .attr('dy', '0.35em')
       .attr('font-size', '12px')
@@ -144,6 +153,8 @@ const TransitionFlowDiagram = ({ careerPaths }) => {
       .style('user-select', 'none')
       .each(function(d) {
         // Wrap text if too long
+        if (!d.label) return;
+        
         const text = d3.select(this);
         const words = d.label.split(/\s+/);
         if (words.length > 2) {
