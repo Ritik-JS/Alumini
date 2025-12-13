@@ -82,37 +82,79 @@ const MentorshipDashboard = () => {
 
   const loadData = async (userId) => {
     try {
+      console.log('Loading mentorship data for user:', userId);
+      
       // Student data
       const mentorshipsResult = await mentorshipService.getActiveMentorships(userId);
+      console.log('Active Mentorships Response:', mentorshipsResult);
       if (mentorshipsResult.success) {
+        console.log('Active Mentorships Data:', mentorshipsResult.data);
         setActiveMentorships(mentorshipsResult.data || []);
+      } else {
+        console.warn('Failed to load active mentorships:', mentorshipsResult.message);
       }
 
       const stuRequestsResult = await mentorshipService.getStudentRequests(userId);
+      console.log('Student Requests Response:', stuRequestsResult);
       if (stuRequestsResult.success) {
+        console.log('Student Requests Data:', stuRequestsResult.data);
         setStudentRequests(stuRequestsResult.data || []);
+      } else {
+        console.warn('Failed to load student requests:', stuRequestsResult.message);
       }
 
       // Mentor data
       const menteesResult = await mentorshipService.getActiveMentees(userId);
+      console.log('Active Mentees Response:', menteesResult);
       if (menteesResult.success) {
+        console.log('Active Mentees Data:', menteesResult.data);
         setActiveMentees(menteesResult.data || []);
+      } else {
+        console.warn('Failed to load active mentees:', menteesResult.message);
       }
 
       const menRequestsResult = await mentorshipService.getMentorRequests(userId);
+      console.log('Mentor Requests Response:', menRequestsResult);
       if (menRequestsResult.success) {
+        console.log('Mentor Requests Data:', menRequestsResult.data);
         setMentorRequests(menRequestsResult.data || []);
+      } else {
+        console.warn('Failed to load mentor requests:', menRequestsResult.message);
       }
 
       // Sessions
       const upcomingResult = await mentorshipService.getUpcomingSessions(userId);
+      console.log('Upcoming Sessions Response:', upcomingResult);
       if (upcomingResult.success) {
+        console.log('Upcoming Sessions Data:', upcomingResult.data);
         setUpcomingSessions(upcomingResult.data || []);
+      } else {
+        console.warn('Failed to load upcoming sessions:', upcomingResult.message);
       }
 
       const pastResult = await mentorshipService.getPastSessions(userId);
+      console.log('Past Sessions Response:', pastResult);
       if (pastResult.success) {
+        console.log('Past Sessions Data:', pastResult.data);
         setPastSessions(pastResult.data || []);
+      } else {
+        console.warn('Failed to load past sessions:', pastResult.message);
+      }
+
+      // Log total data count for debugging
+      const totalDataCount = (mentorshipsResult.data?.length || 0) + 
+                            (stuRequestsResult.data?.length || 0) + 
+                            (menteesResult.data?.length || 0) + 
+                            (menRequestsResult.data?.length || 0);
+      
+      console.log('Total Mentorship Data Count:', totalDataCount);
+      
+      if (totalDataCount === 0) {
+        console.warn('⚠️ No mentorship data found for user:', userId);
+        console.log('💡 Sample user IDs with data:', [
+          '880e8400-e29b-41d4-a716-446655440003 (student)',
+          '660e8400-e29b-41d4-a716-446655440001 (mentor)'
+        ]);
       }
     } catch (err) {
       console.error('Error loading mentorship data:', err);
@@ -211,6 +253,50 @@ const MentorshipDashboard = () => {
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Development Debug Panel */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+            <h3 className="font-semibold text-yellow-900 mb-2">🔧 Debug Info</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="text-yellow-800 font-medium">User ID:</span>
+                <p className="text-yellow-900 font-mono text-xs break-all">{userData?.id || 'N/A'}</p>
+              </div>
+              <div>
+                <span className="text-yellow-800 font-medium">Active Mentorships:</span>
+                <p className="text-yellow-900 font-bold">{activeMentorships.length}</p>
+              </div>
+              <div>
+                <span className="text-yellow-800 font-medium">Student Requests:</span>
+                <p className="text-yellow-900 font-bold">{studentRequests.length}</p>
+              </div>
+              <div>
+                <span className="text-yellow-800 font-medium">Active Mentees:</span>
+                <p className="text-yellow-900 font-bold">{activeMentees.length}</p>
+              </div>
+              <div>
+                <span className="text-yellow-800 font-medium">Mentor Requests:</span>
+                <p className="text-yellow-900 font-bold">{mentorRequests.length}</p>
+              </div>
+              <div>
+                <span className="text-yellow-800 font-medium">Upcoming Sessions:</span>
+                <p className="text-yellow-900 font-bold">{upcomingSessions.length}</p>
+              </div>
+              <div>
+                <span className="text-yellow-800 font-medium">Past Sessions:</span>
+                <p className="text-yellow-900 font-bold">{pastSessions.length}</p>
+              </div>
+              <div>
+                <span className="text-yellow-800 font-medium">Is Mentor:</span>
+                <p className="text-yellow-900 font-bold">{isMentor ? 'Yes' : 'No'}</p>
+              </div>
+            </div>
+            <p className="text-xs text-yellow-700 mt-3">
+              💡 Check browser console for detailed API responses
+            </p>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900" data-testid="page-title">
@@ -366,8 +452,12 @@ const MentorshipDashboard = () => {
                   <CardContent className="p-12 text-center">
                     <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                     <p className="text-gray-500 mb-2">No active mentorships</p>
-                    <p className="text-sm text-gray-400 mb-4">Find a mentor to start your journey</p>
-                    <Button onClick={() => navigate('/mentorship/find')}>
+                    <p className="text-sm text-gray-400 mb-4">
+                      {studentRequests.length === 0 
+                        ? 'Find a mentor to start your journey' 
+                        : 'Your mentorship requests are pending approval'}
+                    </p>
+                    <Button onClick={() => navigate('/mentorship/find')} data-testid="find-mentors-btn">
                       Find Mentors
                     </Button>
                   </CardContent>
@@ -558,7 +648,11 @@ const MentorshipDashboard = () => {
                     <CardContent className="p-12 text-center">
                       <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                       <p className="text-gray-500">No active mentees yet</p>
-                      <p className="text-sm text-gray-400 mt-2">Accept mentorship requests to start mentoring</p>
+                      <p className="text-sm text-gray-400 mt-2">
+                        {mentorRequests.filter(r => r.status === 'pending').length > 0
+                          ? 'Review and accept mentorship requests above to start mentoring'
+                          : 'Students will send you mentorship requests soon'}
+                      </p>
                     </CardContent>
                   </Card>
                 )}
