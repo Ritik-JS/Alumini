@@ -213,9 +213,34 @@ async def main():
             
             # Ask for confirmation if insufficient data
             if not has_sufficient_data:
-                response = input("\nProceed with training anyway? (yes/no): ").lower().strip()
+                logger.info("")
+                logger.info("=" * 70)
+                logger.info("RECOMMENDATION")
+                logger.info("=" * 70)
+                logger.info("The rule-based career prediction system is currently active and")
+                logger.info("working well. ML training requires at least 50 career transitions")
+                logger.info("for accurate predictions.")
+                logger.info("")
+                logger.info("Options:")
+                logger.info("  1. Continue using rule-based predictions (recommended)")
+                logger.info("  2. Collect more career data via admin dashboard")
+                logger.info("  3. Load sample data: mysql < /app/sample_data_insert.sql")
+                logger.info("  4. Proceed with training anyway (low accuracy expected)")
+                logger.info("=" * 70)
+                logger.info("")
+                
+                response = input("Proceed with training anyway? (yes/no): ").lower().strip()
                 if response not in ['yes', 'y']:
-                    logger.info("Training cancelled by user")
+                    logger.info("")
+                    logger.info("=" * 70)
+                    logger.info("Training cancelled - Rule-based system continues to work")
+                    logger.info("=" * 70)
+                    logger.info("")
+                    logger.info("Next steps:")
+                    logger.info("  1. Collect career transition data via admin panel")
+                    logger.info("  2. Run this script again when you have 50+ transitions")
+                    logger.info("  3. See: /app/ADMIN_CAREER_DATA_COLLECTION.md")
+                    logger.info("=" * 70)
                     return
                 logger.info("")
             
