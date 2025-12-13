@@ -21,7 +21,7 @@ import {
 const CommentItem = ({ comment, onReply, onDelete, depth = 0 }) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState('');
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(comment.user_has_liked || false);
   const [likesCount, setLikesCount] = useState(comment.likes_count || 0);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [submitting, setSubmitting] = useState(false);

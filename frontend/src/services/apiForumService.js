@@ -52,8 +52,8 @@ class ApiForumService {
     }
   }
 
-  // Like post
-  async likePost(postId) {
+  // Toggle post like
+  async togglePostLike(postId) {
     try {
       const response = await axios.post(`/api/forum/posts/${postId}/like`);
       return response.data;
@@ -108,8 +108,8 @@ class ApiForumService {
     }
   }
 
-  // Like comment
-  async likeComment(commentId) {
+  // Toggle comment like
+  async toggleCommentLike(commentId) {
     try {
       const response = await axios.post(`/api/forum/comments/${commentId}/like`);
       return response.data;

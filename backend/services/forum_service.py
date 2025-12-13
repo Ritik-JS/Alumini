@@ -70,7 +70,8 @@ class ForumService:
                     p.is_pinned, p.is_deleted, p.created_at, p.updated_at,
                     u.email as author_email,
                     COALESCE(ap.name, u.email) as author_name,
-                    ap.photo_url as author_photo_url
+                    ap.photo_url as author_photo_url,
+                    u.role as author_role
                 FROM forum_posts p
                 INNER JOIN users u ON p.author_id = u.id
                 LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
@@ -108,6 +109,7 @@ class ForumService:
                         author_email=row[12],
                         author_name=row[13],
                         author_photo_url=row[14],
+                        author_role=row[15],
                         user_has_liked=user_has_liked
                     )
                 
@@ -133,7 +135,8 @@ class ForumService:
                     p.is_pinned, p.is_deleted, p.created_at, p.updated_at,
                     u.email as author_email,
                     COALESCE(ap.name, u.email) as author_name,
-                    ap.photo_url as author_photo_url
+                    ap.photo_url as author_photo_url,
+                    u.role as author_role
                 FROM forum_posts p
                 INNER JOIN users u ON p.author_id = u.id
                 LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
@@ -197,6 +200,7 @@ class ForumService:
                         author_email=row[12],
                         author_name=row[13],
                         author_photo_url=row[14],
+                        author_role=row[15],
                         user_has_liked=user_has_liked
                     ))
                 
@@ -215,7 +219,8 @@ class ForumService:
                     p.is_pinned, p.is_deleted, p.created_at, p.updated_at,
                     u.email as author_email,
                     COALESCE(ap.name, u.email) as author_name,
-                    ap.photo_url as author_photo_url
+                    ap.photo_url as author_photo_url,
+                    u.role as author_role
                 FROM forum_posts p
                 INNER JOIN users u ON p.author_id = u.id
                 LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
@@ -244,6 +249,7 @@ class ForumService:
                         author_email=row[12],
                         author_name=row[13],
                         author_photo_url=row[14],
+                        author_role=row[15],
                         user_has_liked=False  # Not needed for own posts
                     ))
                 
@@ -421,7 +427,8 @@ class ForumService:
                     c.likes_count, c.is_deleted, c.created_at, c.updated_at,
                     u.email as author_email,
                     COALESCE(ap.name, u.email) as author_name,
-                    ap.photo_url as author_photo_url
+                    ap.photo_url as author_photo_url,
+                    u.role as author_role
                 FROM forum_comments c
                 INNER JOIN users u ON c.author_id = u.id
                 LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
@@ -461,6 +468,7 @@ class ForumService:
                         author_email=row[9],
                         author_name=row[10],
                         author_photo_url=row[11],
+                        author_role=row[12],
                         user_has_liked=user_has_liked,
                         replies=[]
                     )
