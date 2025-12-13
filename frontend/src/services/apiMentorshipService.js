@@ -12,6 +12,63 @@ class ApiMentorshipService {
     }
   }
 
+  // Filter mentors with complex criteria
+  async filterMentors(filters = {}) {
+    try {
+      const params = {};
+      
+      // Handle expertise filter
+      if (filters.expertise && filters.expertise.length > 0) {
+        params.expertise = Array.isArray(filters.expertise) 
+          ? filters.expertise.join(',') 
+          : filters.expertise;
+      }
+      
+      // Handle rating filter
+      if (filters.minRating || filters.min_rating) {
+        params.min_rating = filters.minRating || filters.min_rating;
+      }
+      
+      // Handle availability filter
+      if (filters.availableOnly !== undefined || filters.available_only !== undefined) {
+        params.available_only = filters.availableOnly ?? filters.available_only ?? true;
+      }
+      
+      // Handle location filter
+      if (filters.location) {
+        params.location = filters.location;
+      }
+      
+      // Handle company filter
+      if (filters.company) {
+        params.company = filters.company;
+      }
+      
+      // Handle pagination
+      if (filters.page) {
+        params.page = filters.page;
+      }
+      if (filters.limit) {
+        params.limit = filters.limit;
+      }
+      
+      const response = await axios.get('/api/mentors', { params });
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: { mentors: [], total: 0 } };
+    }
+  }
+
+  // Get unique expertise areas for filtering
+  async getUniqueExpertiseAreas() {
+    try {
+      const response = await axios.get('/api/mentors/expertise-areas');
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: [] };
+    }
+  }
+
   // Get mentor profile
   async getMentorProfile(userId) {
     try {
@@ -19,6 +76,32 @@ class ApiMentorshipService {
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
+    }
+  }
+
+  // Register as mentor
+  async registerAsMentor(profileData) {
+    try {
+      const response = await axios.post('/api/mentors/register', profileData);
+      return response.data;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.response?.data?.detail || error.message 
+      };
+    }
+  }
+
+  // Update mentor profile
+  async updateMentorProfile(profileData) {
+    try {
+      const response = await axios.put('/api/mentors/profile', profileData);
+      return response.data;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.response?.data?.detail || error.message 
+      };
     }
   }
 
@@ -39,6 +122,33 @@ class ApiMentorshipService {
       return response.data;
     } catch (error) {
       return { success: false, message: error.message, data: [] };
+    }
+  }
+
+  // Get specific mentorship request by ID
+  async getRequestById(requestId) {
+    try {
+      const response = await axios.get(`/api/mentorship/requests/${requestId}`);
+      return response.data;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.response?.data?.detail || error.message 
+      };
+    }
+  }
+
+  // Get sessions for a specific mentorship request
+  async getSessionsByRequestId(requestId) {
+    try {
+      const response = await axios.get(`/api/mentorship/requests/${requestId}/sessions`);
+      return response.data;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.response?.data?.detail || error.message,
+        data: []
+      };
     }
   }
 
@@ -127,6 +237,21 @@ class ApiMentorshipService {
       return response.data;
     } catch (error) {
       return { success: false, message: error.message };
+    }
+  }
+
+  // Cancel session
+  async cancelSession(sessionId) {
+    try {
+      const response = await axios.put(
+        `/api/mentorship/sessions/${sessionId}/cancel`
+      );
+      return response.data;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.response?.data?.detail || error.message 
+      };
     }
   }
 
@@ -223,8 +348,12 @@ class ApiMentorshipService {
   // Cancel mentorship request
   async cancelMentorshipRequest(requestId) {
     try {
-      // Backend doesn't have a cancel endpoint, return error
-      return { success: false, message: 'Cancel not implemented on backend' };
+      // Currently backend doesn't have a cancel endpoint for requests
+      // Users can only reject (for mentors) or wait for it to expire
+      return { 
+        success: false, 
+        message: 'Mentorship request cancellation is not available. Please contact the mentor to decline.' 
+      };
     } catch (error) {
       return { success: false, message: error.message };
     }

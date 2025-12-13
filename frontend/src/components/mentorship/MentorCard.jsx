@@ -17,6 +17,11 @@ const MentorCard = ({ mentor, onRequestMentorship }) => {
       .slice(0, 2) || '??';
   };
 
+  // Safely parse rating to ensure it's always a number
+  const rating = typeof mentor.rating === 'number' 
+    ? mentor.rating 
+    : parseFloat(mentor.rating) || 0;
+
   const availableSlots = mentor.max_mentees - mentor.current_mentees_count;
   const isAvailable = mentor.is_available && availableSlots > 0;
 
@@ -57,12 +62,12 @@ const MentorCard = ({ mentor, onRequestMentorship }) => {
         <div className="mt-4 flex items-center justify-center gap-4 text-sm">
           <div className="flex items-center gap-1 text-yellow-600">
             <Star className="h-4 w-4 fill-current" />
-            <span className="font-semibold">{mentor.rating.toFixed(1)}</span>
-            <span className="text-gray-500">({mentor.total_reviews})</span>
+            <span className="font-semibold">{rating.toFixed(1)}</span>
+            <span className="text-gray-500">({mentor.total_reviews || 0})</span>
           </div>
           <div className="flex items-center gap-1 text-gray-600">
             <BookOpen className="h-4 w-4" />
-            <span>{mentor.total_sessions} sessions</span>
+            <span>{mentor.total_sessions || 0} sessions</span>
           </div>
         </div>
 
