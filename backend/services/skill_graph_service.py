@@ -1,133 +1,54 @@
 """
 Skill Graph Service - Manage skill relationships and analytics
 Auto-populates from alumni profiles and job postings
-Phase 10.3: Enhanced with AI/ML embeddings and FAISS similarity
+Phase 10.3: Enhanced with AI/ML embeddings and FAISS similarity (DISABLED to prevent hangs)
 """
 import logging
 import json
-import numpy as np
 from typing import Dict, List, Optional, Set
 from collections import Counter
 
 logger = logging.getLogger(__name__)
 
-# AI/ML imports for Phase 10.3 - DEFERRED TO AVOID IMPORT BLOCKING
-# These will be imported lazily when needed
-EMBEDDINGS_AVAILABLE = True  # Assume available, check on first use
+# AI/ML imports for Phase 10.3 - COMPLETELY DISABLED TO PREVENT SAFETENSORS/MODEL LOADING HANGS
+# The SentenceTransformer model loading can cause the application to hang
+# All AI features are disabled but the service still works with co-occurrence based relationships
+EMBEDDINGS_AVAILABLE = False  # Disabled to prevent safetensors hang
 
 
 class SkillGraphService:
-    """Service for skill graph network and analytics with AI/ML capabilities"""
+    """Service for skill graph network and analytics (AI features disabled)"""
     
     def __init__(self):
-        """Initialize AI/ML models if available"""
+        """Initialize service without AI/ML models"""
         self.embedding_model = None
         self.faiss_index = None
-        self.dimension = 384  # MiniLM embedding dimension
-        # Note: model instantiation is intentionally deferred to avoid
-        # blocking application startup while downloading model files.
-        # The model will be initialized lazily when embeddings are first needed.
+        self.dimension = 384  # MiniLM embedding dimension (not used)
+        # AI/ML features are completely disabled to prevent application hangs
+        logger.info("SkillGraphService initialized without AI features (safetensors issue)")
     
     async def generate_embeddings(self, db_conn, skills: List[str]) -> Dict[str, List[float]]:
         """
         Generate 384-dimensional embeddings for skills using sentence-transformers
-        Phase 10.3: Core embedding generation
+        Phase 10.3: Core embedding generation (DISABLED)
         """
-        # Initialize embedding model lazily if libraries are available
-        if not EMBEDDINGS_AVAILABLE:
-            logger.warning("Embedding libraries not available, skipping embedding generation")
-            return {}
-
-        if self.embedding_model is None:
-            try:
-                # Import lazily to avoid blocking on startup
-                from sentence_transformers import SentenceTransformer
-                self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-                logger.info("Sentence transformer model loaded successfully (lazy)")
-            except Exception as e:
-                logger.error(f"Failed to load embedding model lazily: {str(e)}")
-                return {}
-
-        try:
-            # Generate embeddings
-            embeddings = self.embedding_model.encode(skills, show_progress_bar=False)
-            
-            # Store embeddings in database
-            for skill, embedding in zip(skills, embeddings):
-                embedding_json = json.dumps(embedding.tolist())
-                async with db_conn.cursor() as cursor:
-                    await cursor.execute("""
-                        INSERT INTO skill_embeddings (skill_name, embedding_vector)
-                        VALUES (%s, %s)
-                        ON DUPLICATE KEY UPDATE 
-                            embedding_vector = VALUES(embedding_vector),
-                            updated_at = NOW()
-                    """, (skill, embedding_json))
-            
-            await db_conn.commit()
-            logger.info(f"Generated and stored embeddings for {len(skills)} skills")
-            
-            return {skill: emb.tolist() for skill, emb in zip(skills, embeddings)}
-        
-        except Exception as e:
-            logger.error(f"Error generating embeddings: {str(e)}")
-            return {}
+        # AI features are completely disabled to prevent safetensors/model loading hangs
+        logger.info("Embedding generation skipped (AI features disabled)")
+        return {}
     
     async def calculate_similarities_faiss(
         self, 
         db_conn, 
         skills: List[str], 
-        embeddings: np.ndarray
+        embeddings
     ) -> int:
         """
         Calculate pairwise similarities using FAISS for fast vector search
-        Phase 10.3: FAISS-based similarity calculation
+        Phase 10.3: FAISS-based similarity calculation (DISABLED)
         """
-        if not EMBEDDINGS_AVAILABLE or embeddings is None or len(embeddings) == 0:
-            logger.warning("FAISS not available or no embeddings provided")
-            return 0
-        
-        try:
-            # Import lazily to avoid blocking on startup
-            import faiss
-            
-            # Build FAISS index with inner product (cosine similarity after normalization)
-            dimension = embeddings.shape[1]
-            index = faiss.IndexFlatIP(dimension)
-            
-            # Normalize embeddings for cosine similarity
-            faiss.normalize_L2(embeddings)
-            index.add(embeddings.astype('float32'))
-            
-            similarities_stored = 0
-            
-            # For each skill, find top 10 most similar skills
-            for i, skill in enumerate(skills):
-                query_vector = embeddings[i:i+1].astype('float32')
-                
-                # Search for top 11 (including itself)
-                distances, indices = index.search(query_vector, min(11, len(skills)))
-                
-                # Store similarities (excluding self)
-                for j, (idx, dist) in enumerate(zip(indices[0][1:], distances[0][1:])):
-                    if dist > 0.3:  # Threshold for meaningful similarity
-                        async with db_conn.cursor() as cursor:
-                            await cursor.execute("""
-                                INSERT INTO skill_similarities (skill_1, skill_2, similarity_score)
-                                VALUES (%s, %s, %s)
-                                ON DUPLICATE KEY UPDATE 
-                                    similarity_score = VALUES(similarity_score)
-                            """, (skill, skills[idx], float(dist)))
-                        similarities_stored += 1
-            
-            await db_conn.commit()
-            logger.info(f"Stored {similarities_stored} skill similarities using FAISS")
-            
-            return similarities_stored
-        
-        except Exception as e:
-            logger.error(f"Error calculating similarities with FAISS: {str(e)}")
-            return 0
+        # AI features are completely disabled to prevent safetensors/model loading hangs
+        logger.info("FAISS similarity calculation skipped (AI features disabled)")
+        return 0
     
     async def build_skill_graph(self, db_conn) -> Dict:
         """
