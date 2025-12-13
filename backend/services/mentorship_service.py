@@ -146,7 +146,7 @@ class MentorshipService:
     
     @staticmethod
     async def get_mentor_with_details(mentor_id: str) -> Optional[Dict[str, Any]]:
-        """Get mentor profile with alumni profile details"""
+        """Get mentor profile with alumni profile details - Returns nested structure"""
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
@@ -155,8 +155,11 @@ class MentorshipService:
                     mp.id, mp.user_id, mp.is_available, mp.expertise_areas,
                     mp.max_mentees, mp.current_mentees_count, mp.rating,
                     mp.total_sessions, mp.total_reviews, mp.mentorship_approach,
+                    mp.created_at, mp.updated_at,
                     ap.name, ap.photo_url, ap.current_company, ap.current_role,
-                    ap.location, ap.batch_year,
+                    ap.location, ap.batch_year, ap.bio, ap.headline,
+                    ap.experience_timeline, ap.education_details, ap.skills,
+                    ap.achievements, ap.social_links, ap.industry, ap.years_of_experience,
                     u.email
                 FROM mentor_profiles mp
                 JOIN alumni_profiles ap ON mp.user_id = ap.user_id
@@ -164,16 +167,56 @@ class MentorshipService:
                 WHERE mp.user_id = %s OR mp.id = %s
                 """
                 await cursor.execute(query, (mentor_id, mentor_id))
-                mentor = await cursor.fetchone()
+                row = await cursor.fetchone()
                 
-                if mentor:
-                    mentor = MentorshipService._parse_json_fields(mentor, ['expertise_areas'])
+                if not row:
+                    return None
+                
+                # Parse JSON fields
+                row = MentorshipService._parse_json_fields(row, [
+                    'expertise_areas', 'experience_timeline', 'education_details',
+                    'skills', 'achievements', 'social_links'
+                ])
+                
+                # Create nested structure
+                mentor = {
+                    'id': row['id'],
+                    'user_id': row['user_id'],
+                    'is_available': row['is_available'],
+                    'expertise_areas': row['expertise_areas'],
+                    'max_mentees': row['max_mentees'],
+                    'current_mentees_count': row['current_mentees_count'],
+                    'rating': float(row['rating']) if row['rating'] else 0.0,
+                    'total_sessions': row['total_sessions'],
+                    'total_reviews': row['total_reviews'],
+                    'mentorship_approach': row['mentorship_approach'],
+                    'created_at': row['created_at'],
+                    'updated_at': row['updated_at'],
+                    'profile': {
+                        'user_id': row['user_id'],
+                        'name': row['name'],
+                        'photo_url': row['photo_url'],
+                        'bio': row['bio'],
+                        'headline': row['headline'],
+                        'current_company': row['current_company'],
+                        'current_role': row['current_role'],
+                        'location': row['location'],
+                        'batch_year': row['batch_year'],
+                        'experience_timeline': row['experience_timeline'],
+                        'education_details': row['education_details'],
+                        'skills': row['skills'],
+                        'achievements': row['achievements'],
+                        'social_links': row['social_links'],
+                        'industry': row['industry'],
+                        'years_of_experience': row['years_of_experience']
+                    }
+                }
                 
                 return mentor
     
     @staticmethod
     async def search_mentors(search_params: MentorSearchParams) -> Dict[str, Any]:
-        """Search available mentors with filters"""
+        """Search available mentors with filters - Returns nested structure"""
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
@@ -208,8 +251,10 @@ class MentorshipService:
                     mp.id, mp.user_id, mp.is_available, mp.expertise_areas,
                     mp.max_mentees, mp.current_mentees_count, mp.rating,
                     mp.total_sessions, mp.total_reviews, mp.mentorship_approach,
+                    mp.created_at, mp.updated_at,
                     ap.name, ap.photo_url, ap.current_company, ap.current_role,
-                    ap.location, ap.batch_year,
+                    ap.location, ap.batch_year, ap.bio, ap.headline,
+                    ap.experience_timeline, ap.education_details, ap.skills,
                     u.email
                 FROM mentor_profiles mp
                 JOIN alumni_profiles ap ON mp.user_id = ap.user_id
@@ -221,13 +266,45 @@ class MentorshipService:
                 values.extend([search_params.limit, offset])
                 
                 await cursor.execute(query, values)
-                mentors = await cursor.fetchall()
+                rows = await cursor.fetchall()
                 
-                # Parse JSON fields
-                parsed_mentors = [MentorshipService._parse_json_fields(m, ['expertise_areas']) for m in mentors]
+                # Parse JSON fields and create nested structure
+                mentors = []
+                for row in rows:
+                    row = MentorshipService._parse_json_fields(row, [
+                        'expertise_areas', 'experience_timeline', 'education_details', 'skills'
+                    ])
+                    
+                    mentor = {
+                        'id': row['id'],
+                        'user_id': row['user_id'],
+                        'is_available': row['is_available'],
+                        'expertise_areas': row['expertise_areas'],
+                        'max_mentees': row['max_mentees'],
+                        'current_mentees_count': row['current_mentees_count'],
+                        'rating': float(row['rating']) if row['rating'] else 0.0,
+                        'total_sessions': row['total_sessions'],
+                        'total_reviews': row['total_reviews'],
+                        'mentorship_approach': row['mentorship_approach'],
+                        'profile': {
+                            'user_id': row['user_id'],
+                            'name': row['name'],
+                            'photo_url': row['photo_url'],
+                            'bio': row['bio'],
+                            'headline': row['headline'],
+                            'current_company': row['current_company'],
+                            'current_role': row['current_role'],
+                            'location': row['location'],
+                            'batch_year': row['batch_year'],
+                            'experience_timeline': row['experience_timeline'],
+                            'education_details': row['education_details'],
+                            'skills': row['skills']
+                        }
+                    }
+                    mentors.append(mentor)
                 
                 return {
-                    "mentors": parsed_mentors,
+                    "mentors": mentors,
                     "total": total,
                     "page": search_params.page,
                     "limit": search_params.limit,
@@ -449,7 +526,7 @@ class MentorshipService:
     
     @staticmethod
     async def get_received_requests(mentor_id: str, status: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Get mentorship requests received by mentor"""
+        """Get mentorship requests received by mentor - Returns enriched nested structure"""
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
@@ -467,6 +544,7 @@ class MentorshipService:
                     COALESCE(ap_student.name, u_student.email) as student_name,
                     u_student.email as student_email,
                     ap_student.photo_url as student_photo,
+                    ap_student.headline as student_headline,
                     ap_mentor.name as mentor_name,
                     u_mentor.email as mentor_email,
                     ap_mentor.photo_url as mentor_photo
@@ -480,13 +558,50 @@ class MentorshipService:
                 """
                 
                 await cursor.execute(query, values)
-                requests = await cursor.fetchall()
+                rows = await cursor.fetchall()
                 
-                return [MentorshipService._parse_json_fields(r, ['preferred_topics']) for r in requests]
+                results = []
+                for row in rows:
+                    row = MentorshipService._parse_json_fields(row, ['preferred_topics'])
+                    
+                    # Create nested structure
+                    request = {
+                        'id': row['id'],
+                        'student_id': row['student_id'],
+                        'mentor_id': row['mentor_id'],
+                        'request_message': row['request_message'],
+                        'goals': row['goals'],
+                        'preferred_topics': row['preferred_topics'],
+                        'status': row['status'],
+                        'rejection_reason': row.get('rejection_reason'),
+                        'requested_at': row['requested_at'],
+                        'accepted_at': row.get('accepted_at'),
+                        'rejected_at': row.get('rejected_at'),
+                        'updated_at': row.get('updated_at'),
+                        'student': {
+                            'id': row['student_id'],
+                            'email': row['student_email'],
+                            'profile': {
+                                'user_id': row['student_id'],
+                                'name': row['student_name'],
+                                'photo_url': row['student_photo'],
+                                'headline': row.get('student_headline')
+                            }
+                        },
+                        'studentProfile': {
+                            'user_id': row['student_id'],
+                            'name': row['student_name'],
+                            'photo_url': row['student_photo'],
+                            'headline': row.get('student_headline')
+                        }
+                    }
+                    results.append(request)
+                
+                return results
     
     @staticmethod
     async def get_sent_requests(student_id: str, status: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Get mentorship requests sent by student"""
+        """Get mentorship requests sent by student - Returns enriched nested structure"""
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
@@ -497,7 +612,7 @@ class MentorshipService:
                     where_clause += " AND mr.status = %s"
                     values.append(status)
                 
-                # Use LEFT JOINs since both students and mentors may not have alumni_profiles
+                # Use LEFT JOINs and get mentor_profiles data
                 query = f"""
                 SELECT 
                     mr.*,
@@ -506,54 +621,141 @@ class MentorshipService:
                     ap_student.photo_url as student_photo,
                     COALESCE(ap_mentor.name, u_mentor.email) as mentor_name,
                     u_mentor.email as mentor_email,
-                    ap_mentor.photo_url as mentor_photo
+                    ap_mentor.photo_url as mentor_photo,
+                    ap_mentor.headline as mentor_headline,
+                    mp.expertise_areas
                 FROM mentorship_requests mr
                 LEFT JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
                 LEFT JOIN users u_student ON mr.student_id = u_student.id
                 LEFT JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
                 LEFT JOIN users u_mentor ON mr.mentor_id = u_mentor.id
+                LEFT JOIN mentor_profiles mp ON mr.mentor_id = mp.user_id
                 {where_clause}
                 ORDER BY mr.requested_at DESC
                 """
                 
                 await cursor.execute(query, values)
-                requests = await cursor.fetchall()
+                rows = await cursor.fetchall()
                 
-                return [MentorshipService._parse_json_fields(r, ['preferred_topics']) for r in requests]
+                results = []
+                for row in rows:
+                    row = MentorshipService._parse_json_fields(row, ['preferred_topics', 'expertise_areas'])
+                    
+                    # Create nested structure
+                    request = {
+                        'id': row['id'],
+                        'student_id': row['student_id'],
+                        'mentor_id': row['mentor_id'],
+                        'request_message': row['request_message'],
+                        'goals': row['goals'],
+                        'preferred_topics': row['preferred_topics'],
+                        'status': row['status'],
+                        'rejection_reason': row.get('rejection_reason'),
+                        'requested_at': row['requested_at'],
+                        'accepted_at': row.get('accepted_at'),
+                        'rejected_at': row.get('rejected_at'),
+                        'updated_at': row.get('updated_at'),
+                        'mentor': {
+                            'id': row['mentor_id'],
+                            'email': row['mentor_email'],
+                            'profile': {
+                                'user_id': row['mentor_id'],
+                                'name': row['mentor_name'],
+                                'photo_url': row['mentor_photo'],
+                                'headline': row.get('mentor_headline')
+                            },
+                            'expertise_areas': row.get('expertise_areas', [])
+                        },
+                        'mentorProfile': {
+                            'user_id': row['mentor_id'],
+                            'name': row['mentor_name'],
+                            'photo_url': row['mentor_photo'],
+                            'headline': row.get('mentor_headline')
+                        }
+                    }
+                    results.append(request)
+                
+                return results
     
     @staticmethod
     async def get_active_mentorships(user_id: str) -> List[Dict[str, Any]]:
-        """Get active mentorships for user (as mentor or student)"""
+        """Get active mentorships for user (as mentor or student) - Returns enriched structure"""
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
-                # Use LEFT JOINs to support both alumni and student users
+                # Use LEFT JOINs and include mentor_profiles data
                 query = """
                 SELECT 
                     mr.*,
                     COALESCE(ap_student.name, u_student.email) as student_name,
                     u_student.email as student_email,
                     ap_student.photo_url as student_photo,
+                    ap_student.headline as student_headline,
                     COALESCE(ap_mentor.name, u_mentor.email) as mentor_name,
                     u_mentor.email as mentor_email,
-                    ap_mentor.photo_url as mentor_photo
+                    ap_mentor.photo_url as mentor_photo,
+                    ap_mentor.headline as mentor_headline,
+                    mp.expertise_areas, mp.rating, mp.total_sessions
                 FROM mentorship_requests mr
                 LEFT JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
                 LEFT JOIN users u_student ON mr.student_id = u_student.id
                 LEFT JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
                 LEFT JOIN users u_mentor ON mr.mentor_id = u_mentor.id
+                LEFT JOIN mentor_profiles mp ON mr.mentor_id = mp.user_id
                 WHERE (mr.student_id = %s OR mr.mentor_id = %s) AND mr.status = 'accepted'
                 ORDER BY mr.accepted_at DESC
                 """
                 
                 await cursor.execute(query, (user_id, user_id))
-                mentorships = await cursor.fetchall()
+                rows = await cursor.fetchall()
                 
-                return [MentorshipService._parse_json_fields(m, ['preferred_topics']) for m in mentorships]
+                results = []
+                for row in rows:
+                    row = MentorshipService._parse_json_fields(row, ['preferred_topics', 'expertise_areas'])
+                    
+                    # Create nested structure with full mentor and student objects
+                    mentorship = {
+                        'id': row['id'],
+                        'student_id': row['student_id'],
+                        'mentor_id': row['mentor_id'],
+                        'request_message': row['request_message'],
+                        'goals': row['goals'],
+                        'preferred_topics': row['preferred_topics'],
+                        'status': row['status'],
+                        'requested_at': row['requested_at'],
+                        'accepted_at': row.get('accepted_at'),
+                        'updated_at': row.get('updated_at'),
+                        'student': {
+                            'id': row['student_id'],
+                            'email': row['student_email'],
+                            'profile': {
+                                'user_id': row['student_id'],
+                                'name': row['student_name'],
+                                'photo_url': row['student_photo'],
+                                'headline': row.get('student_headline')
+                            }
+                        },
+                        'mentor': {
+                            'id': row['mentor_id'],
+                            'email': row['mentor_email'],
+                            'profile': {
+                                'user_id': row['mentor_id'],
+                                'name': row['mentor_name'],
+                                'photo_url': row['mentor_photo'],
+                                'headline': row.get('mentor_headline')
+                            },
+                            'expertise_areas': row.get('expertise_areas', []),
+                            'rating': float(row.get('rating', 0)),
+                            'total_sessions': row.get('total_sessions', 0)
+                        }
+                    }
+                    results.append(mentorship)
+                
+                return results
     
     @staticmethod
     async def get_request_with_details(request_id: str) -> Optional[Dict[str, Any]]:
-        """Get mentorship request with full details"""
+        """Get mentorship request with full details - Returns enriched structure"""
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
@@ -564,9 +766,11 @@ class MentorshipService:
                     COALESCE(ap_student.name, u_student.email) as student_name,
                     u_student.email as student_email,
                     ap_student.photo_url as student_photo,
+                    ap_student.headline as student_headline,
                     COALESCE(ap_mentor.name, u_mentor.email) as mentor_name,
                     u_mentor.email as mentor_email,
-                    ap_mentor.photo_url as mentor_photo
+                    ap_mentor.photo_url as mentor_photo,
+                    ap_mentor.headline as mentor_headline
                 FROM mentorship_requests mr
                 LEFT JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
                 LEFT JOIN users u_student ON mr.student_id = u_student.id
@@ -576,10 +780,48 @@ class MentorshipService:
                 """
                 
                 await cursor.execute(query, (request_id,))
-                request = await cursor.fetchone()
+                row = await cursor.fetchone()
                 
-                if request:
-                    request = MentorshipService._parse_json_fields(request, ['preferred_topics'])
+                if not row:
+                    return None
+                
+                row = MentorshipService._parse_json_fields(row, ['preferred_topics'])
+                
+                # Create nested structure
+                request = {
+                    'id': row['id'],
+                    'student_id': row['student_id'],
+                    'mentor_id': row['mentor_id'],
+                    'request_message': row['request_message'],
+                    'goals': row['goals'],
+                    'preferred_topics': row['preferred_topics'],
+                    'status': row['status'],
+                    'rejection_reason': row.get('rejection_reason'),
+                    'requested_at': row['requested_at'],
+                    'accepted_at': row.get('accepted_at'),
+                    'rejected_at': row.get('rejected_at'),
+                    'updated_at': row.get('updated_at'),
+                    'student': {
+                        'id': row['student_id'],
+                        'email': row['student_email'],
+                        'profile': {
+                            'user_id': row['student_id'],
+                            'name': row['student_name'],
+                            'photo_url': row['student_photo'],
+                            'headline': row.get('student_headline')
+                        }
+                    },
+                    'mentor': {
+                        'id': row['mentor_id'],
+                        'email': row['mentor_email'],
+                        'profile': {
+                            'user_id': row['mentor_id'],
+                            'name': row['mentor_name'],
+                            'photo_url': row['mentor_photo'],
+                            'headline': row.get('mentor_headline')
+                        }
+                    }
+                }
                 
                 return request
     
@@ -779,7 +1021,7 @@ class MentorshipService:
     
     @staticmethod
     async def get_sessions(user_id: str, status: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Get sessions for user (as mentor or student)"""
+        """Get sessions for user (as mentor or student) - Returns enriched structure"""
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
@@ -794,28 +1036,66 @@ class MentorshipService:
                 SELECT 
                     ms.*,
                     mr.student_id, mr.mentor_id,
-                    ap_student.name as student_name,
+                    COALESCE(ap_student.name, u_student.email) as student_name,
                     u_student.email as student_email,
-                    ap_mentor.name as mentor_name,
-                    u_mentor.email as mentor_email
+                    ap_student.photo_url as student_photo,
+                    COALESCE(ap_mentor.name, u_mentor.email) as mentor_name,
+                    u_mentor.email as mentor_email,
+                    ap_mentor.photo_url as mentor_photo
                 FROM mentorship_sessions ms
                 JOIN mentorship_requests mr ON ms.mentorship_request_id = mr.id
-                JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
-                JOIN users u_student ON mr.student_id = u_student.id
-                JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
-                JOIN users u_mentor ON mr.mentor_id = u_mentor.id
+                LEFT JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
+                LEFT JOIN users u_student ON mr.student_id = u_student.id
+                LEFT JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
+                LEFT JOIN users u_mentor ON mr.mentor_id = u_mentor.id
                 {where_clause}
                 ORDER BY ms.scheduled_date DESC
                 """
                 
                 await cursor.execute(query, values)
-                sessions = await cursor.fetchall()
+                rows = await cursor.fetchall()
                 
-                return sessions
+                results = []
+                for row in rows:
+                    session = {
+                        'id': row['id'],
+                        'mentorship_request_id': row['mentorship_request_id'],
+                        'scheduled_date': row['scheduled_date'],
+                        'duration': row['duration'],
+                        'status': row['status'],
+                        'meeting_link': row.get('meeting_link'),
+                        'agenda': row.get('agenda'),
+                        'notes': row.get('notes'),
+                        'feedback': row.get('feedback'),
+                        'rating': row.get('rating'),
+                        'created_at': row.get('created_at'),
+                        'updated_at': row.get('updated_at'),
+                        'student_id': row['student_id'],
+                        'mentor_id': row['mentor_id'],
+                        'student': {
+                            'id': row['student_id'],
+                            'email': row['student_email'],
+                            'profile': {
+                                'name': row['student_name'],
+                                'photo_url': row['student_photo']
+                            }
+                        },
+                        'mentor': {
+                            'id': row['mentor_id'],
+                            'email': row['mentor_email'],
+                            'profile': {
+                                'name': row['mentor_name'],
+                                'photo_url': row['mentor_photo']
+                            }
+                        }
+                    }
+                    results.append(session)
+                
+                return results
     
     @staticmethod
     async def get_session_with_details(session_id: str) -> Optional[Dict[str, Any]]:
-        """Get session with full details"""
+        """Get session with full details - Returns enriched structure"""
         pool = await get_db_pool()
         async with pool.acquire() as conn:
             async with conn.cursor(aiomysql.DictCursor) as cursor:
@@ -823,21 +1103,66 @@ class MentorshipService:
                 SELECT 
                     ms.*,
                     mr.student_id, mr.mentor_id,
-                    ap_student.name as student_name,
+                    COALESCE(ap_student.name, u_student.email) as student_name,
                     u_student.email as student_email,
-                    ap_mentor.name as mentor_name,
-                    u_mentor.email as mentor_email
+                    ap_student.photo_url as student_photo,
+                    ap_student.headline as student_headline,
+                    COALESCE(ap_mentor.name, u_mentor.email) as mentor_name,
+                    u_mentor.email as mentor_email,
+                    ap_mentor.photo_url as mentor_photo,
+                    ap_mentor.headline as mentor_headline
                 FROM mentorship_sessions ms
                 JOIN mentorship_requests mr ON ms.mentorship_request_id = mr.id
-                JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
-                JOIN users u_student ON mr.student_id = u_student.id
-                JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
-                JOIN users u_mentor ON mr.mentor_id = u_mentor.id
+                LEFT JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
+                LEFT JOIN users u_student ON mr.student_id = u_student.id
+                LEFT JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
+                LEFT JOIN users u_mentor ON mr.mentor_id = u_mentor.id
                 WHERE ms.id = %s
                 """
                 
                 await cursor.execute(query, (session_id,))
-                session = await cursor.fetchone()
+                row = await cursor.fetchone()
+                
+                if not row:
+                    return None
+                
+                # Create nested structure
+                session = {
+                    'id': row['id'],
+                    'mentorship_request_id': row['mentorship_request_id'],
+                    'scheduled_date': row['scheduled_date'],
+                    'duration': row['duration'],
+                    'status': row['status'],
+                    'meeting_link': row.get('meeting_link'),
+                    'agenda': row.get('agenda'),
+                    'notes': row.get('notes'),
+                    'feedback': row.get('feedback'),
+                    'rating': row.get('rating'),
+                    'created_at': row.get('created_at'),
+                    'updated_at': row.get('updated_at'),
+                    'student_id': row['student_id'],
+                    'mentor_id': row['mentor_id'],
+                    'student': {
+                        'id': row['student_id'],
+                        'email': row['student_email'],
+                        'profile': {
+                            'user_id': row['student_id'],
+                            'name': row['student_name'],
+                            'photo_url': row['student_photo'],
+                            'headline': row.get('student_headline')
+                        }
+                    },
+                    'mentor': {
+                        'id': row['mentor_id'],
+                        'email': row['mentor_email'],
+                        'profile': {
+                            'user_id': row['mentor_id'],
+                            'name': row['mentor_name'],
+                            'photo_url': row['mentor_photo'],
+                            'headline': row.get('mentor_headline')
+                        }
+                    }
+                }
                 
                 return session
     
@@ -856,3 +1181,134 @@ class MentorshipService:
                 except:
                     data[field] = None
         return data
+    
+    # ========================================================================
+    # ADDITIONAL HELPER METHODS
+    # ========================================================================
+    
+    @staticmethod
+    async def get_unique_expertise_areas() -> List[str]:
+        """Get all unique expertise areas from mentor profiles"""
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cursor:
+                await cursor.execute(
+                    "SELECT DISTINCT expertise_areas FROM mentor_profiles WHERE expertise_areas IS NOT NULL"
+                )
+                rows = await cursor.fetchall()
+                
+                # Parse and flatten all expertise areas
+                all_areas = set()
+                for row in rows:
+                    if row['expertise_areas']:
+                        try:
+                            areas = json.loads(row['expertise_areas']) if isinstance(row['expertise_areas'], str) else row['expertise_areas']
+                            if isinstance(areas, list):
+                                all_areas.update(areas)
+                        except:
+                            pass
+                
+                return sorted(list(all_areas))
+    
+    @staticmethod
+    async def get_sessions_by_request_id(request_id: str) -> List[Dict[str, Any]]:
+        """Get all sessions for a specific mentorship request"""
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cursor:
+                query = """
+                SELECT 
+                    ms.*,
+                    mr.student_id, mr.mentor_id,
+                    COALESCE(ap_student.name, u_student.email) as student_name,
+                    u_student.email as student_email,
+                    ap_student.photo_url as student_photo,
+                    COALESCE(ap_mentor.name, u_mentor.email) as mentor_name,
+                    u_mentor.email as mentor_email,
+                    ap_mentor.photo_url as mentor_photo
+                FROM mentorship_sessions ms
+                JOIN mentorship_requests mr ON ms.mentorship_request_id = mr.id
+                LEFT JOIN alumni_profiles ap_student ON mr.student_id = ap_student.user_id
+                LEFT JOIN users u_student ON mr.student_id = u_student.id
+                LEFT JOIN alumni_profiles ap_mentor ON mr.mentor_id = ap_mentor.user_id
+                LEFT JOIN users u_mentor ON mr.mentor_id = u_mentor.id
+                WHERE ms.mentorship_request_id = %s
+                ORDER BY ms.scheduled_date DESC
+                """
+                
+                await cursor.execute(query, (request_id,))
+                rows = await cursor.fetchall()
+                
+                results = []
+                for row in rows:
+                    session = {
+                        'id': row['id'],
+                        'mentorship_request_id': row['mentorship_request_id'],
+                        'scheduled_date': row['scheduled_date'],
+                        'duration': row['duration'],
+                        'status': row['status'],
+                        'meeting_link': row.get('meeting_link'),
+                        'agenda': row.get('agenda'),
+                        'notes': row.get('notes'),
+                        'feedback': row.get('feedback'),
+                        'rating': row.get('rating'),
+                        'created_at': row.get('created_at'),
+                        'updated_at': row.get('updated_at'),
+                        'student_id': row['student_id'],
+                        'mentor_id': row['mentor_id'],
+                        'student': {
+                            'id': row['student_id'],
+                            'email': row['student_email'],
+                            'name': row['student_name'],
+                            'photo_url': row['student_photo']
+                        },
+                        'mentor': {
+                            'id': row['mentor_id'],
+                            'email': row['mentor_email'],
+                            'name': row['mentor_name'],
+                            'photo_url': row['mentor_photo']
+                        }
+                    }
+                    results.append(session)
+                
+                return results
+    
+    @staticmethod
+    async def cancel_session(session_id: str, user_id: str) -> Dict[str, Any]:
+        """Cancel a mentorship session"""
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cursor:
+                # Verify user is part of the mentorship and session can be cancelled
+                await cursor.execute(
+                    """
+                    SELECT ms.id, ms.status, mr.student_id, mr.mentor_id
+                    FROM mentorship_sessions ms
+                    JOIN mentorship_requests mr ON ms.mentorship_request_id = mr.id
+                    WHERE ms.id = %s
+                    """,
+                    (session_id,)
+                )
+                session = await cursor.fetchone()
+                
+                if not session:
+                    raise ValueError("Session not found")
+                
+                if user_id not in [session['student_id'], session['mentor_id']]:
+                    raise ValueError("You are not authorized to cancel this session")
+                
+                if session['status'] in ['completed', 'cancelled']:
+                    raise ValueError(f"Cannot cancel a session that is already {session['status']}")
+                
+                # Update status to cancelled
+                await cursor.execute(
+                    """
+                    UPDATE mentorship_sessions
+                    SET status = 'cancelled'
+                    WHERE id = %s
+                    """,
+                    (session_id,)
+                )
+                await conn.commit()
+                
+                return await MentorshipService.get_session_with_details(session_id)
