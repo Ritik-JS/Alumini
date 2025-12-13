@@ -370,6 +370,18 @@ class EngagementService:
             return "Active"
         else:
             return "Beginner"
+
+    def _parse_requirements(self, requirements_data) -> Dict:
+        """Parse requirements JSON string from database"""
+        if requirements_data and isinstance(requirements_data, str):
+            try:
+                return json.loads(requirements_data)
+            except json.JSONDecodeError:
+                return {}
+        elif not requirements_data:
+            return {}
+        else:
+            return requirements_data
     
     async def get_user_score(
         self,
@@ -587,7 +599,7 @@ class EngagementService:
                     'name': b[1],
                     'description': b[2],
                     'icon_url': b[3],
-                    'requirements': b[4] if b[4] else {},
+                    'requirements': self._parse_requirements(b[4]),
                     'rarity': b[5],
                     'points': b[6],
                     'created_at': b[7]
