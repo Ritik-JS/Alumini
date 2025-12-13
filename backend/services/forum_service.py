@@ -364,10 +364,11 @@ class ForumService:
                     )
                     liked = False
                 else:
-                    # Like
+                    # Like - Generate UUID for the like
+                    like_id = str(uuid.uuid4())
                     await cursor.execute(
-                        "INSERT INTO post_likes (post_id, user_id) VALUES (%s, %s)",
-                        (post_id, user_id)
+                        "INSERT INTO post_likes (id, post_id, user_id) VALUES (%s, %s, %s)",
+                        (like_id, post_id, user_id)
                     )
                     liked = True
                 
@@ -567,10 +568,11 @@ class ForumService:
                     )
                     liked = False
                 else:
-                    # Like
+                    # Like - Generate UUID for the like
+                    like_id = str(uuid.uuid4())
                     await cursor.execute(
-                        "INSERT INTO comment_likes (comment_id, user_id) VALUES (%s, %s)",
-                        (comment_id, user_id)
+                        "INSERT INTO comment_likes (id, comment_id, user_id) VALUES (%s, %s, %s)",
+                        (like_id, comment_id, user_id)
                     )
                     liked = True
                 

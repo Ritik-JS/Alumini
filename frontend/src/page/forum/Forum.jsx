@@ -36,7 +36,7 @@ const Forum = () => {
       };
       
       if (selectedTag) {
-        filters.tag = selectedTag;
+        filters.tags = selectedTag;
       }
 
       const response = await forumService.getPosts(filters);

@@ -72,8 +72,20 @@ END //
 DELIMITER ;
 
 -- ============================================================================
--- COMMENT SOFT DELETE TRIGGER
+-- COMMENT TRIGGERS
 -- ============================================================================
+
+-- Trigger for comment insert (increment comments_count on post)
+DELIMITER //
+CREATE TRIGGER after_comment_insert
+AFTER INSERT ON forum_comments
+FOR EACH ROW
+BEGIN
+    UPDATE forum_posts 
+    SET comments_count = comments_count + 1 
+    WHERE id = NEW.post_id;
+END //
+DELIMITER ;
 
 -- Trigger for comment soft delete (decrement comments_count on post)
 DELIMITER //
