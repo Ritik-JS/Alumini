@@ -50,26 +50,34 @@ async def get_all_users(
         params.extend([limit, offset])
         
         cursor.execute(query, params)
-        users = cursor.fetchall()
+        rows = cursor.fetchall()
         
-        # Transform data
-        for user in users:
-            if user['last_login']:
-                user['last_login'] = user['last_login'].isoformat()
-            user['created_at'] = user['created_at'].isoformat()
-            user['updated_at'] = user['updated_at'].isoformat()
-            
-            # Add card status
-            user['has_card'] = user['card_id'] is not None
-            user['card_status'] = {
-                'has_card': user['card_id'] is not None,
-                'card_number': user['card_number'],
-                'is_active': user['card_active']
+        # Transform data into clean structure
+        users = []
+        for row in rows:
+            user = {
+                'id': row['id'],
+                'email': row['email'],
+                'role': row['role'],
+                'is_verified': row['is_verified'],
+                'is_active': row['is_active'],
+                'last_login': row['last_login'].isoformat() if row['last_login'] else None,
+                'created_at': row['created_at'].isoformat() if row['created_at'] else None,
+                'updated_at': row['updated_at'].isoformat() if row['updated_at'] else None,
+                'name': row['name'],
+                'photo_url': row['photo_url'],
+                'current_company': row['current_company'],
+                'current_role': row['current_role'],
+                'location': row['location'],
+                'batch_year': row['batch_year'],
+                'profile_completion_percentage': row['profile_completion_percentage'],
+                'card_status': {
+                    'has_card': row['card_id'] is not None,
+                    'card_number': row['card_number'],
+                    'is_active': row['card_active']
+                }
             }
-            # Remove redundant fields
-            del user['card_id']
-            del user['card_number']
-            del user['card_active']
+            users.append(user)
         
         cursor.close()
         connection.close()
@@ -108,72 +116,68 @@ async def get_user_with_profile(user_id: str):
             WHERE u.id = %s
         """, (user_id,))
         
-        user_data = cursor.fetchone()
+        row = cursor.fetchone()
         
-        if not user_data:
+        if not row:
+            cursor.close()
+            connection.close()
             raise HTTPException(status_code=404, detail="User not found")
         
         import json
         
         # Parse JSON fields for profile
         skills = []
-        if user_data.get('skills'):
+        if row.get('skills'):
             try:
-                skills = json.loads(user_data['skills']) if isinstance(user_data['skills'], str) else user_data['skills']
-            except:
+                skills = json.loads(row['skills']) if isinstance(row['skills'], str) else row['skills']
+            except (json.JSONDecodeError, TypeError):
                 skills = []
         
         achievements = []
-        if user_data.get('achievements'):
+        if row.get('achievements'):
             try:
-                achievements = json.loads(user_data['achievements']) if isinstance(user_data['achievements'], str) else user_data['achievements']
-            except:
+                achievements = json.loads(row['achievements']) if isinstance(row['achievements'], str) else row['achievements']
+            except (json.JSONDecodeError, TypeError):
                 achievements = []
         
         social_links = {}
-        if user_data.get('social_links'):
+        if row.get('social_links'):
             try:
-                social_links = json.loads(user_data['social_links']) if isinstance(user_data['social_links'], str) else user_data['social_links']
-            except:
+                social_links = json.loads(row['social_links']) if isinstance(row['social_links'], str) else row['social_links']
+            except (json.JSONDecodeError, TypeError):
                 social_links = {}
-        
-        # Format timestamps
-        last_login = user_data['last_login'].isoformat() if user_data['last_login'] else None
-        created_at = user_data['created_at'].isoformat()
-        updated_at = user_data['updated_at'].isoformat()
         
         # Build nested structure with profile object
         user = {
-            'id': user_data['id'],
-            'email': user_data['email'],
-            'role': user_data['role'],
-            'is_verified': user_data['is_verified'],
-            'is_active': user_data['is_active'],
-            'last_login': last_login,
-            'created_at': created_at,
-            'updated_at': updated_at,
-            'has_card': user_data['card_id'] is not None,
+            'id': row.get('id'),
+            'email': row.get('email'),
+            'role': row.get('role'),
+            'is_verified': row.get('is_verified'),
+            'is_active': row.get('is_active'),
+            'last_login': row['last_login'].isoformat() if row.get('last_login') else None,
+            'created_at': row['created_at'].isoformat() if row.get('created_at') else None,
+            'updated_at': row['updated_at'].isoformat() if row.get('updated_at') else None,
             'card_status': {
-                'has_card': user_data['card_id'] is not None,
-                'card_number': user_data['card_number'],
-                'is_active': user_data['card_active']
+                'has_card': row.get('card_id') is not None,
+                'card_number': row.get('card_number'),
+                'is_active': row.get('card_active')
             },
             'profile': {
-                'name': user_data['name'],
-                'photo_url': user_data['photo_url'],
-                'bio': user_data['bio'],
-                'headline': user_data['headline'],
-                'current_company': user_data['current_company'],
-                'current_role': user_data['current_role'],
-                'location': user_data['location'],
-                'batch_year': user_data['batch_year'],
+                'name': row.get('name'),
+                'photo_url': row.get('photo_url'),
+                'bio': row.get('bio'),
+                'headline': row.get('headline'),
+                'current_company': row.get('current_company'),
+                'current_role': row.get('current_role'),
+                'location': row.get('location'),
+                'batch_year': row.get('batch_year'),
                 'skills': skills,
                 'achievements': achievements,
                 'social_links': social_links,
-                'education_details': user_data['education_details'],
-                'experience_timeline': user_data['experience_timeline'],
-                'profile_completion_percentage': user_data['profile_completion_percentage'],
-                'is_verified': user_data['profile_verified']
+                'education_details': row.get('education_details'),
+                'experience_timeline': row.get('experience_timeline'),
+                'profile_completion_percentage': row.get('profile_completion_percentage'),
+                'is_verified': row.get('profile_verified')
             }
         }
         
@@ -188,7 +192,7 @@ async def get_user_with_profile(user_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching user {user_id}: {str(e)}")
+        logger.error(f"Error fetching user {user_id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/{user_id}/ban", dependencies=[Depends(require_admin)])

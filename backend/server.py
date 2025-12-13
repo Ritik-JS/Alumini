@@ -57,6 +57,7 @@ from routes.admin_notifications import router as admin_notifications_router
 from routes.admin_moderation import router as admin_moderation_router
 from routes.admin_files import router as admin_files_router
 from routes.admin_wrappers import router as admin_wrappers_router
+from routes.admin_audit_logs import router as admin_audit_logs_router
 
 # Import Phase 8 routes - Smart Algorithms & Matching
 from routes.matching import router as matching_router
@@ -248,6 +249,7 @@ app.include_router(admin_badges_router)
 app.include_router(admin_notifications_router)
 app.include_router(admin_moderation_router)
 app.include_router(admin_files_router)
+app.include_router(admin_audit_logs_router)
 app.include_router(admin_wrappers_router)
 
 # Include Phase 8 routes - Smart Algorithms & Recommendations
