@@ -430,6 +430,232 @@ async def get_learning_resources(
 
 
 # ============================================================================
+# PHASE 3: ML MODEL TRAINING ENDPOINTS
+# ============================================================================
+
+@router.post("/train-model")
+async def train_ml_model(
+    min_samples: int = Query(50, ge=10, le=1000, description="Minimum training samples required"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Train career prediction ML model
+    Requires admin privileges
+    
+    This endpoint:
+    1. Extracts career transition data from database
+    2. Trains a Random Forest classifier
+    3. Saves the model to disk
+    4. Stores model metadata in database
+    
+    Minimum 50 career transitions recommended for good accuracy
+    """
+    try:
+        # Check if user is admin
+        if current_user.get('role') != 'admin':
+            raise HTTPException(
+                status_code=403,
+                detail="Only administrators can train ML models"
+            )
+        
+        logger.info(f"Starting ML model training (min_samples={min_samples})...")
+        
+        # Import trainer
+        from ml.career_model_trainer import CareerModelTrainer
+        
+        # Get database connection
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            # Initialize trainer and train model
+            trainer = CareerModelTrainer()
+            result = await trainer.train_from_database(conn, min_samples=min_samples)
+        
+        if result.get('success'):
+            logger.info(f"✅ Model training completed: {result.get('metrics', {}).get('accuracy', 0):.3f} accuracy")
+            
+            # Reload model in model loader
+            from ml.model_loader import reload_model
+            reload_model()
+            
+            return {
+                "success": True,
+                "message": "Model trained successfully",
+                "data": result
+            }
+        else:
+            logger.warning(f"Model training failed: {result.get('message')}")
+            return {
+                "success": False,
+                "message": result.get('message'),
+                "data": result
+            }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error training model: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to train model: {str(e)}"
+        )
+
+
+@router.post("/calculate-matrix")
+async def calculate_transition_matrix(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Calculate career transition probability matrix
+    Updates career_transition_matrix table with latest data
+    
+    This endpoint:
+    1. Analyzes historical career transitions
+    2. Calculates transition probabilities between roles
+    3. Updates the career_transition_matrix table
+    4. Provides foundation for rule-based predictions
+    """
+    try:
+        # Check if user is admin
+        if current_user.get('role') != 'admin':
+            raise HTTPException(
+                status_code=403,
+                detail="Only administrators can calculate transition matrix"
+            )
+        
+        logger.info("Calculating career transition matrix...")
+        
+        # Import trainer
+        from ml.career_model_trainer import CareerModelTrainer
+        
+        # Get database connection
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            # Initialize trainer and calculate matrix
+            trainer = CareerModelTrainer()
+            result = await trainer.calculate_transition_matrix(conn)
+        
+        if result.get('success'):
+            logger.info(f"✅ Transition matrix calculated: {result.get('transitions_calculated')} transitions")
+            return {
+                "success": True,
+                "message": "Transition matrix calculated successfully",
+                "data": result
+            }
+        else:
+            logger.warning(f"Matrix calculation failed: {result.get('message')}")
+            return {
+                "success": False,
+                "message": result.get('message'),
+                "data": result
+            }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error calculating matrix: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to calculate matrix: {str(e)}"
+        )
+
+
+@router.get("/model-status")
+async def get_model_status(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get ML model status and metadata
+    
+    Returns information about:
+    - Model availability and loading status
+    - Model type and framework
+    - Training metrics (accuracy, precision, etc.)
+    - Feature count and classes
+    - Training data statistics from database
+    """
+    try:
+        from ml.model_loader import get_model_loader
+        
+        # Get model loader
+        model_loader = get_model_loader()
+        model_info = model_loader.get_model_info()
+        
+        # Get training data statistics from database
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                # Count career transitions
+                await cursor.execute("""
+                    SELECT COUNT(*) as total_transitions,
+                           COUNT(DISTINCT from_role) as unique_from_roles,
+                           COUNT(DISTINCT to_role) as unique_to_roles
+                    FROM career_paths
+                    WHERE from_role IS NOT NULL AND to_role IS NOT NULL
+                """)
+                transitions_data = await cursor.fetchone()
+                
+                # Count transition matrix entries
+                await cursor.execute("""
+                    SELECT COUNT(*) as matrix_entries,
+                           MAX(last_calculated) as last_updated
+                    FROM career_transition_matrix
+                """)
+                matrix_data = await cursor.fetchone()
+                
+                # Get latest model metadata
+                await cursor.execute("""
+                    SELECT model_name, model_version, framework,
+                           accuracy, trained_at, status
+                    FROM ml_models
+                    WHERE model_name = 'career_predictor'
+                    ORDER BY trained_at DESC
+                    LIMIT 1
+                """)
+                model_metadata = await cursor.fetchone()
+        
+        # Build response
+        response = {
+            "model_loaded": model_info.get('loaded', False),
+            "model_info": model_info,
+            "training_data": {
+                "total_transitions": transitions_data[0] if transitions_data else 0,
+                "unique_from_roles": transitions_data[1] if transitions_data else 0,
+                "unique_to_roles": transitions_data[2] if transitions_data else 0,
+                "sufficient_for_training": (transitions_data[0] if transitions_data else 0) >= 50
+            },
+            "transition_matrix": {
+                "entries": matrix_data[0] if matrix_data else 0,
+                "last_updated": matrix_data[1].isoformat() if matrix_data and matrix_data[1] else None
+            }
+        }
+        
+        # Add model metadata if available
+        if model_metadata:
+            response["latest_model"] = {
+                "name": model_metadata[0],
+                "version": model_metadata[1],
+                "framework": model_metadata[2],
+                "accuracy": float(model_metadata[3]) if model_metadata[3] else None,
+                "trained_at": model_metadata[4].isoformat() if model_metadata[4] else None,
+                "status": model_metadata[5]
+            }
+        else:
+            response["latest_model"] = None
+        
+        return {
+            "success": True,
+            "data": response
+        }
+    
+    except Exception as e:
+        logger.error(f"Error getting model status: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get model status: {str(e)}"
+        )
+
+
+# ============================================================================
 # HELPER FUNCTIONS
 # ============================================================================
 
