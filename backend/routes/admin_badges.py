@@ -11,10 +11,10 @@ router = APIRouter(prefix="/api/admin/badges", tags=["admin-badges"])
 
 class BadgeCreate(BaseModel):
     name: str
-    description: str
-    rarity: str
-    points: int
-    requirements: dict
+    description: Optional[str] = "Badge earned"
+    rarity: Optional[str] = "common"
+    points: Optional[int] = 10
+    requirements: Optional[dict] = None
 
 @router.get("", dependencies=[Depends(require_admin)])
 async def get_all_badges():

@@ -23,65 +23,40 @@ async def get_flagged_content(
         connection = get_sync_db_connection()
         cursor = connection.cursor()
         
-        # Get flagged forum posts
+        # Get all flagged content from content_flags table
         cursor.execute("""
             SELECT 
-                fp.id,
-                fp.title,
-                fp.content,
-                fp.created_at as timestamp,
-                u.email as author,
-                'forum_post' as type,
-                'Spam' as reason,
-                'System' as reportedBy
-            FROM forum_posts fp
-            JOIN users u ON fp.author_id = u.id
-            WHERE fp.is_flagged = TRUE
-            ORDER BY fp.created_at DESC
-            LIMIT 50
-        """)
-        flagged_posts = cursor.fetchall()
+                cf.id as flag_id,
+                cf.content_id,
+                cf.content_type,
+                cf.reason,
+                cf.status,
+                cf.flagged_by,
+                cf.created_at as timestamp,
+                cf.reviewed_at,
+                u.email as author_email
+            FROM content_flags cf
+            LEFT JOIN users u ON cf.flagged_by = u.id
+            WHERE cf.status = 'pending'
+            ORDER BY cf.created_at DESC
+            LIMIT %s OFFSET %s
+        """, (limit, offset))
         
-        # Format posts
-        for post in flagged_posts:
-            post['timestamp'] = post['timestamp'].isoformat() if post.get('timestamp') else None
+        flagged_items = cursor.fetchall()
         
-        # Get flagged jobs
-        cursor.execute("""
-            SELECT 
-                j.id,
-                j.title,
-                j.description as content,
-                j.created_at as timestamp,
-                u.email as author,
-                'job_posting' as type,
-                'Suspicious/Scam' as reason,
-                'System' as reportedBy
-            FROM jobs j
-            JOIN users u ON j.posted_by = u.id
-            WHERE j.is_flagged = TRUE
-            ORDER BY j.created_at DESC
-            LIMIT 50
-        """)
-        flagged_jobs = cursor.fetchall()
-        
-        # Format jobs
-        for job in flagged_jobs:
-            job['timestamp'] = job['timestamp'].isoformat() if job.get('timestamp') else None
-        
-        # Get flagged comments (if exists)
-        flagged_comments = []
+        # Format results
+        for item in flagged_items:
+            if item.get('timestamp'):
+                item['timestamp'] = item['timestamp'].isoformat()
+            if item.get('reviewed_at'):
+                item['reviewed_at'] = item['reviewed_at'].isoformat()
         
         cursor.close()
         connection.close()
         
         return {
             "success": True,
-            "data": {
-                "posts": flagged_posts,
-                "jobs": flagged_jobs,
-                "comments": flagged_comments
-            }
+            "data": flagged_items
         }
     
     except Exception as e:

@@ -1,7 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional
 import logging
+from datetime import datetime
+import json
+import uuid
 from database.connection import get_sync_db_connection
+from database.models import JobCreate
 from middleware.auth_middleware import require_admin, get_current_user
 
 logger = logging.getLogger(__name__)
@@ -73,7 +77,62 @@ async def get_all_jobs(
         logger.error(f"Error fetching jobs: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{job_id}", dependencies=[Depends(require_admin)])
+
+@router.post("", dependencies=[Depends(require_admin)])
+async def create_job(
+    job_data: JobCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a new job posting (Admin only)"""
+    try:
+        connection = get_sync_db_connection()
+        cursor = connection.cursor()
+        
+        job_id = str(uuid.uuid4())
+        skills_json = json.dumps(job_data.skills_required) if job_data.skills_required else None
+        
+        cursor.execute("""
+            INSERT INTO jobs (
+                id, title, description, company, location,
+                job_type, experience_required, skills_required,
+                salary_range, apply_link, application_deadline,
+                posted_by, status, created_at, updated_at
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            job_id,
+            job_data.title,
+            job_data.description,
+            job_data.company,
+            job_data.location,
+            job_data.job_type.value if hasattr(job_data.job_type, 'value') else job_data.job_type,
+            job_data.experience_required,
+            skills_json,
+            job_data.salary_range,
+            job_data.apply_link,
+            job_data.application_deadline,
+            current_user['id'],
+            job_data.status.value if hasattr(job_data.status, 'value') else job_data.status,
+            datetime.now(),
+            datetime.now()
+        ))
+        
+        connection.commit()
+        cursor.close()
+        connection.close()
+        
+        return {
+            "success": True,
+            "message": "Job created successfully",
+            "data": {
+                "job_id": job_id,
+                "title": job_data.title,
+                "company": job_data.company
+            }
+        }
+    
+    except Exception as e:
+        logger.error(f"Error creating job: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 async def get_job_by_id(job_id: str):
     """Get detailed job information"""
     try:

@@ -95,9 +95,26 @@ const AlumniCard = () => {
 
   const handleDownload = async () => {
     try {
-      await alumniCardService.downloadCard(cardData.id);
-      toast.success('Card download started');
+      const response = await alumniCardService.downloadCard(cardData.id);
+      
+      if (response.success && response.data) {
+        // Create a blob URL and trigger download
+        const blob = new Blob([response.data], { type: 'image/png' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `alumni_card_${cardData.card_number}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        toast.success('Card downloaded successfully!');
+      } else {
+        toast.error('Download failed');
+      }
     } catch (error) {
+      console.error('Download error:', error);
       toast.error('Download failed');
     }
   };
