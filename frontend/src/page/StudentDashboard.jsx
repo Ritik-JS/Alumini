@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Users, Briefcase, Calendar, MessageSquare, Award, TrendingUp, Eye, FileText, UserCheck, Trophy } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import usePolling from '@/hooks/usePolling';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -30,39 +31,42 @@ const StudentDashboard = () => {
   const [requestMessage, setRequestMessage] = useState('');
   const [requestGoals, setRequestGoals] = useState('');
 
+  const loadData = async () => {
+    try {
+      const [profileData, appsData, mentorRequests, scoreData, eventsData, mentorsData] = await Promise.all([
+        profileService.getProfileByUserId(user.id),
+        profileService.getJobApplicationsByUser(user.id),
+        profileService.getMentorshipRequestsByStudent(user.id),
+        leaderboardService.getMyScore(user.id),
+        eventService.getAllEvents({ is_upcoming: true }),
+        mentorshipService.getMentors(),
+      ]);
+
+      setProfile(profileData?.data || profileData);
+      setApplications(appsData || []);
+      setMentorshipRequests(mentorRequests || []);
+      if (scoreData.success) setEngagementScore(scoreData.data);
+      
+      // Get upcoming events
+      const events = eventsData?.data?.slice(0, 3) || [];
+      setUpcomingEvents(events);
+
+      // Get recommended mentors
+      const mentors = mentorsData?.data?.slice(0, 3) || [];
+      setRecommendedMentors(mentors);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [profileData, appsData, mentorRequests, scoreData, eventsData, mentorsData] = await Promise.all([
-          profileService.getProfileByUserId(user.id),
-          profileService.getJobApplicationsByUser(user.id),
-          profileService.getMentorshipRequestsByStudent(user.id),
-          leaderboardService.getMyScore(user.id),
-          eventService.getAllEvents({ is_upcoming: true }),
-          mentorshipService.getMentors(),
-        ]);
-
-        setProfile(profileData?.data || profileData);
-        setApplications(appsData || []);
-        setMentorshipRequests(mentorRequests || []);
-        if (scoreData.success) setEngagementScore(scoreData.data);
-        
-        // Get upcoming events
-        const events = eventsData?.data?.slice(0, 3) || [];
-        setUpcomingEvents(events);
-
-        // Get recommended mentors
-        const mentors = mentorsData?.data?.slice(0, 3) || [];
-        setRecommendedMentors(mentors);
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadData();
   }, [user.id]);
+
+  // Poll dashboard data every 60 seconds
+  usePolling(loadData, 60000);
 
   const handleConnectClick = (mentor) => {
     setSelectedMentor(mentor);

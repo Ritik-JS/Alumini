@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Eye, Users, Briefcase, Calendar, TrendingUp, Award, Trophy } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import usePolling from '@/hooks/usePolling';
 
 const AlumniDashboard = () => {
   const { user } = useAuth();
@@ -22,41 +23,44 @@ const AlumniDashboard = () => {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [profileData, mentorData, mentorRequests, jobsData, scoreData, eventsData] = await Promise.all([
-          profileService.getProfileByUserId(user.id),
-          profileService.getMentorProfile(user.id),
-          profileService.getMentorshipRequestsByMentor(user.id),
-          profileService.getJobsByPoster(user.id),
-          leaderboardService.getMyScore(user.id),
-          eventService.getUpcomingEvents(),
-        ]);
+  const loadData = async () => {
+    try {
+      const [profileData, mentorData, mentorRequests, jobsData, scoreData, eventsData] = await Promise.all([
+        profileService.getProfileByUserId(user.id),
+        profileService.getMentorProfile(user.id),
+        profileService.getMentorshipRequestsByMentor(user.id),
+        profileService.getJobsByPoster(user.id),
+        leaderboardService.getMyScore(user.id),
+        eventService.getUpcomingEvents(),
+      ]);
 
-        if (profileData?.success) setProfile(profileData.data);
-        if (mentorData?.success) setMentorProfile(mentorData.data);
-        
-        setMentorshipRequests(Array.isArray(mentorRequests) ? mentorRequests : []);
-        setPostedJobs(Array.isArray(jobsData) ? jobsData : []);
-        
-        if (scoreData?.success) setEngagementScore(scoreData.data);
-        
-        // Get upcoming events
-        if (eventsData?.success) {
-          const events = (eventsData.data || []).slice(0, 3);
-          setUpcomingEvents(events);
-        }
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        toast.error('Some dashboard data could not be loaded.');
-      } finally {
-        setLoading(false);
+      if (profileData?.success) setProfile(profileData.data);
+      if (mentorData?.success) setMentorProfile(mentorData.data);
+      
+      setMentorshipRequests(Array.isArray(mentorRequests) ? mentorRequests : []);
+      setPostedJobs(Array.isArray(jobsData) ? jobsData : []);
+      
+      if (scoreData?.success) setEngagementScore(scoreData.data);
+      
+      // Get upcoming events
+      if (eventsData?.success) {
+        const events = (eventsData.data || []).slice(0, 3);
+        setUpcomingEvents(events);
       }
-    };
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      toast.error('Some dashboard data could not be loaded.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadData();
   }, [user.id]);
+
+  // Poll dashboard data every 60 seconds
+  usePolling(loadData, 60000);
 
   const pendingRequests = mentorshipRequests.filter(r => r.status === 'pending');
   const activeJobs = postedJobs.filter(j => j.status === 'active');

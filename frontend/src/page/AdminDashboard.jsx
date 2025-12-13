@@ -10,6 +10,7 @@ import { Users, Briefcase, Calendar, AlertCircle, TrendingUp, CheckCircle, UserC
 import { Link } from 'react-router-dom';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
+import usePolling from '@/hooks/usePolling';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -18,35 +19,38 @@ const AdminDashboard = () => {
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const loadData = async () => {
+    try {
+      const [stats, verifications] = await Promise.all([
+        profileService.getSystemStats(),
+        profileService.getPendingVerifications(),
+      ]);
+
+      setSystemStats(stats);
+      setPendingVerifications(verifications?.profiles || verifications || []);
+
+      // Mock recent activity (this should come from backend in future)
+      const activity = [
+        { id: 1, type: 'user', message: 'New user registered: maria.garcia@alumni.edu', time: '5 minutes ago' },
+        { id: 2, type: 'job', message: 'New job posted: Senior Full-Stack Engineer', time: '1 hour ago' },
+        { id: 3, type: 'event', message: 'Event created: Tech Career Fair 2025', time: '2 hours ago' },
+        { id: 4, type: 'verification', message: 'Profile verification requested', time: '3 hours ago' },
+        { id: 5, type: 'user', message: 'User login: david.kim@techcorp.com', time: '4 hours ago' },
+      ];
+      setRecentActivity(activity);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [stats, verifications] = await Promise.all([
-          profileService.getSystemStats(),
-          profileService.getPendingVerifications(),
-        ]);
-
-        setSystemStats(stats);
-        setPendingVerifications(verifications?.profiles || verifications || []);
-
-        // Mock recent activity (this should come from backend in future)
-        const activity = [
-          { id: 1, type: 'user', message: 'New user registered: maria.garcia@alumni.edu', time: '5 minutes ago' },
-          { id: 2, type: 'job', message: 'New job posted: Senior Full-Stack Engineer', time: '1 hour ago' },
-          { id: 3, type: 'event', message: 'Event created: Tech Career Fair 2025', time: '2 hours ago' },
-          { id: 4, type: 'verification', message: 'Profile verification requested', time: '3 hours ago' },
-          { id: 5, type: 'user', message: 'User login: david.kim@techcorp.com', time: '4 hours ago' },
-        ];
-        setRecentActivity(activity);
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadData();
   }, [user.id]);
+
+  // Poll dashboard data every 60 seconds
+  usePolling(loadData, 60000);
 
   const stats = [
     {

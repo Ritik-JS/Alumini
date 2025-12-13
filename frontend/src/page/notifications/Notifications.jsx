@@ -13,6 +13,7 @@ import {
 import { notificationService } from '@/services';
 import NotificationCard from '@/components/notifications/NotificationCard';
 import { toast } from 'sonner';
+import usePolling from '@/hooks/usePolling';
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -25,6 +26,12 @@ const Notifications = () => {
     loadNotifications();
     loadUnreadCount();
   }, [activeTab, filterType]);
+
+  // Poll for new notifications every 30 seconds
+  usePolling(() => {
+    loadNotifications();
+    loadUnreadCount();
+  }, 30000);
 
   const loadNotifications = async () => {
     setLoading(true);
