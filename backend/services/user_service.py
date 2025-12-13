@@ -33,7 +33,9 @@ class UserService:
                 False,  # Not verified initially
                 True    # Active by default
             ))
-            await conn.commit()
+            # No need for explicit commit with autocommit=True, but keeping for safety
+            if not conn.get_autocommit():
+                await conn.commit()
             
             # Fetch the created user
             return await UserService.get_user_by_id(conn, user_id)
@@ -68,7 +70,9 @@ class UserService:
         async with conn.cursor() as cursor:
             query = "UPDATE users SET is_verified = %s WHERE id = %s"
             await cursor.execute(query, (is_verified, user_id))
-            await conn.commit()
+            # No need for explicit commit with autocommit=True, but keeping for safety
+            if not conn.get_autocommit():
+                await conn.commit()
             return cursor.rowcount > 0
     
     @staticmethod
@@ -77,7 +81,9 @@ class UserService:
         async with conn.cursor() as cursor:
             query = "UPDATE users SET last_login = %s WHERE id = %s"
             await cursor.execute(query, (datetime.utcnow(), user_id))
-            await conn.commit()
+            # No need for explicit commit with autocommit=True, but keeping for safety
+            if not conn.get_autocommit():
+                await conn.commit()
             return cursor.rowcount > 0
     
     @staticmethod
@@ -87,7 +93,9 @@ class UserService:
         async with conn.cursor() as cursor:
             query = "UPDATE users SET password_hash = %s WHERE id = %s"
             await cursor.execute(query, (password_hash, user_id))
-            await conn.commit()
+            # No need for explicit commit with autocommit=True, but keeping for safety
+            if not conn.get_autocommit():
+                await conn.commit()
             return cursor.rowcount > 0
     
     @staticmethod

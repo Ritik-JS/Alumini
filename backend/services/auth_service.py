@@ -43,7 +43,9 @@ class AuthService:
                 VALUES (%s, %s, %s, %s, %s)
             """
             await cursor.execute(query, (verification_id, user.id, otp_code, expires_at, False))
-            await conn.commit()
+            # No need for explicit commit with autocommit=True, but keeping for safety
+            if not conn.get_autocommit():
+                await conn.commit()
         
         # Send verification email
         await email_service.send_verification_email(user.email, otp_code)
@@ -79,7 +81,9 @@ class AuthService:
             # Mark OTP as used
             update_query = "UPDATE email_verifications SET is_used = TRUE WHERE id = %s"
             await cursor.execute(update_query, (verification['id'],))
-            await conn.commit()
+            # No need for explicit commit with autocommit=True, but keeping for safety
+            if not conn.get_autocommit():
+                await conn.commit()
         
         # Update user verification status
         await UserService.update_user_verification(conn, user.id, True)
