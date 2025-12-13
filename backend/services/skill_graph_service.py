@@ -283,6 +283,48 @@ class SkillGraphService:
             logger.error(f"Error building skill graph: {str(e)}")
             raise
     
+    async def get_skills_list(
+        self,
+        db_conn,
+        min_popularity: float = 0.0,
+        limit: int = 100
+    ) -> List[Dict]:
+        """
+        Get skills as flat array for frontend display
+        Returns list of skills with all properties
+        """
+        try:
+            async with db_conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT 
+                        id, skill_name, related_skills, industry_connections,
+                        alumni_count, job_count, popularity_score
+                    FROM skill_graph
+                    WHERE popularity_score >= %s
+                    ORDER BY popularity_score DESC
+                    LIMIT %s
+                """, (min_popularity, limit))
+                results = await cursor.fetchall()
+            
+            skills = []
+            for row in results:
+                skill_data = {
+                    'id': row[0],
+                    'skill_name': row[1],
+                    'related_skills': json.loads(row[2]) if row[2] else [],
+                    'industry_connections': json.loads(row[3]) if row[3] else [],
+                    'alumni_count': row[4] or 0,
+                    'job_count': row[5] or 0,
+                    'popularity_score': float(row[6]) if row[6] else 0.0
+                }
+                skills.append(skill_data)
+            
+            return skills
+        
+        except Exception as e:
+            logger.error(f"Error getting skills list: {str(e)}")
+            raise
+    
     async def get_skill_network(
         self,
         db_conn,

@@ -47,9 +47,12 @@ class HeatmapService:
                 top_industries = self._parse_json(loc[9])
                 
                 talent_data.append({
-                    "location": loc[0],
+                    "id": f"loc-{loc[0].lower().replace(' ', '-').replace(',', '')}",
+                    "location_name": loc[0],  # Fixed: use location_name not location
                     "country": loc[1],
                     "city": loc[2],
+                    "latitude": float(loc[3]) if loc[3] else None,
+                    "longitude": float(loc[4]) if loc[4] else None,
                     "coordinates": {
                         "latitude": float(loc[3]) if loc[3] else None,
                         "longitude": float(loc[4]) if loc[4] else None
@@ -96,18 +99,26 @@ class HeatmapService:
                 top_industries = self._parse_json(loc[8])
                 
                 opportunity_data.append({
-                    "location": loc[0],
+                    "id": f"loc-{loc[0].lower().replace(' ', '-').replace(',', '')}",
+                    "location_name": loc[0],  # Fixed: use location_name not location
+                    "location": loc[0],  # Keep for backward compatibility
                     "country": loc[1],
                     "city": loc[2],
+                    "latitude": float(loc[3]) if loc[3] else None,
+                    "longitude": float(loc[4]) if loc[4] else None,
                     "coordinates": {
                         "latitude": float(loc[3]) if loc[3] else None,
                         "longitude": float(loc[4]) if loc[4] else None
                     },
                     "jobs_available": loc[6],
+                    "jobs_count": loc[6],  # Fixed: add jobs_count field
                     "alumni_nearby": loc[5],
+                    "alumni_count": loc[5],  # Fixed: add alumni_count field
                     "competition_ratio": round(loc[5] / loc[6], 2) if loc[6] > 0 else 0,
                     "in_demand_skills": top_skills[:10] if top_skills else [],
+                    "top_skills": top_skills[:10] if top_skills else [],  # Fixed: add top_skills field
                     "hiring_industries": top_industries[:5] if top_industries else [],
+                    "top_industries": top_industries[:5] if top_industries else [],  # Fixed: add top_industries field
                     "opportunity_score": self._calculate_opportunity_score(loc[5], loc[6])
                 })
             
@@ -662,18 +673,27 @@ class HeatmapService:
             cluster_data = []
             for cluster in clusters:
                 cluster_data.append({
+                    "id": cluster[0],  # Fixed: add id field
                     "cluster_id": cluster[0],
                     "cluster_name": cluster[1],
+                    "center_latitude": float(cluster[2]),  # Fixed: add flat fields
+                    "center_longitude": float(cluster[3]),  # Fixed: add flat fields
                     "center": {
                         "latitude": float(cluster[2]),
                         "longitude": float(cluster[3])
+                    },
+                    "center_location": {  # Fixed: add center_location for UI
+                        "city": cluster[1].split(' ')[0] if cluster[1] else "Unknown",
+                        "country": "United States"  # Default, can be enhanced
                     },
                     "radius_km": float(cluster[4]),
                     "alumni_ids": self._parse_json(cluster[5]),
                     "dominant_skills": self._parse_json(cluster[6]),
                     "dominant_industries": self._parse_json(cluster[7]),
                     "alumni_count": cluster[8],
+                    "cluster_size": cluster[8],  # Fixed: alias for frontend
                     "density": float(cluster[9]),
+                    "cluster_density": float(cluster[9]),  # Fixed: alias for frontend
                     "created_at": cluster[10].isoformat() if cluster[10] else None,
                     "updated_at": cluster[11].isoformat() if cluster[11] else None
                 })
