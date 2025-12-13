@@ -7,13 +7,15 @@ import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Briefcase, Calendar, AlertCircle, TrendingUp, CheckCircle, UserCheck, Award, Activity } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import usePolling from '@/hooks/usePolling';
+import MLDataStatusWidget from '@/components/admin/MLDataStatusWidget';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [systemStats, setSystemStats] = useState(null);
   const [pendingVerifications, setPendingVerifications] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
@@ -241,7 +243,7 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Pending Verifications */}
               <Card>
                 <CardHeader>
@@ -311,6 +313,11 @@ const AdminDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* ML Data Status Widget - NEW */}
+              <MLDataStatusWidget 
+                onUploadClick={() => navigate('/admin/career-data-upload')}
+              />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

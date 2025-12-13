@@ -89,6 +89,7 @@ const DatasetUpload = lazy(() => import('@/page/admin/datasets/DatasetUpload'));
 const DatasetProgress = lazy(() => import('@/page/admin/datasets/DatasetProgress'));
 const DatasetReport = lazy(() => import('@/page/admin/datasets/DatasetReport'));
 const DatasetHistory = lazy(() => import('@/page/admin/datasets/DatasetHistory'));
+const AdminCareerDataUpload = lazy(() => import('@/page/admin/AdminCareerDataUpload'));
 
 // Phase 11.8: AI System Health Monitor (Admin)
 const AdminAIMonitor = lazy(() => import('@/page/admin/AdminAIMonitor'));
@@ -578,6 +579,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <DatasetHistory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/career-data-upload"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminCareerDataUpload />
               </ProtectedRoute>
             }
           />
