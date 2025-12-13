@@ -1,5 +1,5 @@
 """Job management routes"""
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Query
 from typing import List, Optional
 import logging
 
@@ -55,12 +55,14 @@ async def get_jobs(
     location: Optional[str] = None,
     job_type: Optional[str] = None,
     search: Optional[str] = None,
+    skills: Optional[List[str]] = Query(None),
     page: int = 1,
     limit: int = 20
 ):
     """
     Get all jobs with optional filters
     - **Public endpoint** - Anyone can view jobs
+    - **NEW**: Supports multiple skill filters via ?skills=Python&skills=React
     """
     try:
         # Convert status and job_type to enums if provided
@@ -73,6 +75,7 @@ async def get_jobs(
             location=location,
             job_type=job_type_enum,
             search=search,
+            skills=skills,
             page=page,
             limit=limit
         )
