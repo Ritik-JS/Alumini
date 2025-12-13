@@ -8,6 +8,12 @@ import { format } from 'date-fns';
 const EventCard = ({ event }) => {
   const navigate = useNavigate();
 
+  // Validate event data
+  if (!event || !event.id) {
+    console.error('Invalid event data:', event);
+    return null;
+  }
+
   const getEventTypeBadgeColor = (type) => {
     const colors = {
       'workshop': 'bg-purple-100 text-purple-700',
@@ -32,10 +38,29 @@ const EventCard = ({ event }) => {
   const isSpotsAvailable = maxAttendees > currentAttendees;
   const spotsLeft = maxAttendees === Infinity ? 'Unlimited' : maxAttendees - currentAttendees;
 
+  const handleViewDetails = (e) => {
+    e.stopPropagation();
+    if (event && event.id) {
+      console.log('Navigating to event:', event.id);
+      navigate(`/events/${event.id}`);
+    } else {
+      console.error('Event ID is missing:', event);
+    }
+  };
+
+  const handleCardClick = () => {
+    if (event && event.id) {
+      console.log('Card clicked, navigating to event:', event.id);
+      navigate(`/events/${event.id}`);
+    } else {
+      console.error('Event ID is missing:', event);
+    }
+  };
+
   return (
     <Card 
       className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
-      onClick={() => navigate(`/events/${event.id}`)}
+      onClick={handleCardClick}
       data-testid={`event-card-${event.id}`}
     >
       {/* Event Banner */}
@@ -119,10 +144,7 @@ const EventCard = ({ event }) => {
         <Button 
           className="w-full" 
           variant="outline"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/events/${event.id}`);
-          }}
+          onClick={handleViewDetails}
           data-testid={`view-event-details-${event.id}`}
         >
           View Details
