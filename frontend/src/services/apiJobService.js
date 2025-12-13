@@ -244,6 +244,56 @@ export const apiJobService = {
       };
     }
   },
+
+  // MISSING METHODS - Added to fix JobDetails.jsx and PostJob.jsx issues
+
+  // Check if user has applied to a job (used by JobDetails.jsx)
+  async hasUserApplied(jobId, userId) {
+    try {
+      const response = await this.getMyApplications(userId);
+      if (!response.success) {
+        // If response doesn't have success flag, check data directly
+        const applications = response.data || response || [];
+        return applications.some(app => app.job_id === jobId);
+      }
+      
+      const applications = response.data || [];
+      return applications.some(app => app.job_id === jobId);
+    } catch (error) {
+      console.error('Error checking application status:', error);
+      return false;
+    }
+  },
+
+  // Alias for createJob (used by PostJob.jsx)
+  async postJob(jobData) {
+    return await this.createJob(jobData);
+  },
+
+  // Alias for getJobApplications (used by ApplicationsManager.jsx)
+  async getApplicationsForJob(jobId) {
+    return await this.getJobApplications(jobId);
+  },
+
+  // Normalize response to ensure consistent format
+  normalizeResponse(response) {
+    // If response is null/undefined
+    if (!response) {
+      return { success: false, data: null, error: 'No response' };
+    }
+    
+    // If already normalized with success flag
+    if (response.hasOwnProperty('success')) {
+      return response;
+    }
+    
+    // If it's a direct data response
+    return {
+      success: true,
+      data: response.data || response,
+      error: null
+    };
+  },
 };
 
 export default apiJobService;
