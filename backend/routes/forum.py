@@ -15,6 +15,23 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/forum", tags=["forum"])
 
 
+# Helper function to transform post/comment data with nested author object
+def transform_author_data(data: dict) -> dict:
+    """Transform flat author fields to nested author object"""
+    if 'author_name' in data:
+        data['author'] = {
+            'id': data.get('author_id'),
+            'email': data.get('author_email'),
+            'role': data.get('author_role', 'user'),
+            'profile': {
+                'name': data.get('author_name'),
+                'photo_url': data.get('author_photo_url')
+            }
+        }
+        # Keep flat fields for backward compatibility
+    return data
+
+
 # ========== Forum Post Routes ==========
 
 @router.post("/posts", response_model=dict)
@@ -62,7 +79,7 @@ async def get_all_posts(
         )
         return {
             "success": True,
-            "data": [post.model_dump() for post in posts]
+            "data": [transform_author_data(post.model_dump()) for post in posts]
         }
     except Exception as e:
         logger.error(f"Error fetching posts: {str(e)}")
@@ -84,7 +101,7 @@ async def get_post(
         
         return {
             "success": True,
-            "data": post.model_dump()
+            "data": transform_author_data(post.model_dump())
         }
     except HTTPException:
         raise
@@ -163,7 +180,7 @@ async def get_my_posts(
         posts = await ForumService.get_posts_by_author(current_user["id"])
         return {
             "success": True,
-            "data": [post.model_dump() for post in posts]
+            "data": [transform_author_data(post.model_dump()) for post in posts]
         }
     except Exception as e:
         logger.error(f"Error fetching user posts: {str(e)}")
@@ -222,9 +239,17 @@ async def get_post_comments(
     try:
         user_id = current_user["id"] if current_user else None
         comments = await ForumService.get_post_comments(post_id, user_id)
+        
+        # Transform comments recursively
+        def transform_comment(comment_dict):
+            transformed = transform_author_data(comment_dict)
+            if 'replies' in transformed and transformed['replies']:
+                transformed['replies'] = [transform_comment(reply) for reply in transformed['replies']]
+            return transformed
+        
         return {
             "success": True,
-            "data": [comment.model_dump() for comment in comments]
+            "data": [transform_comment(comment.model_dump()) for comment in comments]
         }
     except Exception as e:
         logger.error(f"Error fetching comments: {str(e)}")

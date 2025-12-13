@@ -831,6 +831,7 @@ class ForumPostWithAuthor(BaseModel):
     author_name: str
     author_email: str
     author_photo_url: Optional[str] = None
+    author_role: str = "user"
     tags: Optional[list] = None
     likes_count: int
     comments_count: int
@@ -876,6 +877,7 @@ class ForumCommentWithAuthor(BaseModel):
     author_name: str
     author_email: str
     author_photo_url: Optional[str] = None
+    author_role: str = "user"
     parent_comment_id: Optional[str] = None
     content: str
     likes_count: int

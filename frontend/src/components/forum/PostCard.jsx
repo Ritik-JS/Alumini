@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 const PostCard = ({ post, showFullContent = false }) => {
   const navigate = useNavigate();
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(post.user_has_liked || false);
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
 
   const handleLike = async (e) => {
