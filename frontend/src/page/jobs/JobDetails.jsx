@@ -26,10 +26,8 @@ const JobDetails = () => {
     const loadJob = async () => {
       setLoading(true);
       try {
-        // Ensure jobId is clean (remove prefix if present)
-        const cleanJobId = jobId.startsWith('job-') ? jobId.substring(4) : jobId;
-        
-        const response = await jobService.getJobById(cleanJobId);
+        // Load job by ID (no prefix cleaning needed - database uses UUIDs)
+        const response = await jobService.getJobById(jobId);
         
         // Consistent response handling
         if (!response.success || !response.data) {
@@ -44,10 +42,10 @@ const JobDetails = () => {
         if (jobData && jobData.id) {
           setJob(jobData);
           
-          // Check if user has applied
+          // Check if user has applied (uses optimized caching)
           if (user) {
             try {
-              const applied = await jobService.hasUserApplied(cleanJobId, user.id);
+              const applied = await jobService.hasUserApplied(jobId, user.id);
               setHasApplied(applied);
             } catch (error) {
               console.error('Error checking application status:', error);
@@ -55,13 +53,13 @@ const JobDetails = () => {
             }
           }
 
-          // Load similar jobs
+          // Load similar jobs based on skills
           try {
             if (jobData.skills_required && jobData.skills_required.length > 0) {
               const filtered = await jobService.filterJobs({
                 skills: jobData.skills_required.slice(0, 2),
               });
-              setSimilarJobs(filtered.filter(j => j.id !== cleanJobId).slice(0, 3));
+              setSimilarJobs(filtered.filter(j => j.id !== jobId).slice(0, 3));
             }
           } catch (error) {
             console.error('Error loading similar jobs:', error);

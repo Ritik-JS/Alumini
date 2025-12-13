@@ -29,25 +29,18 @@ const JobApplicationsManager = () => {
 
   const loadData = async () => {
     try {
-      // Load job details
-      const jobResponse = await jobService.getJobById(jobId);
-      if (!jobResponse.success) {
-        console.error('Failed to load job:', jobResponse.error);
-        toast.error('Unable to load job details. Please try again later.');
+      // OPTIMIZED: Load job and applications in parallel using single method
+      const response = await jobService.getJobWithApplications(jobId);
+      
+      if (!response.success) {
+        console.error('Failed to load data:', response.error);
+        toast.error('Unable to load job details and applications. Please try again later.');
         setLoading(false);
         return;
       }
-      setJob(jobResponse.data);
-
-      // Load applications for this job
-      const appsResponse = await jobService.getJobApplications(jobId);
-      if (!appsResponse.success) {
-        console.error('Failed to load applications:', appsResponse.error);
-        toast.error('Unable to load applications. Please try again later.');
-        setApplications([]);
-      } else {
-        setApplications(appsResponse.data || []);
-      }
+      
+      setJob(response.data.job);
+      setApplications(response.data.applications || []);
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('An error occurred while loading data. Please try again later.');

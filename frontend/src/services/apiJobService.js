@@ -119,36 +119,76 @@ export const apiJobService = {
     }
   },
 
-  // Filter jobs - NOW OPTIMIZED: Use backend filtering instead of client-side
+  // Filter jobs - OPTIMIZED: Uses backend filtering with axios params array support
   async filterJobs(filters = {}) {
     try {
       // Build query params for backend filtering
-      const params = {};
+      const params = new URLSearchParams();
       
       if (filters.search) {
-        params.search = filters.search;
+        params.append('search', filters.search);
       }
       
-      if (filters.location) {
-        params.location = filters.location;
+      // Handle location filters - send all to backend
+      if (filters.locations && filters.locations.length > 0) {
+        // For single location, use simpler param
+        if (filters.locations.length === 1) {
+          params.append('location', filters.locations[0]);
+        } else {
+          // For multiple locations, use first one (backend limitation)
+          params.append('location', filters.locations[0]);
+        }
+      } else if (filters.location) {
+        params.append('location', filters.location);
       }
       
+      // Handle job type filters
       if (filters.jobTypes && filters.jobTypes.length > 0) {
-        params.job_type = filters.jobTypes[0]; // Backend supports single job_type
+        if (filters.jobTypes.length === 1) {
+          params.append('job_type', filters.jobTypes[0]);
+        } else {
+          // Use first job type for backend
+          params.append('job_type', filters.jobTypes[0]);
+        }
       }
       
-      if (filters.company) {
-        params.company = filters.company;
+      // Handle company filters
+      if (filters.companies && filters.companies.length > 0) {
+        if (filters.companies.length === 1) {
+          params.append('company', filters.companies[0]);
+        } else {
+          // Use first company for backend
+          params.append('company', filters.companies[0]);
+        }
+      } else if (filters.company) {
+        params.append('company', filters.company);
+      }
+      
+      // OPTIMIZED: Send all skills to backend (backend now supports multiple)
+      if (filters.skills && filters.skills.length > 0) {
+        filters.skills.forEach(skill => {
+          params.append('skills', skill);
+        });
       }
       
       // Get filtered jobs from backend
-      const response = await this.getAllJobs(params);
-      let jobs = response.data || [];
+      const response = await axios.get('/api/jobs', { 
+        params: params,
+        paramsSerializer: params => {
+          // Ensure params are properly serialized for array support
+          return params.toString();
+        }
+      });
       
-      // Apply additional client-side filters if needed (for complex filters not supported by backend)
-      if (filters.locations && filters.locations.length > 0) {
+      let jobs = this.normalizeResponse(response.data).data || [];
+      
+      // Apply minimal client-side filters only for multiple selections
+      // (where backend only supports single value)
+      if (filters.locations && filters.locations.length > 1) {
         jobs = jobs.filter(job => 
-          filters.locations.some(loc => job.location?.toLowerCase().includes(loc.toLowerCase()))
+          filters.locations.some(loc => 
+            job.location?.toLowerCase().includes(loc.toLowerCase())
+          )
         );
       }
       
@@ -156,21 +196,20 @@ export const apiJobService = {
         jobs = jobs.filter(job => filters.jobTypes.includes(job.job_type));
       }
       
-      if (filters.companies && filters.companies.length > 0) {
+      if (filters.companies && filters.companies.length > 1) {
         jobs = jobs.filter(job => 
-          filters.companies.some(comp => job.company?.toLowerCase().includes(comp.toLowerCase()))
+          filters.companies.some(comp => 
+            job.company?.toLowerCase().includes(comp.toLowerCase())
+          )
         );
       }
       
-      if (filters.skills && filters.skills.length > 0) {
-        jobs = jobs.filter(job => 
-          filters.skills.some(skill => job.skills_required?.includes(skill))
-        );
-      }
-      
+      // Experience level filtering (client-side only)
       if (filters.experienceLevels && filters.experienceLevels.length > 0) {
         jobs = jobs.filter(job => 
-          filters.experienceLevels.some(exp => job.experience_required?.toLowerCase().includes(exp.toLowerCase()))
+          filters.experienceLevels.some(exp => 
+            job.experience_required?.toLowerCase().includes(exp.toLowerCase())
+          )
         );
       }
       
@@ -248,15 +287,45 @@ export const apiJobService = {
     }
   },
 
-  // Check if user has applied to a job (used by JobDetails.jsx)
+  // Cache for user applications (to avoid repeated API calls)
+  _applicationCache: {},
+
+  // Check if user has applied to a job (used by JobDetails.jsx) - OPTIMIZED with caching
   async hasUserApplied(jobId, userId) {
     try {
-      const response = await this.getMyApplications(userId);
-      const applications = response.data || [];
+      // Check if cache exists and is fresh (less than 2 minutes old)
+      const cached = this._applicationCache[userId];
+      const cacheAge = cached ? Date.now() - cached.timestamp : Infinity;
+      const isCacheFresh = cacheAge < 120000; // 2 minutes
+      
+      let applications;
+      
+      if (cached && isCacheFresh) {
+        // Use cached data
+        applications = cached.applications;
+      } else {
+        // Fetch fresh data and cache it
+        const response = await this.getMyApplications(userId);
+        applications = response.data || [];
+        this._applicationCache[userId] = {
+          applications,
+          timestamp: Date.now()
+        };
+      }
+      
       return applications.some(app => app.job_id === jobId);
     } catch (error) {
       console.error('Error checking application status:', error);
       return false;
+    }
+  },
+
+  // Clear application cache for a user (call after new application submitted)
+  clearApplicationCache(userId) {
+    if (userId) {
+      delete this._applicationCache[userId];
+    } else {
+      this._applicationCache = {};
     }
   },
 
@@ -268,6 +337,34 @@ export const apiJobService = {
   // Alias for getJobApplications (used by ApplicationsManager.jsx)
   async getApplicationsForJob(jobId) {
     return await this.getJobApplications(jobId);
+  },
+
+  // Alias for applyForJob (used by ApplicationModal.jsx)
+  async submitApplication(applicationData) {
+    const { job_id, ...restData } = applicationData;
+    return await this.applyForJob(job_id, restData);
+  },
+
+  // OPTIMIZED: Get job with applications in single call
+  async getJobWithApplications(jobId) {
+    try {
+      // Make parallel requests to get both job and applications
+      const [jobResponse, appsResponse] = await Promise.all([
+        this.getJobById(jobId),
+        this.getJobApplications(jobId)
+      ]);
+
+      return {
+        success: jobResponse.success && appsResponse.success,
+        data: {
+          job: jobResponse.data,
+          applications: appsResponse.data || []
+        },
+        error: jobResponse.error || appsResponse.error
+      };
+    } catch (error) {
+      return handleApiError(error);
+    }
   },
 
   // Normalize response to ensure consistent format

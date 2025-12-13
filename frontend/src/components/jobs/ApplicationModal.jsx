@@ -59,6 +59,8 @@ const ApplicationModal = ({ isOpen, onClose, job, userId }) => {
       const result = await jobService.submitApplication(applicationData);
       
       if (result.success) {
+        // Clear application cache so hasUserApplied will fetch fresh data
+        jobService.clearApplicationCache(userId);
         toast.success(result.message);
         onClose(true); // Pass true to indicate successful submission
       } else {
