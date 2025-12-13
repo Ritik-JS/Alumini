@@ -200,7 +200,8 @@ const ManageEvents = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          disabled
+                          onClick={() => navigate(`/events/${event.id}/edit`)}
+                          data-testid={`edit-event-button-${event.id}`}
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
