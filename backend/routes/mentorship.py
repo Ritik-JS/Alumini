@@ -145,6 +145,27 @@ async def list_mentors(
         )
 
 
+@router.get("/mentors/expertise-areas", response_model=dict)
+async def get_expertise_areas():
+    """
+    Get unique expertise areas from all mentors
+    
+    Public endpoint - returns list of all unique expertise areas for filtering
+    """
+    try:
+        areas = await MentorshipService.get_unique_expertise_areas()
+        return {
+            "success": True,
+            "data": areas
+        }
+    except Exception as e:
+        logger.error(f"Error fetching expertise areas: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch expertise areas"
+        )
+
+
 @router.get("/mentors/{mentor_id}", response_model=dict)
 async def get_mentor_profile(mentor_id: str):
     """
@@ -405,6 +426,93 @@ async def get_active_mentorships(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch active mentorships"
+        )
+
+
+@router.get("/mentorship/requests/{request_id}", response_model=dict)
+async def get_request_by_id(
+    request_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get specific mentorship request by ID
+    
+    Returns detailed information about a specific mentorship request
+    User must be either the mentor or student in the request
+    """
+    try:
+        request = await MentorshipService.get_request_with_details(request_id)
+        
+        if not request:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Mentorship request not found"
+            )
+        
+        # Check access: user must be either mentor or student
+        if current_user['id'] not in [request['mentor_id'], request['student_id']]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have access to this request"
+            )
+        
+        return {
+            "success": True,
+            "data": request
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching mentorship request: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch mentorship request"
+        )
+
+
+@router.get("/mentorship/requests/{request_id}/sessions", response_model=dict)
+async def get_sessions_by_request(
+    request_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get all sessions for a specific mentorship request
+    
+    Returns all sessions associated with a mentorship request
+    User must be either the mentor or student in the request
+    """
+    try:
+        # First verify user has access to this request
+        request = await MentorshipService.get_request_with_details(request_id)
+        
+        if not request:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Mentorship request not found"
+            )
+        
+        # Check access: user must be either mentor or student
+        if current_user['id'] not in [request['mentor_id'], request['student_id']]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have access to this request"
+            )
+        
+        # Get sessions for this request
+        sessions = await MentorshipService.get_sessions_by_request_id(request_id)
+        
+        return {
+            "success": True,
+            "data": sessions,
+            "total": len(sessions)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching sessions for request: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch sessions"
         )
 
 
@@ -688,6 +796,37 @@ async def submit_session_feedback(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to submit feedback"
+        )
+
+
+@router.put("/mentorship/sessions/{session_id}/cancel", response_model=dict)
+async def cancel_session(
+    session_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Cancel a mentorship session
+    
+    Both mentor and student can cancel sessions.
+    Cannot cancel sessions that are already completed or cancelled.
+    """
+    try:
+        session = await MentorshipService.cancel_session(session_id, current_user['id'])
+        return {
+            "success": True,
+            "message": "Session cancelled successfully",
+            "data": session
+        }
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Error cancelling session: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to cancel session"
         )
 
 

@@ -429,7 +429,9 @@ const AdminMentorship = () => {
                                   {mentor.rating && (
                                     <div className="flex items-center gap-1 text-sm">
                                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                      <span className="font-medium">{mentor.rating.toFixed(1)}</span>
+                                      <span className="font-medium">
+                                        {(typeof mentor.rating === 'number' ? mentor.rating : parseFloat(mentor.rating) || 0).toFixed(1)}
+                                      </span>
                                       {mentor.total_reviews && (
                                         <span className="text-gray-500">({mentor.total_reviews})</span>
                                       )}

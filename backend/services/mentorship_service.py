@@ -182,13 +182,13 @@ class MentorshipService:
                 mentor = {
                     'id': row['id'],
                     'user_id': row['user_id'],
-                    'is_available': row['is_available'],
+                    'is_available': bool(row['is_available']),
                     'expertise_areas': row['expertise_areas'],
-                    'max_mentees': row['max_mentees'],
-                    'current_mentees_count': row['current_mentees_count'],
-                    'rating': float(row['rating']) if row['rating'] else 0.0,
-                    'total_sessions': row['total_sessions'],
-                    'total_reviews': row['total_reviews'],
+                    'max_mentees': int(row['max_mentees']) if row['max_mentees'] else 0,
+                    'current_mentees_count': int(row['current_mentees_count']) if row['current_mentees_count'] else 0,
+                    'rating': float(row['rating']) if row['rating'] is not None else 0.0,
+                    'total_sessions': int(row['total_sessions']) if row['total_sessions'] else 0,
+                    'total_reviews': int(row['total_reviews']) if row['total_reviews'] else 0,
                     'mentorship_approach': row['mentorship_approach'],
                     'created_at': row['created_at'],
                     'updated_at': row['updated_at'],
@@ -278,13 +278,13 @@ class MentorshipService:
                     mentor = {
                         'id': row['id'],
                         'user_id': row['user_id'],
-                        'is_available': row['is_available'],
+                        'is_available': bool(row['is_available']),
                         'expertise_areas': row['expertise_areas'],
-                        'max_mentees': row['max_mentees'],
-                        'current_mentees_count': row['current_mentees_count'],
-                        'rating': float(row['rating']) if row['rating'] else 0.0,
-                        'total_sessions': row['total_sessions'],
-                        'total_reviews': row['total_reviews'],
+                        'max_mentees': int(row['max_mentees']) if row['max_mentees'] else 0,
+                        'current_mentees_count': int(row['current_mentees_count']) if row['current_mentees_count'] else 0,
+                        'rating': float(row['rating']) if row['rating'] is not None else 0.0,
+                        'total_sessions': int(row['total_sessions']) if row['total_sessions'] else 0,
+                        'total_reviews': int(row['total_reviews']) if row['total_reviews'] else 0,
                         'mentorship_approach': row['mentorship_approach'],
                         'profile': {
                             'user_id': row['user_id'],
@@ -745,8 +745,8 @@ class MentorshipService:
                                 'headline': row.get('mentor_headline')
                             },
                             'expertise_areas': row.get('expertise_areas', []),
-                            'rating': float(row.get('rating', 0)),
-                            'total_sessions': row.get('total_sessions', 0)
+                            'rating': float(row['rating']) if row.get('rating') is not None else 0.0,
+                            'total_sessions': int(row['total_sessions']) if row.get('total_sessions') else 0
                         }
                     }
                     results.append(mentorship)

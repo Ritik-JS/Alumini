@@ -176,16 +176,18 @@ const MentorProfile = () => {
                 <div className="flex flex-wrap gap-4 mb-4">
                   <div className="flex items-center gap-2">
                     <Star className="h-5 w-5 text-yellow-500 fill-current" />
-                    <span className="font-semibold text-lg">{mentor.rating.toFixed(2)}</span>
-                    <span className="text-gray-600">({mentor.total_reviews} reviews)</span>
+                    <span className="font-semibold text-lg">
+                      {(typeof mentor.rating === 'number' ? mentor.rating : parseFloat(mentor.rating) || 0).toFixed(2)}
+                    </span>
+                    <span className="text-gray-600">({mentor.total_reviews || 0} reviews)</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <BookOpen className="h-5 w-5" />
-                    <span>{mentor.total_sessions} sessions completed</span>
+                    <span>{mentor.total_sessions || 0} sessions completed</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <Users className="h-5 w-5" />
-                    <span>{mentor.current_mentees_count} / {mentor.max_mentees} mentees</span>
+                    <span>{mentor.current_mentees_count || 0} / {mentor.max_mentees || 0} mentees</span>
                   </div>
                 </div>
 
