@@ -1,7 +1,12 @@
 """Verification script for forum database setup and counts"""
 import asyncio
 import sys
-sys.path.insert(0, '/app/backend')
+from pathlib import Path
+import sys
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BASE_DIR))
+
 
 from database.connection import get_db_pool, close_db_pool
 
