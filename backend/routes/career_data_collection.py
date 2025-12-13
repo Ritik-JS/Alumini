@@ -10,6 +10,7 @@ import logging
 import json
 import csv
 import io
+import uuid
 
 from middleware.auth_middleware import get_current_user, require_role
 from database.connection import get_db_pool
@@ -217,6 +218,10 @@ async def bulk_upload_career_data(
     - Transition date format: YYYY-MM-DD
     - Success rating: 1-5
     
+    **Auto-User Creation:**
+    - If a user email doesn't exist, a basic user profile will be automatically created
+    - Auto-created users have role 'alumni' with no password (must reset to login)
+    
     **Returns:**
     - success_count: Number of records imported
     - failed_count: Number of records failed
@@ -244,7 +249,7 @@ async def bulk_upload_career_data(
                         continue
                     
                     async with conn.cursor() as cursor:
-                        # Get user_id from email
+                        # Get user_id from email, create user if doesn't exist
                         await cursor.execute(
                             "SELECT id FROM users WHERE email = %s",
                             (row['email'],)
@@ -252,11 +257,47 @@ async def bulk_upload_career_data(
                         user = await cursor.fetchone()
                         
                         if not user:
-                            errors.append(f"Row {row_num}: User not found with email {row['email']}")
-                            error_count += 1
-                            continue
-                        
-                        user_id = user[0]
+                            # Auto-create user and profile
+                            try:
+                                # Generate UUID for new user
+                                new_user_id = str(uuid.uuid4())
+                                
+                                # Extract name from email (before @)
+                                email_prefix = row['email'].split('@')[0]
+                                # Convert john.doe or john_doe to John Doe
+                                name_parts = email_prefix.replace('.', ' ').replace('_', ' ').split()
+                                display_name = ' '.join([part.capitalize() for part in name_parts])
+                                
+                                # Create user with placeholder password
+                                await cursor.execute("""
+                                    INSERT INTO users (id, email, password_hash, role, is_verified, is_active)
+                                    VALUES (%s, %s, %s, 'alumni', FALSE, TRUE)
+                                """, (
+                                    new_user_id,
+                                    row['email'],
+                                    'IMPORTED_FROM_CSV_NO_PASSWORD'  # Placeholder - user must reset password to login
+                                ))
+                                
+                                # Create alumni profile
+                                await cursor.execute("""
+                                    INSERT INTO alumni_profiles (user_id, name, bio, profile_completion_percentage)
+                                    VALUES (%s, %s, %s, 10)
+                                """, (
+                                    new_user_id,
+                                    display_name,
+                                    'Profile auto-created from career data import'
+                                ))
+                                
+                                user_id = new_user_id
+                                logger.info(f"Auto-created user and profile for {row['email']} during CSV import")
+                                    
+                            except Exception as create_error:
+                                errors.append(f"Row {row_num}: Failed to auto-create user {row['email']}: {str(create_error)}")
+                                error_count += 1
+                                logger.error(f"Error creating user {row['email']}: {str(create_error)}")
+                                continue
+                        else:
+                            user_id = user[0]
                         
                         # Parse skills (pipe-separated)
                         skills = []
@@ -460,7 +501,7 @@ sarah.wilson@alumni.edu,UX Designer,Lead UX Designer,Dropbox,Airbnb,2023-01-01,D
             "template": template_content,
             "filename": "career_transitions_template.csv",
             "instructions": {
-                "email": "User's email address (must exist in system)",
+                "email": "User's email address (auto-creates user if not found)",
                 "from_role": "Previous job role",
                 "to_role": "New job role",
                 "from_company": "Previous company (optional)",

@@ -104,7 +104,7 @@ const AdminCareerDataUpload = () => {
               <div className="space-y-2 text-sm text-blue-900">
                 <p><strong>Required fields:</strong></p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li><code className="bg-blue-100 px-1 rounded">email</code> - User's email (must exist in system)</li>
+                  <li><code className="bg-blue-100 px-1 rounded">email</code> - User's email (auto-creates if not found)</li>
                   <li><code className="bg-blue-100 px-1 rounded">from_role</code> - Previous job role</li>
                   <li><code className="bg-blue-100 px-1 rounded">to_role</code> - New job role</li>
                   <li><code className="bg-blue-100 px-1 rounded">transition_date</code> - Date (YYYY-MM-DD)</li>
@@ -113,6 +113,9 @@ const AdminCareerDataUpload = () => {
                 <p className="mt-3"><strong>Optional fields:</strong> from_company, to_company, skills_acquired</p>
                 <p className="text-xs mt-2">
                   💡 Tip: Skills should be separated by pipes (|), e.g., "Skill1|Skill2|Skill3"
+                </p>
+                <p className="text-xs mt-2 font-semibold text-green-800">
+                  ✨ New users will be auto-created with basic profiles
                 </p>
               </div>
             </Card>
