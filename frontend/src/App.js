@@ -49,6 +49,7 @@ const SessionDetails = lazy(() => import('@/page/mentorship/SessionDetails'));
 const Events = lazy(() => import('@/page/events/Events'));
 const EventDetails = lazy(() => import('@/page/events/EventDetails'));
 const CreateEvent = lazy(() => import('@/page/events/CreateEvent'));
+const EditEvent = lazy(() => import('@/page/events/EditEvent'));
 const ManageEvents = lazy(() => import('@/page/events/ManageEvents'));
 const EventAttendees = lazy(() => import('@/page/events/EventAttendees'));
 
@@ -328,6 +329,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ManageEvents />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events/:eventId/edit"
+            element={
+              <ProtectedRoute>
+                <EditEvent />
               </ProtectedRoute>
             }
           />

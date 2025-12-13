@@ -165,7 +165,12 @@ const EventDetails = () => {
             
             <div className="flex gap-2">
               {canEdit && (
-                <Button variant="outline" size="icon">
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => navigate(`/events/${event.id}/edit`)}
+                  data-testid="edit-event-button"
+                >
                   <Edit className="h-4 w-4" />
                 </Button>
               )}
