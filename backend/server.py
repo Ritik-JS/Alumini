@@ -71,6 +71,7 @@ from routes.skill_graph import router as skill_graph_router  # RE-ENABLED: AI fe
 from routes.skill_recommendations import router as skill_recommendations_router
 from routes.career_paths import router as career_router, career_paths_router
 from routes.career_predictions_router import router as career_predictions_router
+from routes.career_data_collection import router as career_data_collection_router
 from routes.alumni_card import router as alumni_card_router
 from routes.heatmap import router as heatmap_router
 
@@ -266,6 +267,7 @@ app.include_router(skill_graph_router)  # RE-ENABLED: AI features disabled in se
 app.include_router(skill_recommendations_router)
 app.include_router(career_router)
 app.include_router(career_predictions_router)
+app.include_router(career_data_collection_router)
 app.include_router(alumni_card_router)
 app.include_router(heatmap_router)
 

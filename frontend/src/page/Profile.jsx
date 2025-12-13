@@ -29,6 +29,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import CareerJourneyForm from '@/components/career/CareerJourneyForm';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -690,6 +691,11 @@ const Profile = () => {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Career Journey Form - ML Data Collection */}
+                {!isEditing && (
+                  <CareerJourneyForm onSuccess={() => toast.success('Thank you for contributing to our AI! 🚀')} />
+                )}
               </TabsContent>
 
               {/* Education Tab */}
