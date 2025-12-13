@@ -3,7 +3,7 @@ Engagement Routes - Engagement scoring and leaderboard
 Phase 8: Smart Algorithms
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from typing import List
+from typing import List, Optional
 import logging
 
 from database.connection import get_db_pool
@@ -109,6 +109,7 @@ async def get_my_engagement_score(
 )
 async def get_engagement_leaderboard(
     limit: int = Query(50, ge=1, le=100, description="Number of top users to retrieve"),
+    role: Optional[str] = Query(None, description="Filter by user role (student, alumni, recruiter)"),
     current_user: dict = Depends(get_current_user)
 ):
     """
@@ -122,6 +123,7 @@ async def get_engagement_leaderboard(
     - Contribution breakdown
     
     Also includes the current user's rank position in the response.
+    Optionally filter by user role.
     """
     try:
         from services.engagement_service import engagement_service
@@ -133,7 +135,8 @@ async def get_engagement_leaderboard(
             leaderboard = await engagement_service.get_leaderboard(
                 conn,
                 limit=limit,
-                current_user_id=user_id
+                current_user_id=user_id,
+                role_filter=role
             )
         
         return leaderboard
