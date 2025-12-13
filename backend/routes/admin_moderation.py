@@ -23,20 +23,29 @@ async def get_flagged_content(
         connection = get_sync_db_connection()
         cursor = connection.cursor()
         
-        # Get all flagged content from content_flags table
+        # Get all flagged content from content_flags table with content details
         cursor.execute("""
             SELECT 
                 cf.id as flag_id,
-                cf.content_id,
+                cf.content_id as id,
                 cf.content_type,
                 cf.reason,
                 cf.status,
                 cf.flagged_by,
                 cf.created_at as timestamp,
                 cf.reviewed_at,
-                u.email as author_email
+                u.email as reported_by_email,
+                COALESCE(fp.title, j.title, e.title, 'No Title') as title,
+                COALESCE(fp.content, j.description, e.description, 'No Content') as content,
+                COALESCE(u2.email, u3.email, u4.email, 'Unknown') as author
             FROM content_flags cf
             LEFT JOIN users u ON cf.flagged_by = u.id
+            LEFT JOIN forum_posts fp ON cf.content_type = 'post' AND cf.content_id = fp.id
+            LEFT JOIN jobs j ON cf.content_type = 'job' AND cf.content_id = j.id
+            LEFT JOIN events e ON cf.content_type = 'event' AND cf.content_id = e.id
+            LEFT JOIN users u2 ON fp.author_id = u2.id
+            LEFT JOIN users u3 ON j.posted_by = u3.id
+            LEFT JOIN users u4 ON e.created_by = u4.id
             WHERE cf.status = 'pending'
             ORDER BY cf.created_at DESC
             LIMIT %s OFFSET %s
@@ -44,19 +53,40 @@ async def get_flagged_content(
         
         flagged_items = cursor.fetchall()
         
-        # Format results
+        # Categorize by type for frontend
+        categorized_data = {
+            'posts': [],
+            'jobs': [],
+            'comments': []
+        }
+        
         for item in flagged_items:
+            # Format dates
             if item.get('timestamp'):
                 item['timestamp'] = item['timestamp'].isoformat()
             if item.get('reviewed_at'):
                 item['reviewed_at'] = item['reviewed_at'].isoformat()
+            
+            # Set reportedBy field
+            item['reportedBy'] = item.get('reported_by_email', 'Unknown')
+            
+            # Map content_type to frontend categories
+            if item['content_type'] == 'post':
+                item['type'] = 'forum_post'
+                categorized_data['posts'].append(item)
+            elif item['content_type'] == 'job':
+                item['type'] = 'job_posting'
+                categorized_data['jobs'].append(item)
+            elif item['content_type'] == 'comment':
+                item['type'] = 'comment'
+                categorized_data['comments'].append(item)
         
         cursor.close()
         connection.close()
         
         return {
             "success": True,
-            "data": flagged_items
+            "data": categorized_data
         }
     
     except Exception as e:

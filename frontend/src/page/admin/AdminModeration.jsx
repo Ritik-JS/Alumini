@@ -32,15 +32,25 @@ const AdminModeration = () => {
     try {
       const response = await adminService.getFlaggedContent();
       if (response.success) {
-        setFlaggedContent(response.data || { posts: [], jobs: [], comments: [] });
+        // Ensure data structure is always correct with default empty arrays
+        const data = response.data || {};
+        setFlaggedContent({
+          posts: Array.isArray(data.posts) ? data.posts : [],
+          jobs: Array.isArray(data.jobs) ? data.jobs : [],
+          comments: Array.isArray(data.comments) ? data.comments : []
+        });
       } else {
         setError(response.message || 'Failed to load flagged content');
         toast.error(response.message || 'Failed to load flagged content');
+        // Set empty structure on error
+        setFlaggedContent({ posts: [], jobs: [], comments: [] });
       }
     } catch (err) {
       const errorMsg = err.response?.data?.message || err.message || 'Failed to load flagged content';
       setError(errorMsg);
       toast.error(errorMsg);
+      // Set empty structure on error
+      setFlaggedContent({ posts: [], jobs: [], comments: [] });
     } finally {
       setLoading(false);
     }
@@ -129,7 +139,7 @@ const AdminModeration = () => {
   };
 
   const totalFlagged =
-    flaggedContent.posts.length + flaggedContent.jobs.length + flaggedContent.comments.length;
+    (flaggedContent.posts?.length || 0) + (flaggedContent.jobs?.length || 0) + (flaggedContent.comments?.length || 0);
 
   const renderContentCard = (item, contentType) => (
     <div
@@ -263,19 +273,19 @@ const AdminModeration = () => {
                 </Card>
               <Card>
                 <CardContent className="pt-6">
-                  <div className="text-2xl font-bold text-orange-600">{flaggedContent.posts.length}</div>
+                  <div className="text-2xl font-bold text-orange-600">{flaggedContent.posts?.length || 0}</div>
                   <p className="text-sm text-gray-600 mt-1">Forum Posts</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="pt-6">
-                  <div className="text-2xl font-bold text-purple-600">{flaggedContent.jobs.length}</div>
+                  <div className="text-2xl font-bold text-purple-600">{flaggedContent.jobs?.length || 0}</div>
                   <p className="text-sm text-gray-600 mt-1">Job Postings</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="pt-6">
-                  <div className="text-2xl font-bold text-blue-600">{flaggedContent.comments.length}</div>
+                  <div className="text-2xl font-bold text-blue-600">{flaggedContent.comments?.length || 0}</div>
                   <p className="text-sm text-gray-600 mt-1">Comments</p>
                 </CardContent>
               </Card>
@@ -296,20 +306,20 @@ const AdminModeration = () => {
                       All ({totalFlagged})
                     </TabsTrigger>
                     <TabsTrigger value="posts" data-testid="tab-posts">
-                      Posts ({flaggedContent.posts.length})
+                      Posts ({flaggedContent.posts?.length || 0})
                     </TabsTrigger>
                     <TabsTrigger value="jobs" data-testid="tab-jobs">
-                      Jobs ({flaggedContent.jobs.length})
+                      Jobs ({flaggedContent.jobs?.length || 0})
                     </TabsTrigger>
                     <TabsTrigger value="comments" data-testid="tab-comments">
-                      Comments ({flaggedContent.comments.length})
+                      Comments ({flaggedContent.comments?.length || 0})
                     </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="all" className="space-y-4 mt-4">
-                    {[...flaggedContent.posts, ...flaggedContent.jobs, ...flaggedContent.comments].map(
+                    {[...(flaggedContent.posts || []), ...(flaggedContent.jobs || []), ...(flaggedContent.comments || [])].map(
                       (item) => {
-                        const contentType = item.type === 'forum_post' ? 'posts' : 'jobs';
+                        const contentType = item.type === 'forum_post' ? 'posts' : item.type === 'comment' ? 'comments' : 'jobs';
                         return renderContentCard(item, contentType);
                       }
                     )}
@@ -323,8 +333,8 @@ const AdminModeration = () => {
                   </TabsContent>
 
                   <TabsContent value="posts" className="space-y-4 mt-4">
-                    {flaggedContent.posts.map((item) => renderContentCard(item, 'posts'))}
-                    {flaggedContent.posts.length === 0 && (
+                    {(flaggedContent.posts || []).map((item) => renderContentCard(item, 'posts'))}
+                    {(flaggedContent.posts?.length || 0) === 0 && (
                       <div className="text-center py-12 text-gray-500">
                         <p>No flagged posts</p>
                       </div>
@@ -332,8 +342,8 @@ const AdminModeration = () => {
                   </TabsContent>
 
                   <TabsContent value="jobs" className="space-y-4 mt-4">
-                    {flaggedContent.jobs.map((item) => renderContentCard(item, 'jobs'))}
-                    {flaggedContent.jobs.length === 0 && (
+                    {(flaggedContent.jobs || []).map((item) => renderContentCard(item, 'jobs'))}
+                    {(flaggedContent.jobs?.length || 0) === 0 && (
                       <div className="text-center py-12 text-gray-500">
                         <p>No flagged jobs</p>
                       </div>
@@ -341,8 +351,8 @@ const AdminModeration = () => {
                   </TabsContent>
 
                   <TabsContent value="comments" className="space-y-4 mt-4">
-                    {flaggedContent.comments.map((item) => renderContentCard(item, 'comments'))}
-                    {flaggedContent.comments.length === 0 && (
+                    {(flaggedContent.comments || []).map((item) => renderContentCard(item, 'comments'))}
+                    {(flaggedContent.comments?.length || 0) === 0 && (
                       <div className="text-center py-12 text-gray-500">
                         <p>No flagged comments</p>
                       </div>

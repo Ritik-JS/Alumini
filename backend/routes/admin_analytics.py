@@ -473,10 +473,10 @@ async def get_mentorship_analytics():
         # Rating distribution
         cursor.execute("""
             SELECT 
-                CONCAT(rating, ' Stars') as stars,
+                CONCAT(CAST(rating AS CHAR), ' Stars') as stars,
                 COUNT(*) as count
             FROM mentorship_sessions
-            WHERE rating IS NOT NULL
+            WHERE rating IS NOT NULL AND rating > 0
             GROUP BY rating
             ORDER BY rating DESC
         """)

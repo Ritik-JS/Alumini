@@ -35,7 +35,7 @@ async def get_all_files(
                 f.file_size_kb,
                 f.uploaded_at,
                 u.email as user_email
-            FROM files f
+            FROM file_uploads f
             JOIN users u ON f.user_id = u.id
             WHERE 1=1
         """
@@ -87,7 +87,7 @@ async def get_file_details(file_id: str):
                 u.email as user_email,
                 u.role as user_role,
                 ap.name as user_name
-            FROM files f
+            FROM file_uploads f
             JOIN users u ON f.user_id = u.id
             LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
             WHERE f.id = %s
@@ -127,14 +127,14 @@ async def delete_file(
         cursor = connection.cursor()
         
         # Get file info before deletion
-        cursor.execute("SELECT file_name, user_id FROM files WHERE id = %s", (file_id,))
+        cursor.execute("SELECT file_name, user_id FROM file_uploads WHERE id = %s", (file_id,))
         file_info = cursor.fetchone()
         
         if not file_info:
             raise HTTPException(status_code=404, detail="File not found")
         
         # Delete file record
-        cursor.execute("DELETE FROM files WHERE id = %s", (file_id,))
+        cursor.execute("DELETE FROM file_uploads WHERE id = %s", (file_id,))
         
         # Log admin action
         cursor.execute("""
@@ -171,7 +171,7 @@ async def get_file_stats():
                 COUNT(*) as total_files,
                 SUM(file_size_kb) as total_size_kb,
                 COUNT(DISTINCT user_id) as unique_uploaders
-            FROM files
+            FROM file_uploads
         """)
         stats = cursor.fetchone()
         
@@ -181,7 +181,7 @@ async def get_file_stats():
                 file_type,
                 COUNT(*) as count,
                 SUM(file_size_kb) as total_size_kb
-            FROM files
+            FROM file_uploads
             GROUP BY file_type
         """)
         by_type = cursor.fetchall()
@@ -189,7 +189,7 @@ async def get_file_stats():
         # Recent uploads (last 7 days)
         cursor.execute("""
             SELECT COUNT(*) as recent_uploads
-            FROM files
+            FROM file_uploads
             WHERE uploaded_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
         """)
         recent = cursor.fetchone()

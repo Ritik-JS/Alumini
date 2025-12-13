@@ -676,15 +676,15 @@ async def admin_get_all_mentorship_requests(
                         mr.*,
                         us.email as student_email,
                         um.email as mentor_email,
-                        ps.name as student_name,
-                        ps.photo_url as student_photo,
-                        pm.name as mentor_name,
-                        pm.photo_url as mentor_photo
+                        aps.name as student_name,
+                        aps.photo_url as student_photo,
+                        apm.name as mentor_name,
+                        apm.photo_url as mentor_photo
                     FROM mentorship_requests mr
                     LEFT JOIN users us ON mr.student_id = us.id
                     LEFT JOIN users um ON mr.mentor_id = um.id
-                    LEFT JOIN profiles ps ON mr.student_id = ps.user_id
-                    LEFT JOIN profiles pm ON mr.mentor_id = pm.user_id
+                    LEFT JOIN alumni_profiles aps ON mr.student_id = aps.user_id
+                    LEFT JOIN alumni_profiles apm ON mr.mentor_id = apm.user_id
                 """
                 
                 params = []
@@ -701,7 +701,7 @@ async def admin_get_all_mentorship_requests(
                 # Get sessions for each mentorship
                 for req in requests:
                     await cursor.execute(
-                        "SELECT * FROM mentorship_sessions WHERE mentorship_id = %s ORDER BY scheduled_date DESC",
+                        "SELECT * FROM mentorship_sessions WHERE mentorship_request_id = %s ORDER BY scheduled_date DESC",
                         (req['id'],)
                     )
                     req['sessions'] = await cursor.fetchall()
@@ -726,8 +726,9 @@ async def admin_get_all_mentorship_requests(
                 
     except Exception as e:
         logger.error(f"Error fetching all mentorship requests: {e}")
+        from fastapi import status as http_status
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch mentorship requests"
         )
 
@@ -754,7 +755,7 @@ async def admin_get_all_sessions(
                         mr.student_id,
                         mr.mentor_id
                     FROM mentorship_sessions ms
-                    LEFT JOIN mentorship_requests mr ON ms.mentorship_id = mr.id
+                    LEFT JOIN mentorship_requests mr ON ms.mentorship_request_id = mr.id
                 """
                 
                 params = []
@@ -776,8 +777,9 @@ async def admin_get_all_sessions(
                 
     except Exception as e:
         logger.error(f"Error fetching all sessions: {e}")
+        from fastapi import status as http_status
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch sessions"
         )
 

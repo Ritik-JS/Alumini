@@ -437,7 +437,8 @@ class EngagementService:
         self,
         db_conn,
         limit: int = 50,
-        current_user_id: Optional[str] = None
+        current_user_id: Optional[str] = None,
+        role_filter: Optional[str] = None
     ) -> Dict:
         """
         Get engagement leaderboard
@@ -445,14 +446,23 @@ class EngagementService:
         try:
             # Get top users from engagement_leaderboard view
             async with db_conn.cursor() as cursor:
-                await cursor.execute("""
+                query = """
                     SELECT 
                         id, name, photo_url, role, total_score,
                         rank_position, level, contributions
                     FROM engagement_leaderboard
-                    ORDER BY total_score DESC
-                    LIMIT %s
-                """, (limit,))
+                """
+                params = []
+                
+                # Add role filter if provided
+                if role_filter and role_filter != 'all':
+                    query += " WHERE role = %s"
+                    params.append(role_filter)
+                
+                query += " ORDER BY total_score DESC LIMIT %s"
+                params.append(limit)
+                
+                await cursor.execute(query, tuple(params))
                 leaderboard = await cursor.fetchall()
             
             # Format leaderboard entries

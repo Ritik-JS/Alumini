@@ -13,7 +13,7 @@ async def get_all_mentorship_requests():
         connection = get_sync_db_connection()
         cursor = connection.cursor()
         
-        # Simple query - just get mentorship requests
+        # Query with JOINs to get complete user and profile data
         cursor.execute("""
             SELECT 
                 mr.id,
@@ -26,22 +26,54 @@ async def get_all_mentorship_requests():
                 mr.requested_at,
                 mr.accepted_at,
                 mr.rejected_at,
-                mr.updated_at
+                mr.updated_at,
+                
+                -- Student user info
+                su.email as student_email,
+                su.role as student_role,
+                
+                -- Student profile info
+                sp.name as student_name,
+                sp.photo_url as student_photo_url,
+                sp.current_company as student_company,
+                sp.current_role as student_role_title,
+                
+                -- Mentor user info
+                mu.email as mentor_email,
+                mu.role as mentor_role,
+                
+                -- Mentor profile info
+                mp.name as mentor_name,
+                mp.photo_url as mentor_photo_url,
+                mp.current_company as mentor_company,
+                mp.current_role as mentor_role_title
+                
             FROM mentorship_requests mr
+            
+            -- Join student data
+            LEFT JOIN users su ON mr.student_id = su.id
+            LEFT JOIN alumni_profiles sp ON mr.student_id = sp.user_id
+            
+            -- Join mentor data
+            LEFT JOIN users mu ON mr.mentor_id = mu.id
+            LEFT JOIN alumni_profiles mp ON mr.mentor_id = mp.user_id
+            
             ORDER BY mr.requested_at DESC
         """)
         
         requests = cursor.fetchall()
         
-        # Parse JSON and format dates
+        # Parse JSON and format dates, create nested structure
         import json
         for req in requests:
+            # Parse preferred topics
             if req.get('preferred_topics'):
                 try:
                     req['preferred_topics'] = json.loads(req['preferred_topics']) if isinstance(req['preferred_topics'], str) else req['preferred_topics']
                 except:
                     req['preferred_topics'] = []
             
+            # Format dates
             if req.get('requested_at'):
                 req['requested_at'] = req['requested_at'].isoformat()
             if req.get('accepted_at'):
@@ -50,6 +82,46 @@ async def get_all_mentorship_requests():
                 req['rejected_at'] = req['rejected_at'].isoformat()
             if req.get('updated_at'):
                 req['updated_at'] = req['updated_at'].isoformat()
+            
+            # Create nested student object
+            req['student'] = {
+                'email': req.pop('student_email'),
+                'role': req.pop('student_role')
+            }
+            
+            req['studentProfile'] = {
+                'name': req.pop('student_name'),
+                'photo_url': req.pop('student_photo_url'),
+                'current_company': req.pop('student_company'),
+                'current_role': req.pop('student_role_title')
+            }
+            
+            # Create nested mentor object
+            req['mentor'] = {
+                'email': req.pop('mentor_email'),
+                'role': req.pop('mentor_role')
+            }
+            
+            req['mentorProfile'] = {
+                'name': req.pop('mentor_name'),
+                'photo_url': req.pop('mentor_photo_url'),
+                'current_company': req.pop('mentor_company'),
+                'current_role': req.pop('mentor_role_title')
+            }
+            
+            # Get sessions for this mentorship
+            cursor.execute("""
+                SELECT id, scheduled_date, duration, status, agenda, rating
+                FROM mentorship_sessions
+                WHERE mentorship_request_id = %s
+                ORDER BY scheduled_date DESC
+            """, (req['id'],))
+            
+            sessions = cursor.fetchall()
+            for session in sessions:
+                session['scheduled_date'] = session['scheduled_date'].isoformat()
+            
+            req['sessions'] = sessions
         
         cursor.close()
         connection.close()
