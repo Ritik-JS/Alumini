@@ -1,28 +1,54 @@
 """
 LLM-based Career Advisor
-Uses Emergent LLM Key to generate personalized career advice
+Uses Gemini AI to generate personalized career advice
 """
 import logging
 import os
 import json
 from typing import Dict, List, Optional
-import aiohttp
+import asyncio
 
 logger = logging.getLogger(__name__)
+
+# Import Gemini SDK
+try:
+    import google.generativeai as genai
+    from google.generativeai.types import HarmCategory, HarmBlockThreshold
+    GEMINI_AVAILABLE = True
+except ImportError:
+    GEMINI_AVAILABLE = False
+    logger.warning("google-generativeai not installed. LLM advice will be disabled")
 
 
 class CareerLLMAdvisor:
     """
-    Generates personalized career advice using LLM
+    Generates personalized career advice using Gemini AI
+    Falls back to Emergent LLM if Gemini is unavailable
     """
     
     def __init__(self):
-        self.api_key = os.getenv('EMERGENT_LLM_KEY')
-        self.api_url = os.getenv('EMERGENT_LLM_API_URL', 'https://api.emergent.ai/v1/chat/completions')
-        self.model = os.getenv('EMERGENT_LLM_MODEL', 'gpt-4')
+        # Try Gemini first (primary)
+        self.gemini_key = os.getenv('GEMINI_API_KEY')
+        self.gemini_model_name = os.getenv('GEMINI_MODEL', 'gemini-1.5-pro')
+        self.gemini_model = None
         
-        if not self.api_key:
-            logger.warning("EMERGENT_LLM_KEY not found. LLM advice will be disabled")
+        # Configure Gemini if available
+        if self.gemini_key and GEMINI_AVAILABLE:
+            try:
+                genai.configure(api_key=self.gemini_key)
+                self.gemini_model = genai.GenerativeModel(self.gemini_model_name)
+                logger.info(f"✅ Gemini AI configured successfully ({self.gemini_model_name})")
+            except Exception as e:
+                logger.error(f"Failed to configure Gemini: {str(e)}")
+                self.gemini_model = None
+        
+        # Fallback to Emergent LLM (legacy)
+        self.emergent_key = os.getenv('EMERGENT_LLM_KEY')
+        self.emergent_url = os.getenv('EMERGENT_LLM_API_URL', 'https://api.emergent.ai/v1/chat/completions')
+        self.emergent_model = os.getenv('EMERGENT_LLM_MODEL', 'gpt-4')
+        
+        if not self.gemini_model and not self.emergent_key:
+            logger.warning("No LLM API configured (Gemini or Emergent). LLM advice will be disabled")
     
     async def generate_career_advice(
         self,
@@ -41,15 +67,21 @@ class CareerLLMAdvisor:
         Returns:
             str: Personalized career advice
         """
-        if not self.api_key:
+        # Check if any LLM is available
+        if not self.gemini_model and not self.emergent_key:
             return self._generate_fallback_advice(user_profile, predictions)
         
         try:
             # Prepare context for LLM
             prompt = self._build_prompt(user_profile, predictions, similar_alumni)
             
-            # Call Emergent LLM API
-            advice = await self._call_llm_api(prompt)
+            # Try Gemini first, then Emergent LLM as fallback
+            if self.gemini_model:
+                advice = await self._call_gemini_api(prompt)
+            elif self.emergent_key:
+                advice = await self._call_emergent_api(prompt)
+            else:
+                return self._generate_fallback_advice(user_profile, predictions)
             
             return advice
         
@@ -110,17 +142,54 @@ Keep the tone encouraging and professional. Focus on actionable next steps."""
 
         return prompt
     
-    async def _call_llm_api(self, prompt: str) -> str:
+    async def _call_gemini_api(self, prompt: str) -> str:
         """
-        Call Emergent LLM API
+        Call Gemini AI API (Primary method)
         """
+        try:
+            # Run sync Gemini call in executor to avoid blocking
+            def _generate():
+                response = self.gemini_model.generate_content(
+                    prompt,
+                    generation_config={
+                        'temperature': 0.7,
+                        'max_output_tokens': 300,
+                    },
+                    safety_settings={
+                        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+                        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                    }
+                )
+                return response.text.strip()
+            
+            # Execute in thread pool to avoid blocking
+            advice = await asyncio.to_thread(_generate)
+            
+            if not advice:
+                raise Exception("Empty response from Gemini API")
+            
+            logger.info("✅ Generated career advice using Gemini AI")
+            return advice
+            
+        except Exception as e:
+            logger.error(f"Gemini API error: {str(e)}")
+            raise
+    
+    async def _call_emergent_api(self, prompt: str) -> str:
+        """
+        Call Emergent LLM API (Fallback method)
+        """
+        import aiohttp
+        
         headers = {
-            'Authorization': f'Bearer {self.api_key}',
+            'Authorization': f'Bearer {self.emergent_key}',
             'Content-Type': 'application/json'
         }
         
         payload = {
-            'model': self.model,
+            'model': self.emergent_model,
             'messages': [
                 {
                     'role': 'system',
@@ -137,15 +206,15 @@ Keep the tone encouraging and professional. Focus on actionable next steps."""
         
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                self.api_url,
+                self.emergent_url,
                 headers=headers,
                 json=payload,
                 timeout=aiohttp.ClientTimeout(total=30)
             ) as response:
                 if response.status != 200:
                     error_text = await response.text()
-                    logger.error(f"LLM API error: {response.status} - {error_text}")
-                    raise Exception(f"LLM API returned status {response.status}")
+                    logger.error(f"Emergent LLM API error: {response.status} - {error_text}")
+                    raise Exception(f"Emergent LLM API returned status {response.status}")
                 
                 data = await response.json()
                 
@@ -153,8 +222,9 @@ Keep the tone encouraging and professional. Focus on actionable next steps."""
                 advice = data.get('choices', [{}])[0].get('message', {}).get('content', '')
                 
                 if not advice:
-                    raise Exception("Empty response from LLM API")
+                    raise Exception("Empty response from Emergent LLM API")
                 
+                logger.info("✅ Generated career advice using Emergent LLM (fallback)")
                 return advice.strip()
     
     def _generate_fallback_advice(
