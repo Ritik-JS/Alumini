@@ -21,7 +21,7 @@ const PostCard = ({ post, showFullContent = false }) => {
       const response = await forumService.togglePostLike(post.id);
       if (response.success) {
         setLiked(response.data.liked);
-        setLikesCount(prev => response.data.liked ? prev + 1 : prev - 1);
+        setLikesCount(response.data.likes_count);
       }
     } catch (error) {
       toast.error('Failed to update like');

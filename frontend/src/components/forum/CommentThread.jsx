@@ -34,7 +34,7 @@ const CommentItem = ({ comment, onReply, onDelete, depth = 0 }) => {
       const response = await forumService.toggleCommentLike(comment.id);
       if (response.success) {
         setLiked(response.data.liked);
-        setLikesCount(prev => response.data.liked ? prev + 1 : prev - 1);
+        setLikesCount(response.data.likes_count);
       }
     } catch (error) {
       toast.error('Failed to update like');

@@ -150,11 +150,10 @@ class ForumService:
                     params.extend([search_param, search_param])
                 
                 if tags:
-                    # Search for posts containing any of the tags
-                    tag_conditions = []
+                    # Search for posts containing any of the tags using JSON functions
                     for tag in tags:
-                        query += " AND p.tags LIKE %s"
-                        params.append(f"%{tag}%")
+                        query += " AND JSON_CONTAINS(p.tags, %s, '$')"
+                        params.append(json.dumps(tag))
                 
                 # Sort
                 if sort_by == "popular":
@@ -374,9 +373,9 @@ class ForumService:
                 
                 await conn.commit()
                 
-                # Get updated likes count
+                # Get actual count from post_likes table for accuracy
                 await cursor.execute(
-                    "SELECT likes_count FROM forum_posts WHERE id = %s",
+                    "SELECT COUNT(*) FROM post_likes WHERE post_id = %s",
                     (post_id,)
                 )
                 row = await cursor.fetchone()
@@ -578,9 +577,9 @@ class ForumService:
                 
                 await conn.commit()
                 
-                # Get updated likes count
+                # Get actual count from comment_likes table for accuracy
                 await cursor.execute(
-                    "SELECT likes_count FROM forum_comments WHERE id = %s",
+                    "SELECT COUNT(*) FROM comment_likes WHERE comment_id = %s",
                     (comment_id,)
                 )
                 row = await cursor.fetchone()
