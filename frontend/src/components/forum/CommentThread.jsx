@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Reply, Trash2 } from 'lucide-react';
+import { Heart, Reply, Trash2, MessageCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { forumService } from '@/services';
 import { toast } from 'sonner';
