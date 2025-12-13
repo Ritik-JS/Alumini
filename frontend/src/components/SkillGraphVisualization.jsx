@@ -60,7 +60,7 @@ const SkillGraphVisualization = ({
     };
 
     const getNodeColor = (node) => {
-      const popularity = node.popularity || 0;
+      const popularity = node.popularity || node.popularity_score || 0;
       
       if (node.is_center || node.id === selectedSkill) {
         return '#fbbf24';
@@ -108,7 +108,18 @@ const SkillGraphVisualization = ({
 
     // Clone data to avoid mutation
     const nodes = networkData.nodes.map(d => ({ ...d }));
-    const edges = networkData.edges.map(d => ({ ...d }));
+    
+    // Create a Set of valid node IDs for quick lookup
+    const nodeIds = new Set(nodes.map(n => n.id));
+    
+    // Filter edges to only include those where both source and target exist in nodes
+    const edges = networkData.edges
+      .filter(edge => {
+        const sourceId = typeof edge.source === 'object' ? edge.source.id : edge.source;
+        const targetId = typeof edge.target === 'object' ? edge.target.id : edge.target;
+        return nodeIds.has(sourceId) && nodeIds.has(targetId);
+      })
+      .map(d => ({ ...d }));
 
     // Create force simulation
     const simulation = d3.forceSimulation(nodes)
@@ -240,12 +251,13 @@ const SkillGraphVisualization = ({
       .style('z-index', 1000);
 
     function showTooltip(event, d) {
+      const popularity = d.popularity || d.popularity_score || 0;
       tooltip.style('visibility', 'visible')
         .html(`
           <strong>${d.label || d.id}</strong><br/>
           Alumni: ${d.alumni_count || 0}<br/>
           Jobs: ${d.job_count || 0}<br/>
-          Popularity: ${(d.popularity || 0).toFixed(1)}
+          Popularity: ${popularity.toFixed(1)}
         `)
         .style('left', (event.pageX + 10) + 'px')
         .style('top', (event.pageY - 10) + 'px');
