@@ -154,6 +154,36 @@ async def delete_post(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/my-posts", response_model=dict)
+async def get_my_posts(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get current user's forum posts"""
+    try:
+        posts = await ForumService.get_posts_by_author(current_user["id"])
+        return {
+            "success": True,
+            "data": [post.model_dump() for post in posts]
+        }
+    except Exception as e:
+        logger.error(f"Error fetching user posts: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/tags", response_model=dict)
+async def get_all_tags():
+    """Get all unique tags used in forum posts"""
+    try:
+        tags = await ForumService.get_all_tags()
+        return {
+            "success": True,
+            "data": tags
+        }
+    except Exception as e:
+        logger.error(f"Error fetching tags: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/posts/{post_id}/like", response_model=dict)
 async def toggle_post_like(
     post_id: str,
@@ -266,8 +296,12 @@ async def delete_comment(
 ):
     """Delete a comment (Author/Admin only)"""
     try:
-        # Would need proper author check - for now just delete
-        success = await ForumService.delete_comment(comment_id)
+        is_admin = current_user.get("role") == "admin"
+        success = await ForumService.delete_comment(
+            comment_id, 
+            current_user["id"],
+            is_admin
+        )
         
         if success:
             return {
@@ -276,6 +310,8 @@ async def delete_comment(
             }
         else:
             raise HTTPException(status_code=404, detail="Comment not found")
+    except ValueError as e:
+        raise HTTPException(status_code=403, detail=str(e))
     except HTTPException:
         raise
     except Exception as e:
