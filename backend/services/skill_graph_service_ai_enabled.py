@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 # Try to import AI/ML libraries with graceful fallback
-EMBEDDINGS_AVAILABLE = True
-from sentence_transformers import SentenceTransformer
-import faiss
+EMBEDDINGS_AVAILABLE = False
+sentence_transformers = None
+faiss = None
 
 try:
     from sentence_transformers import SentenceTransformer

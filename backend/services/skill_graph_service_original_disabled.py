@@ -1,233 +1,59 @@
 """
-Skill Graph Service - Manage skill relationships and analytics with AI/ML
+Skill Graph Service - Manage skill relationships and analytics
 Auto-populates from alumni profiles and job postings
-Phase 10.3: Enhanced with AI/ML embeddings and FAISS similarity (FULLY ENABLED)
+Phase 10.3: Enhanced with AI/ML embeddings and FAISS similarity (DISABLED to prevent hangs)
 """
 import logging
 import json
-import numpy as np
 from typing import Dict, List, Optional, Set
 from collections import Counter
 
 logger = logging.getLogger(__name__)
 
-# ============================================================================
-# AI/ML ENABLED - Phase 10.3 Implementation
-# ============================================================================
-# This version has AI/ML features ENABLED with proper error handling
-# to prevent application hangs during model loading
-# ============================================================================
-
-# Try to import AI/ML libraries with graceful fallback
-EMBEDDINGS_AVAILABLE = True
-from sentence_transformers import SentenceTransformer
-import faiss
-
-try:
-    from sentence_transformers import SentenceTransformer
-    import faiss as faiss_lib
-    faiss = faiss_lib
-    EMBEDDINGS_AVAILABLE = True
-    logger.info("✅ AI/ML libraries loaded successfully (sentence-transformers + FAISS)")
-except ImportError as e:
-    logger.warning(f"⚠️ AI/ML libraries not available: {e}")
-    logger.warning("⚠️ Falling back to co-occurrence based relationships")
-except Exception as e:
-    logger.error(f"❌ Error loading AI/ML libraries: {e}")
-    logger.warning("⚠️ Falling back to co-occurrence based relationships")
+# AI/ML imports for Phase 10.3 - COMPLETELY DISABLED TO PREVENT SAFETENSORS/MODEL LOADING HANGS
+# The SentenceTransformer model loading can cause the application to hang
+# All AI features are disabled but the service still works with co-occurrence based relationships
+EMBEDDINGS_AVAILABLE = False  # Disabled to prevent safetensors hang
 
 
 class SkillGraphService:
-    """Service for skill graph network and analytics with AI/ML support"""
+    """Service for skill graph network and analytics (AI features disabled)"""
     
     def __init__(self):
-        """Initialize service with AI/ML models (if available)"""
+        """Initialize service without AI/ML models"""
         self.embedding_model = None
         self.faiss_index = None
-        self.dimension = 384  # all-MiniLM-L6-v2 embedding dimension
-        self.model_name = 'all-MiniLM-L6-v2'
-        
-        # Try to initialize the model with error handling
-        if EMBEDDINGS_AVAILABLE:
-            try:
-                logger.info(f"🔄 Loading sentence-transformer model: {self.model_name}")
-                logger.info("   (First time: ~90MB download, may take 30-60 seconds)")
-                
-                # Load model with timeout protection
-                self.embedding_model = SentenceTransformer(self.model_name)
-                
-                logger.info("✅ Sentence-transformer model loaded successfully")
-                logger.info(f"   Model dimension: {self.dimension}")
-                logger.info("✅ SkillGraphService initialized with AI features enabled")
-            except Exception as e:
-                logger.error(f"❌ Failed to load embedding model: {e}")
-                logger.warning("⚠️ Falling back to co-occurrence based relationships")
-                self.embedding_model = None
-        else:
-            logger.info("ℹ️ SkillGraphService initialized without AI features")
-            logger.info("   Install: pip install sentence-transformers faiss-cpu")
+        self.dimension = 384  # MiniLM embedding dimension (not used)
+        # AI/ML features are completely disabled to prevent application hangs
+        logger.info("SkillGraphService initialized without AI features (safetensors issue)")
     
     async def generate_embeddings(self, db_conn, skills: List[str]) -> Dict[str, List[float]]:
         """
         Generate 384-dimensional embeddings for skills using sentence-transformers
-        Phase 10.3: Core embedding generation
-        
-        Args:
-            db_conn: Database connection
-            skills: List of skill names to generate embeddings for
-            
-        Returns:
-            Dictionary mapping skill names to embedding vectors
+        Phase 10.3: Core embedding generation (DISABLED)
         """
-        if not self.embedding_model:
-            logger.info("⚠️ Embedding generation skipped (model not available)")
-            return {}
-        
-        if not skills:
-            logger.warning("⚠️ No skills provided for embedding generation")
-            return {}
-        
-        try:
-            logger.info(f"🔄 Generating embeddings for {len(skills)} skills...")
-            
-            # Generate embeddings in batches for efficiency
-            batch_size = 32
-            all_embeddings = []
-            
-            for i in range(0, len(skills), batch_size):
-                batch = skills[i:i+batch_size]
-                logger.info(f"   Batch {i//batch_size + 1}/{(len(skills)-1)//batch_size + 1}: Processing {len(batch)} skills")
-                
-                # Generate embeddings
-                batch_embeddings = self.embedding_model.encode(
-                    batch,
-                    convert_to_numpy=True,
-                    show_progress_bar=False
-                )
-                all_embeddings.extend(batch_embeddings)
-            
-            # Convert to dictionary
-            embeddings_map = {
-                skill: embedding.tolist()
-                for skill, embedding in zip(skills, all_embeddings)
-            }
-            
-            logger.info(f"✅ Generated {len(embeddings_map)} embeddings")
-            
-            # Store embeddings in database
-            for skill_name, embedding_vector in embeddings_map.items():
-                async with db_conn.cursor() as cursor:
-                    await cursor.execute("""
-                        INSERT INTO skill_embeddings (skill_name, embedding_vector)
-                        VALUES (%s, %s)
-                        ON DUPLICATE KEY UPDATE
-                            embedding_vector = VALUES(embedding_vector),
-                            updated_at = NOW()
-                    """, (
-                        skill_name,
-                        json.dumps(embedding_vector)
-                    ))
-            
-            await db_conn.commit()
-            logger.info(f"✅ Stored embeddings in database")
-            
-            return embeddings_map
-        
-        except Exception as e:
-            logger.error(f"❌ Error generating embeddings: {str(e)}")
-            return {}
+        # AI features are completely disabled to prevent safetensors/model loading hangs
+        logger.info("Embedding generation skipped (AI features disabled)")
+        return {}
     
     async def calculate_similarities_faiss(
         self, 
         db_conn, 
         skills: List[str], 
-        embeddings_array: np.ndarray
+        embeddings
     ) -> int:
         """
         Calculate pairwise similarities using FAISS for fast vector search
-        Phase 10.3: FAISS-based similarity calculation
-        
-        Args:
-            db_conn: Database connection
-            skills: List of skill names (same order as embeddings)
-            embeddings_array: Numpy array of embeddings (shape: [n_skills, 384])
-            
-        Returns:
-            Number of similarity pairs calculated
+        Phase 10.3: FAISS-based similarity calculation (DISABLED)
         """
-        if not faiss or embeddings_array is None or len(embeddings_array) == 0:
-            logger.info("⚠️ FAISS similarity calculation skipped")
-            return 0
-        
-        try:
-            logger.info(f"🔄 Building FAISS index for {len(skills)} skills...")
-            
-            # Normalize embeddings for cosine similarity
-            embeddings_normalized = embeddings_array / np.linalg.norm(
-                embeddings_array, axis=1, keepdims=True
-            )
-            
-            # Build FAISS index (IndexFlatIP for cosine similarity)
-            index = faiss.IndexFlatIP(self.dimension)
-            index.add(embeddings_normalized.astype('float32'))
-            
-            logger.info(f"✅ FAISS index built successfully")
-            logger.info(f"   Index type: IndexFlatIP (cosine similarity)")
-            logger.info(f"   Total vectors: {index.ntotal}")
-            
-            # Calculate top-10 similar skills for each skill
-            logger.info(f"🔄 Calculating similarities...")
-            k = 11  # Top 11 (includes self, which we'll skip)
-            similarities_count = 0
-            
-            # Clear existing similarities (optional - for rebuild)
-            async with db_conn.cursor() as cursor:
-                await cursor.execute("DELETE FROM skill_similarities")
-            await db_conn.commit()
-            
-            # Search for similar skills
-            distances, indices = index.search(
-                embeddings_normalized.astype('float32'), 
-                k
-            )
-            
-            # Store similarities in database
-            for i, skill_name in enumerate(skills):
-                similar_indices = indices[i][1:]  # Skip self (index 0)
-                similar_scores = distances[i][1:]
-                
-                for similar_idx, score in zip(similar_indices, similar_scores):
-                    if similar_idx < len(skills):
-                        similar_skill = skills[similar_idx]
-                        
-                        # Only store if similarity is meaningful (> 0.5)
-                        if score > 0.5:
-                            async with db_conn.cursor() as cursor:
-                                await cursor.execute("""
-                                    INSERT INTO skill_similarities 
-                                    (skill_1, skill_2, similarity_score)
-                                    VALUES (%s, %s, %s)
-                                """, (
-                                    skill_name,
-                                    similar_skill,
-                                    float(score)
-                                ))
-                            similarities_count += 1
-            
-            await db_conn.commit()
-            logger.info(f"✅ Calculated and stored {similarities_count} similarity pairs")
-            
-            return similarities_count
-        
-        except Exception as e:
-            logger.error(f"❌ Error calculating similarities: {str(e)}")
-            return 0
+        # AI features are completely disabled to prevent safetensors/model loading hangs
+        logger.info("FAISS similarity calculation skipped (AI features disabled)")
+        return 0
     
     async def build_skill_graph(self, db_conn) -> Dict:
         """
         Build skill graph from alumni profiles and job postings
         Updates skill_graph table with relationships
-        Now includes AI/ML embeddings and similarities
         """
         try:
             # Extract all skills from alumni profiles
@@ -298,15 +124,13 @@ class SkillGraphService:
                 top_related = sorted(related.items(), key=lambda x: x[1], reverse=True)[:10]
                 skill_relations[skill] = [s for s, _ in top_related]
             
-            # ====================================================================
             # Phase 10.3: Generate embeddings for all skills
-            # ====================================================================
             skills_list = list(all_skills)
             embeddings_map = {}
             similarities_count = 0
             
             if self.embedding_model and len(skills_list) > 0:
-                logger.info(f"🤖 AI/ML Processing: Generating embeddings for {len(skills_list)} skills...")
+                logger.info(f"Generating embeddings for {len(skills_list)} skills...")
                 embeddings_map = await self.generate_embeddings(db_conn, skills_list)
                 
                 # Calculate similarities using FAISS
@@ -317,11 +141,6 @@ class SkillGraphService:
                         skills_list, 
                         embeddings_array
                     )
-            else:
-                if not self.embedding_model:
-                    logger.info("ℹ️ Skipping AI/ML processing (model not available)")
-                else:
-                    logger.info("ℹ️ No skills to process")
             
             # Update skill_graph table
             for skill, related_skills in skill_relations.items():
@@ -346,7 +165,7 @@ class SkillGraphService:
                 
                 # Calculate popularity score (normalized)
                 popularity = (alumni_count * 0.6 + job_count * 0.4) / 10.0
-                popularity = min(popularity, 9999.99)  # Cap at 9999.99 (DECIMAL(6,2))
+                popularity = min(popularity, 100.0)  # Cap at 100
                 
                 # Insert or update skill in graph
                 async with db_conn.cursor() as cursor:
@@ -355,18 +174,13 @@ class SkillGraphService:
                         (skill_name, related_skills, alumni_count, job_count, popularity_score)
                         VALUES (%s, %s, %s, %s, %s)
                         ON DUPLICATE KEY UPDATE
-                            related_skills = %s,
-                            alumni_count = %s,
-                            job_count = %s,
-                            popularity_score = %s,
+                            related_skills = VALUES(related_skills),
+                            alumni_count = VALUES(alumni_count),
+                            job_count = VALUES(job_count),
+                            popularity_score = VALUES(popularity_score),
                             updated_at = NOW()
                     """, (
                         skill,
-                        json.dumps(related_skills),
-                        alumni_count,
-                        job_count,
-                        popularity,
-                        # For UPDATE clause:
                         json.dumps(related_skills),
                         alumni_count,
                         job_count,
@@ -381,9 +195,7 @@ class SkillGraphService:
                 "embeddings_generated": len(embeddings_map),
                 "similarities_calculated": similarities_count,
                 "ai_enabled": self.embedding_model is not None,
-                "message": "Skill graph built successfully" + (
-                    " with AI/ML enhancements" if self.embedding_model else ""
-                )
+                "message": "Skill graph built successfully with AI enhancements"
             }
         
         except Exception as e:
