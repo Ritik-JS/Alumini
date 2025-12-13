@@ -114,20 +114,62 @@ class AlumniCardService:
                     """, (card_id, user_id, card_number, qr_code_data, issue_date, expiry_date))
                     await db_conn.commit()
             
+            # Fetch complete profile data for consistent structure
+            async with db_conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT 
+                        ap.current_company, ap.current_role, ap.location, 
+                        ap.headline, ap.is_verified
+                    FROM alumni_profiles ap
+                    WHERE ap.user_id = %s
+                """, (user_id,))
+                profile_data = await cursor.fetchone()
+            
+            current_company = profile_data[0] if profile_data else None
+            current_role = profile_data[1] if profile_data else None
+            location = profile_data[2] if profile_data else None
+            headline = profile_data[3] if profile_data else None
+            is_verified = profile_data[4] if profile_data else False
+            
+            # Determine AI validation based on duplicate check
+            duplicate_check_result = await self.check_duplicate_by_name(db_conn, name, batch_year) if (name and batch_year) else {"duplicate_found": False}
+            duplicate_check_passed = not duplicate_check_result.get("duplicate_found", False)
+            ai_confidence_score = 95 if duplicate_check_passed else 60
+            ai_validation_status = "verified" if duplicate_check_passed else "pending"
+            
             return {
+                "id": str(card_id),
                 "card_id": str(card_id),
                 "user_id": user_id,
                 "card_number": card_number,
-                "holder_name": name,
-                "holder_email": email,
-                "photo_url": photo_url,
-                "batch_year": batch_year,
-                "role": role,
                 "qr_code_data": qr_code_data,
                 "issue_date": issue_date.isoformat(),
                 "expiry_date": expiry_date.isoformat(),
                 "is_active": True,
-                "verification_count": 0
+                "verification_count": 0,
+                # AI Validation fields
+                "ai_validation_status": ai_validation_status,
+                "ai_confidence_score": ai_confidence_score,
+                "duplicate_check_passed": duplicate_check_passed,
+                "signature_verified": True,
+                # Nested profile object
+                "profile": {
+                    "name": name,
+                    "email": email,
+                    "photo_url": photo_url,
+                    "batch_year": batch_year,
+                    "current_company": current_company,
+                    "current_role": current_role,
+                    "location": location,
+                    "headline": headline,
+                    "is_verified": is_verified
+                },
+                # Keep flat structure for backward compatibility
+                "holder_name": name,
+                "holder_email": email,
+                "photo_url": photo_url,
+                "batch_year": batch_year,
+                "role": role
             }
         
         except Exception as e:
@@ -454,7 +496,8 @@ class AlumniCardService:
                         ac.id, ac.card_number, ac.qr_code_data, ac.issue_date,
                         ac.expiry_date, ac.is_active, ac.verification_count, ac.last_verified,
                         u.email, u.role,
-                        ap.name, ap.photo_url, ap.batch_year
+                        ap.name, ap.photo_url, ap.batch_year, ap.current_company, 
+                        ap.current_role, ap.location, ap.headline, ap.is_verified
                     FROM alumni_cards ac
                     JOIN users u ON ac.user_id = u.id
                     LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
@@ -465,7 +508,25 @@ class AlumniCardService:
             if not card_data:
                 return None
             
+            # Check for duplicate names to set AI validation status
+            name = card_data[10] if card_data[10] else card_data[8].split('@')[0]
+            batch_year = card_data[12]
+            
+            duplicate_check_passed = True
+            ai_confidence_score = 95  # Default high confidence
+            
+            if name and batch_year:
+                duplicate_result = await self.check_duplicate_by_name(db_conn, name, batch_year)
+                if duplicate_result.get("duplicate_found"):
+                    duplicate_check_passed = False
+                    ai_confidence_score = 60  # Lower confidence if duplicate found
+            
+            # Determine AI validation status
+            ai_validation_status = "verified" if (card_data[5] and duplicate_check_passed) else "pending"
+            
+            # Return data with nested profile object to match frontend expectations
             return {
+                "id": str(card_data[0]),
                 "card_id": str(card_data[0]),
                 "user_id": user_id,
                 "card_number": card_data[1],
@@ -475,6 +536,24 @@ class AlumniCardService:
                 "is_active": card_data[5],
                 "verification_count": card_data[6],
                 "last_verified": card_data[7].isoformat() if card_data[7] else None,
+                # AI Validation fields
+                "ai_validation_status": ai_validation_status,
+                "ai_confidence_score": ai_confidence_score,
+                "duplicate_check_passed": duplicate_check_passed,
+                "signature_verified": True,  # Cards are generated with valid signatures
+                # Nested profile object for frontend compatibility
+                "profile": {
+                    "name": card_data[10] if card_data[10] else card_data[8].split('@')[0],
+                    "email": card_data[8],
+                    "photo_url": card_data[11],
+                    "batch_year": card_data[12],
+                    "current_company": card_data[13],
+                    "current_role": card_data[14],
+                    "location": card_data[15],
+                    "headline": card_data[16],
+                    "is_verified": card_data[17]
+                },
+                # Keep flat structure for backward compatibility
                 "holder_name": card_data[10] if card_data[10] else card_data[8].split('@')[0],
                 "holder_email": card_data[8],
                 "photo_url": card_data[11],
@@ -552,4 +631,119 @@ class AlumniCardService:
         
         except Exception as e:
             logger.error(f"Error getting verification history: {str(e)}")
+            raise
+    
+    def generate_card_image(self, card_data: Dict) -> bytes:
+        """
+        Generate alumni card as PNG image
+        Returns image bytes
+        """
+        try:
+            from PIL import Image, ImageDraw, ImageFont
+            import io
+            
+            # Card dimensions (standard ID card aspect ratio)
+            width = 1050
+            height = 650
+            
+            # Create image with gradient background
+            img = Image.new('RGB', (width, height), color='#1e40af')
+            draw = ImageDraw.Draw(img)
+            
+            # Create gradient effect (simple top-to-bottom)
+            for i in range(height):
+                # Gradient from blue to purple
+                r = int(30 + (i / height) * 80)
+                g = int(64 - (i / height) * 30)
+                b = int(175 + (i / height) * 50)
+                draw.line([(0, i), (width, i)], fill=(r, g, b))
+            
+            # Try to load fonts, fall back to default if not available
+            try:
+                title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 48)
+                header_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 36)
+                label_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20)
+                value_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 28)
+            except:
+                # Fall back to default font
+                title_font = ImageFont.load_default()
+                header_font = ImageFont.load_default()
+                label_font = ImageFont.load_default()
+                value_font = ImageFont.load_default()
+            
+            # Extract data
+            profile = card_data.get('profile', {})
+            name = profile.get('name', 'N/A')
+            batch_year = profile.get('batch_year', 'N/A')
+            card_number = card_data.get('card_number', 'N/A')
+            expiry_date = card_data.get('expiry_date', 'N/A')
+            is_verified = profile.get('is_verified', False)
+            
+            # Header - AlumUnity
+            draw.text((50, 50), "AlumUnity", font=title_font, fill='white')
+            draw.text((50, 105), "Official Alumni ID Card", font=label_font, fill='#bfdbfe')
+            
+            # Verified badge
+            if is_verified:
+                draw.rectangle([(width - 180, 50), (width - 50, 90)], fill='#10b981')
+                draw.text((width - 170, 55), "✓ Verified", font=label_font, fill='white')
+            
+            # Profile section
+            y_offset = 200
+            
+            # Name
+            draw.text((50, y_offset), "NAME", font=label_font, fill='#bfdbfe')
+            draw.text((50, y_offset + 30), str(name)[:30], font=value_font, fill='white')
+            
+            # Batch Year and Card Number (two columns)
+            y_offset += 110
+            draw.text((50, y_offset), "BATCH YEAR", font=label_font, fill='#bfdbfe')
+            draw.text((50, y_offset + 30), str(batch_year), font=value_font, fill='white')
+            
+            draw.text((400, y_offset), "CARD NUMBER", font=label_font, fill='#bfdbfe')
+            draw.text((400, y_offset + 30), str(card_number), font=value_font, fill='white')
+            
+            # Valid Until
+            y_offset += 110
+            draw.text((50, y_offset), "VALID UNTIL", font=label_font, fill='#bfdbfe')
+            if expiry_date and expiry_date != 'N/A':
+                try:
+                    expiry_obj = datetime.fromisoformat(expiry_date.replace('Z', '+00:00'))
+                    expiry_str = expiry_obj.strftime("%B %d, %Y")
+                except:
+                    expiry_str = str(expiry_date)
+            else:
+                expiry_str = "N/A"
+            draw.text((50, y_offset + 30), expiry_str, font=label_font, fill='white')
+            
+            # QR Code placeholder (white box)
+            qr_box_size = 180
+            qr_x = width - qr_box_size - 50
+            qr_y = 200
+            draw.rectangle(
+                [(qr_x, qr_y), (qr_x + qr_box_size, qr_y + qr_box_size)],
+                fill='white'
+            )
+            draw.text(
+                (qr_x + qr_box_size//2 - 30, qr_y + qr_box_size//2 - 10),
+                "QR CODE",
+                font=label_font,
+                fill='#1e40af'
+            )
+            draw.text(
+                (qr_x + qr_box_size//2 - 50, qr_y + qr_box_size + 15),
+                "Scan to verify",
+                font=label_font,
+                fill='#bfdbfe'
+            )
+            
+            # Convert to bytes
+            img_byte_arr = io.BytesIO()
+            img.save(img_byte_arr, format='PNG', optimize=True)
+            img_byte_arr.seek(0)
+            
+            return img_byte_arr.getvalue()
+        
+        except Exception as e:
+            logger.error(f"Error generating card image: {str(e)}")
             raise

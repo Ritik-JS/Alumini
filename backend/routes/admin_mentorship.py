@@ -13,23 +13,21 @@ async def get_all_mentorship_requests():
         connection = get_sync_db_connection()
         cursor = connection.cursor()
         
+        # Simple query - just get mentorship requests
         cursor.execute("""
             SELECT 
-                mr.*,
-                s.email as student_email,
-                sp.name as student_name,
-                sp.photo_url as student_photo,
-                m.email as mentor_email,
-                mp.name as mentor_name,
-                mp.photo_url as mentor_photo,
-                COUNT(DISTINCT ms.id) as sessions_count
+                mr.id,
+                mr.student_id,
+                mr.mentor_id,
+                mr.status,
+                mr.request_message,
+                mr.goals,
+                mr.preferred_topics,
+                mr.requested_at,
+                mr.accepted_at,
+                mr.rejected_at,
+                mr.updated_at
             FROM mentorship_requests mr
-            JOIN users s ON mr.student_id = s.id
-            JOIN users m ON mr.mentor_id = m.id
-            LEFT JOIN alumni_profiles sp ON s.id = sp.user_id
-            LEFT JOIN alumni_profiles mp ON m.id = mp.user_id
-            LEFT JOIN mentorship_sessions ms ON mr.id = ms.mentorship_request_id
-            GROUP BY mr.id
             ORDER BY mr.requested_at DESC
         """)
         
@@ -44,24 +42,14 @@ async def get_all_mentorship_requests():
                 except:
                     req['preferred_topics'] = []
             
-            req['requested_at'] = req['requested_at'].isoformat()
+            if req.get('requested_at'):
+                req['requested_at'] = req['requested_at'].isoformat()
             if req.get('accepted_at'):
                 req['accepted_at'] = req['accepted_at'].isoformat()
             if req.get('rejected_at'):
                 req['rejected_at'] = req['rejected_at'].isoformat()
-            req['updated_at'] = req['updated_at'].isoformat()
-            
-            # Add user objects for frontend
-            req['student'] = {"email": req['student_email']}
-            req['mentor'] = {"email": req['mentor_email']}
-            req['studentProfile'] = {
-                "name": req['student_name'],
-                "photo_url": req['student_photo']
-            }
-            req['mentorProfile'] = {
-                "name": req['mentor_name'],
-                "photo_url": req['mentor_photo']
-            }
+            if req.get('updated_at'):
+                req['updated_at'] = req['updated_at'].isoformat()
         
         cursor.close()
         connection.close()

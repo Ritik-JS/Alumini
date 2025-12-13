@@ -310,3 +310,71 @@ async def regenerate_alumni_card(
             status_code=500,
             detail=f"Failed to regenerate alumni card: {str(e)}"
         )
+
+
+@router.get("/{card_id}/download")
+async def download_alumni_card(
+    card_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Download alumni card as PNG image
+    Generates a visual representation of the digital ID card
+    """
+    try:
+        from fastapi.responses import Response
+        
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            # Get card by ID
+            async with conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT user_id FROM alumni_cards WHERE id = %s
+                """, (card_id,))
+                result = await cursor.fetchone()
+            
+            if not result:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Alumni card not found"
+                )
+            
+            card_user_id = result[0]
+            
+            # Check permissions - user can download own card or admin can download any
+            if current_user['id'] != card_user_id and current_user['role'] != 'admin':
+                raise HTTPException(
+                    status_code=403,
+                    detail="You can only download your own card"
+                )
+            
+            # Get full card data
+            card_data = await card_service.get_alumni_card(conn, card_user_id)
+            
+            if not card_data:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Alumni card not found"
+                )
+            
+            # Generate image
+            image_bytes = card_service.generate_card_image(card_data)
+            
+            # Return as downloadable PNG
+            return Response(
+                content=image_bytes,
+                media_type="image/png",
+                headers={
+                    "Content-Disposition": f"attachment; filename=alumni_card_{card_data['card_number']}.png"
+                }
+            )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error downloading alumni card: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to download alumni card: {str(e)}"
+        )
