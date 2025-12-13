@@ -57,18 +57,11 @@ async def get_all_events(
             offset=offset
         )
         
-        # Add attendees to each event
-        events_with_attendees = []
-        for event in events:
-            event_dict = event.model_dump()
-            # Get attendees for this event
-            attendees = await EventService.get_event_attendees(event_dict['id'])
-            event_dict['attendees'] = [att.model_dump() for att in attendees]
-            events_with_attendees.append(event_dict)
-        
+        # Return events without fetching attendees (N+1 query fix)
+        # Frontend will fetch attendees separately when viewing event details
         return {
             "success": True,
-            "data": events_with_attendees
+            "data": [event.model_dump() for event in events]
         }
     except Exception as e:
         logger.error(f"Error fetching events: {str(e)}")

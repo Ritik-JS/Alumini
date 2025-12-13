@@ -211,7 +211,7 @@ const EventDetails = () => {
                   <div>
                     <p className="font-semibold text-sm">Attendees</p>
                     <p className="text-sm text-gray-600">
-                      {event.current_attendees_count} / {event.max_attendees} registered
+                      {event.current_attendees_count || 0} / {event.max_attendees || 'Unlimited'} registered
                     </p>
                   </div>
                 </div>
@@ -238,12 +238,16 @@ const EventDetails = () => {
 
               <div className="flex items-center justify-between">
                 <div>
-                  {event.current_attendees_count >= event.max_attendees ? (
-                    <p className="text-sm text-red-600 font-semibold">Event is full</p>
+                  {event.max_attendees ? (
+                    (event.current_attendees_count || 0) >= event.max_attendees ? (
+                      <p className="text-sm text-red-600 font-semibold">Event is full</p>
+                    ) : (
+                      <p className="text-sm text-green-600">
+                        {event.max_attendees - (event.current_attendees_count || 0)} spots remaining
+                      </p>
+                    )
                   ) : (
-                    <p className="text-sm text-green-600">
-                      {event.max_attendees - event.current_attendees_count} spots remaining
-                    </p>
+                    <p className="text-sm text-blue-600">Unlimited spots available</p>
                   )}
                 </div>
                 <RSVPButton eventId={event.id} onRSVPChange={handleRSVPChange} />

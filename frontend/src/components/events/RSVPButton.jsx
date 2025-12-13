@@ -36,13 +36,47 @@ const RSVPButton = ({ eventId, onRSVPChange }) => {
       
       if (response.success) {
         setRsvpStatus(status);
-        toast.success(response.message);
+        
+        // Better success messages based on status
+        const messages = {
+          'attending': 'You\'re going to this event! 🎉',
+          'maybe': 'You might attend this event',
+          'not_attending': 'RSVP cancelled'
+        };
+        toast.success(messages[status] || response.message);
+        
         if (onRSVPChange) onRSVPChange(status);
       } else {
-        toast.error(response.message);
+        // Handle specific error cases
+        const message = response.message || '';
+        if (message.toLowerCase().includes('full')) {
+          toast.error('Sorry, this event is now full');
+        } else if (message.toLowerCase().includes('deadline')) {
+          toast.error('Registration deadline has passed');
+        } else if (message.toLowerCase().includes('authentication') || message.toLowerCase().includes('login')) {
+          toast.error('Please log in to RSVP');
+        } else {
+          toast.error(message || 'Failed to update RSVP');
+        }
       }
     } catch (error) {
-      toast.error('Failed to update RSVP');
+      console.error('RSVP error:', error);
+      
+      // Handle different error types
+      if (error.response?.status === 401) {
+        toast.error('Please log in to RSVP to events');
+      } else if (error.response?.status === 400) {
+        const errorMsg = error.response.data?.detail || 'Unable to RSVP';
+        if (errorMsg.toLowerCase().includes('full')) {
+          toast.error('This event is full');
+        } else {
+          toast.error(errorMsg);
+        }
+      } else if (error.response?.status === 404) {
+        toast.error('Event not found');
+      } else {
+        toast.error('Failed to update RSVP. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

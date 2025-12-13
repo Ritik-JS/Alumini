@@ -1,5 +1,5 @@
 """Pydantic models for database entities"""
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
 from typing import Optional, Literal
 from datetime import datetime
 from enum import Enum
@@ -640,7 +640,7 @@ class RSVPStatus(str, Enum):
 class EventCreate(BaseModel):
     """Event creation model"""
     title: str = Field(..., min_length=1, max_length=255)
-    description: Optional[str] = None
+    description: str = Field(..., min_length=10)
     event_type: EventType
     location: Optional[str] = Field(None, max_length=255)
     is_virtual: bool = False
@@ -651,6 +651,38 @@ class EventCreate(BaseModel):
     max_attendees: Optional[int] = Field(None, gt=0)
     banner_image: Optional[str] = Field(None, max_length=500)
     status: EventStatus = EventStatus.PUBLISHED
+    
+    @field_validator('end_date')
+    @classmethod
+    def validate_end_date(cls, v, info):
+        """Ensure end_date is after start_date"""
+        if 'start_date' in info.data and v < info.data['start_date']:
+            raise ValueError('end_date must be after start_date')
+        return v
+    
+    @field_validator('registration_deadline')
+    @classmethod
+    def validate_registration_deadline(cls, v, info):
+        """Ensure registration_deadline is before start_date"""
+        if v and 'start_date' in info.data and v > info.data['start_date']:
+            raise ValueError('registration_deadline must be before start_date')
+        return v
+    
+    @field_validator('meeting_link')
+    @classmethod
+    def validate_virtual_event(cls, v, info):
+        """Require meeting_link for virtual events"""
+        if info.data.get('is_virtual') and not v:
+            raise ValueError('meeting_link is required for virtual events')
+        return v
+    
+    @field_validator('location')
+    @classmethod
+    def validate_physical_event(cls, v, info):
+        """Require location for non-virtual events"""
+        if not info.data.get('is_virtual', False) and not v:
+            raise ValueError('location is required for non-virtual events')
+        return v
 
 
 class EventUpdate(BaseModel):

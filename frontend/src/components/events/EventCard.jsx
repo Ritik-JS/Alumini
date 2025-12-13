@@ -27,8 +27,10 @@ const EventCard = ({ event }) => {
     }
   };
 
-  const isSpotsAvailable = event.max_attendees > event.current_attendees_count;
-  const spotsLeft = event.max_attendees - event.current_attendees_count;
+  const maxAttendees = event.max_attendees || Infinity;
+  const currentAttendees = event.current_attendees_count || 0;
+  const isSpotsAvailable = maxAttendees > currentAttendees;
+  const spotsLeft = maxAttendees === Infinity ? 'Unlimited' : maxAttendees - currentAttendees;
 
   return (
     <Card 
@@ -91,19 +93,25 @@ const EventCard = ({ event }) => {
           <div className="flex items-center text-sm text-gray-600">
             <Users className="h-4 w-4 mr-2 flex-shrink-0" />
             <span>
-              {event.current_attendees_count} / {event.max_attendees} attendees
+              {currentAttendees} / {event.max_attendees || 'Unlimited'} attendees
             </span>
           </div>
         </div>
 
         {/* Spots Status */}
-        {isSpotsAvailable ? (
-          <div className="text-xs text-green-600 mb-3">
-            {spotsLeft} spots remaining
-          </div>
+        {event.max_attendees ? (
+          isSpotsAvailable ? (
+            <div className="text-xs text-green-600 mb-3">
+              {typeof spotsLeft === 'number' ? `${spotsLeft} spots remaining` : spotsLeft}
+            </div>
+          ) : (
+            <div className="text-xs text-red-600 mb-3">
+              Event is full
+            </div>
+          )
         ) : (
-          <div className="text-xs text-red-600 mb-3">
-            Event is full
+          <div className="text-xs text-blue-600 mb-3">
+            Unlimited spots available
           </div>
         )}
 
