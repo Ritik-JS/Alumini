@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Briefcase, Users, Eye, TrendingUp, FileText, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import usePolling from '@/hooks/usePolling';
 
 const RecruiterDashboard = () => {
   const { user } = useAuth();
@@ -17,34 +18,37 @@ const RecruiterDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setError(null);
-        // Load jobs posted by this recruiter
-        const jobsResponse = await jobService.getMyJobs(user.id);
-        if (!jobsResponse.success) {
-          throw new Error(jobsResponse.error || 'Failed to load jobs');
-        }
-        const jobs = jobsResponse.data || [];
-        setPostedJobs(jobs);
-
-        // Load all applications for recruiter's jobs
-        const appsResponse = await jobService.getAllRecruiterApplications(user.id);
-        if (!appsResponse.success) {
-          throw new Error(appsResponse.error || 'Failed to load applications');
-        }
-        setAllApplications(appsResponse.data || []);
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        setError(error.message || 'Failed to load dashboard data');
-      } finally {
-        setLoading(false);
+  const loadData = async () => {
+    try {
+      setError(null);
+      // Load jobs posted by this recruiter
+      const jobsResponse = await jobService.getMyJobs(user.id);
+      if (!jobsResponse.success) {
+        throw new Error(jobsResponse.error || 'Failed to load jobs');
       }
-    };
+      const jobs = jobsResponse.data || [];
+      setPostedJobs(jobs);
 
+      // Load all applications for recruiter's jobs
+      const appsResponse = await jobService.getAllRecruiterApplications(user.id);
+      if (!appsResponse.success) {
+        throw new Error(appsResponse.error || 'Failed to load applications');
+      }
+      setAllApplications(appsResponse.data || []);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      setError(error.message || 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadData();
   }, [user.id]);
+
+  // Poll dashboard data every 60 seconds
+  usePolling(loadData, 60000);
 
   // Show error state
   if (error) {
