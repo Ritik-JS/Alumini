@@ -78,16 +78,26 @@ const AdminEvents = () => {
     setFilteredEvents(filtered);
   }, [searchQuery, statusFilter, events]);
 
-  const handleViewEvent = (eventId) => {
-    const event = events.find((e) => e.id === eventId);
-    setSelectedEvent(event);
-    setShowEventModal(true);
+  const handleViewEvent = async (eventId) => {
+    try {
+      const result = await adminService.getEventDetails(eventId);
+      setSelectedEvent(result.data);
+      setShowEventModal(true);
+    } catch (error) {
+      console.error('Error loading event:', error);
+      toast.error('Unable to load event details. Please try again.');
+    }
   };
 
-  const handleViewAttendees = (eventId) => {
-    const event = events.find((e) => e.id === eventId);
-    setSelectedEvent(event);
-    setShowAttendeesModal(true);
+  const handleViewAttendees = async (eventId) => {
+    try {
+      const result = await adminService.getEventDetails(eventId);
+      setSelectedEvent(result.data);
+      setShowAttendeesModal(true);
+    } catch (error) {
+      console.error('Error loading event attendees:', error);
+      toast.error('Unable to load event attendees. Please try again.');
+    }
   };
 
   const handleChangeStatus = async (eventId, newStatus) => {
@@ -277,7 +287,7 @@ const AdminEvents = () => {
                             </Badge>
                           </td>
                           <td className="py-4 text-sm">
-                            {event.attendees?.length || 0} / {event.max_attendees || '∞'}
+                            {event.current_attendees_count || 0} / {event.max_attendees || '∞'}
                           </td>
                           <td className="py-4">
                             <DropdownMenu>
@@ -388,7 +398,7 @@ const AdminEvents = () => {
 
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm font-medium text-gray-600">Created By</p>
-                <p className="text-sm">{selectedEvent.creator?.email || 'Unknown'}</p>
+                <p className="text-sm">{selectedEvent.creator_email || 'Unknown'}</p>
                 <p className="text-xs text-gray-500 mt-1">on {new Date(selectedEvent.created_at).toLocaleDateString()}</p>
               </div>
 
