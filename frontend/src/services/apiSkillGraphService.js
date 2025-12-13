@@ -109,6 +109,32 @@ class ApiSkillGraphService {
       };
     }
   }
+
+  // Get skill network data for visualization
+  async getSkillNetwork(minPopularity = 0.0, limit = 100) {
+    try {
+      const response = await axios.get('/api/skill-graph/network', {
+        params: { min_popularity: minPopularity, limit }
+      });
+      return response.data;
+    } catch (error) {
+      return { success: false, message: error.message, data: {} };
+    }
+  }
+
+  // Get focused network for a specific skill (for visualization)
+  async getFocusedNetwork(skillName, limit = 10) {
+    try {
+      const response = await axios.get(
+        `/api/skill-graph/network/${encodeURIComponent(skillName)}`,
+        { params: { limit } }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching focused network:', error);
+      return { success: false, message: error.message, data: { nodes: [], edges: [] } };
+    }
+  }
 }
 
 export default new ApiSkillGraphService();
