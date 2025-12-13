@@ -82,6 +82,11 @@ from routes.datasets import router as datasets_router
 # Import Phase 10.7 routes - Knowledge Capsules Ranking Engine
 from routes.capsule_ranking import router as capsule_ranking_router
 
+# Import NEW wrapper routes for advanced features (Phase 10.8)
+from routes.recommendations_wrapper import router as recommendations_wrapper_router
+from routes.leaderboard_wrapper import router as leaderboard_wrapper_router
+from routes.alumni_card import admin_router as alumni_card_admin_router
+
 # Import middleware
 from middleware.rate_limit import rate_limiter
 
@@ -269,6 +274,11 @@ app.include_router(datasets_router)
 
 # Include Phase 10.7 routes - Knowledge Capsules Ranking Engine
 app.include_router(capsule_ranking_router)
+
+# Include Phase 10.8 routes - Advanced Features Wrapper Routes
+app.include_router(recommendations_wrapper_router)
+app.include_router(leaderboard_wrapper_router)
+app.include_router(alumni_card_admin_router)
 
 # Include API router in main app
 app.include_router(api_router)

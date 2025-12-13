@@ -5,6 +5,8 @@ Provides endpoints for digital alumni ID card management
 from fastapi import APIRouter, Depends, HTTPException, Body
 from pydantic import BaseModel, Field
 from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 import logging
 
 from middleware.auth_middleware import get_current_user, require_role
@@ -378,3 +380,160 @@ async def download_alumni_card(
             status_code=500,
             detail=f"Failed to download alumni card: {str(e)}"
         )
+
+
+@router.get("/{card_id}/verifications")
+async def get_card_verifications_by_id(
+    card_id: str,
+    limit: int = 20,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get verification history for a card by card_id
+    Frontend expects this endpoint for verification history display
+    """
+    try:
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            # Get card and check permissions
+            async with conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT user_id, card_number, verification_count
+                    FROM alumni_cards
+                    WHERE id = %s
+                """, (card_id,))
+                card_result = await cursor.fetchone()
+            
+            if not card_result:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Alumni card not found"
+                )
+            
+            card_user_id = card_result[0]
+            card_number = card_result[1]
+            total_verifications = card_result[2]
+            
+            # Check permissions - user can view own card or admin can view any
+            if current_user['id'] != card_user_id and current_user['role'] != 'admin':
+                raise HTTPException(
+                    status_code=403,
+                    detail="You can only view your own verification history"
+                )
+            
+            # Get verification history
+            history = await card_service.get_verification_history(
+                conn,
+                card_id,
+                limit=limit
+            )
+            
+            return {
+                "success": True,
+                "data": {
+                    "card_number": card_number,
+                    "verifications": history,
+                    "total_verifications": total_verifications or 0
+                }
+            }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting card verifications: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch verification history: {str(e)}"
+        )
+
+
+# Admin endpoints
+admin_router = APIRouter(prefix="/api/admin/alumni-card", tags=["Alumni Card Admin"])
+
+
+@admin_router.get("/verifications")
+async def get_all_verifications_admin(
+    limit: int = 50,
+    offset: int = 0,
+    status_filter: Optional[str] = None,
+    current_user: dict = Depends(require_role(['admin']))
+):
+    """
+    Get all card verifications across system (Admin only)
+    Used for admin verification tracking and monitoring
+    """
+    try:
+        pool = await get_db_pool()
+        
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                # Build query with optional status filter
+                query = """
+                    SELECT 
+                        aiv.id,
+                        aiv.card_id,
+                        ac.card_number,
+                        ac.user_id,
+                        ap.name as user_name,
+                        aiv.verification_method,
+                        aiv.verification_location,
+                        aiv.is_valid,
+                        aiv.verified_at,
+                        aiv.rule_validations
+                    FROM alumni_id_verifications aiv
+                    JOIN alumni_cards ac ON aiv.card_id = ac.id
+                    LEFT JOIN alumni_profiles ap ON ac.user_id = ap.user_id
+                """
+                
+                params = []
+                
+                if status_filter:
+                    query += " WHERE aiv.is_valid = %s"
+                    params.append(status_filter == 'valid')
+                
+                query += " ORDER BY aiv.verified_at DESC LIMIT %s OFFSET %s"
+                params.extend([limit, offset])
+                
+                await cursor.execute(query, tuple(params))
+                
+                verifications = []
+                for row in await cursor.fetchall():
+                    verifications.append({
+                        "id": row[0],
+                        "card_id": row[1],
+                        "card_number": row[2],
+                        "user_id": row[3],
+                        "user_name": row[4],
+                        "verification_method": row[5],
+                        "verification_location": row[6],
+                        "is_valid": bool(row[7]),
+                        "verified_at": row[8].isoformat() if row[8] else None,
+                        "rule_validations": row[9]
+                    })
+                
+                # Get total count
+                count_query = "SELECT COUNT(*) FROM alumni_id_verifications"
+                if status_filter:
+                    count_query += " WHERE is_valid = %s"
+                    await cursor.execute(count_query, (status_filter == 'valid',))
+                else:
+                    await cursor.execute(count_query)
+                
+                total_count = (await cursor.fetchone())[0]
+                
+                return {
+                    "success": True,
+                    "data": verifications,
+                    "total": total_count,
+                    "limit": limit,
+                    "offset": offset
+                }
+    
+    except Exception as e:
+        logger.error(f"Error getting admin verifications: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch verifications: {str(e)}"
+        )
+
