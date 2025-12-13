@@ -67,8 +67,9 @@ from routes.engagement import router as engagement_router
 # Import Phase 9 routes - Innovative Features
 from routes.capsules import router as capsules_router
 from routes.aes import router as aes_router
-from routes.skill_graph import router as skill_graph_router
+# from routes.skill_graph import router as skill_graph_router  # DISABLED: Causes SentenceTransformer hang
 from routes.career_paths import router as career_router, career_paths_router
+from routes.career_predictions_router import router as career_predictions_router
 from routes.alumni_card import router as alumni_card_router
 from routes.heatmap import router as heatmap_router
 
@@ -260,8 +261,9 @@ app.include_router(engagement_router)
 # Include Phase 9 routes - Innovative Features
 app.include_router(capsules_router)
 app.include_router(aes_router)
-app.include_router(skill_graph_router)
+# app.include_router(skill_graph_router)  # DISABLED: Causes SentenceTransformer hang
 app.include_router(career_router)
+app.include_router(career_predictions_router)
 app.include_router(alumni_card_router)
 app.include_router(heatmap_router)
 
