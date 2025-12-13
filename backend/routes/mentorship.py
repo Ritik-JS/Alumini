@@ -537,6 +537,47 @@ async def get_sessions(
         )
 
 
+@router.get("/mentorship/sessions/{session_id}", response_model=dict)
+async def get_session_details(
+    session_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get details for a specific mentorship session
+    
+    - **session_id**: UUID of the session
+    
+    Both mentor and student can view session details
+    """
+    try:
+        session = await MentorshipService.get_session_with_details(session_id)
+        if not session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Session not found"
+            )
+        
+        # Check access: user must be either mentor or student in this session
+        if current_user['id'] not in [session.get('mentor_id'), session.get('student_id')]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have access to this session"
+            )
+        
+        return {
+            "success": True,
+            "data": session
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching session: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch session"
+        )
+
+
 @router.put("/mentorship/sessions/{session_id}", response_model=dict)
 async def update_session(
     session_id: str,

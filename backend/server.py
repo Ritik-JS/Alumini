@@ -68,6 +68,7 @@ from routes.engagement import router as engagement_router
 from routes.capsules import router as capsules_router
 from routes.aes import router as aes_router
 # from routes.skill_graph import router as skill_graph_router  # DISABLED: Causes SentenceTransformer hang
+from routes.skill_recommendations import router as skill_recommendations_router
 from routes.career_paths import router as career_router, career_paths_router
 from routes.career_predictions_router import router as career_predictions_router
 from routes.alumni_card import router as alumni_card_router
@@ -262,6 +263,7 @@ app.include_router(engagement_router)
 app.include_router(capsules_router)
 app.include_router(aes_router)
 # app.include_router(skill_graph_router)  # DISABLED: Causes SentenceTransformer hang
+app.include_router(skill_recommendations_router)
 app.include_router(career_router)
 app.include_router(career_predictions_router)
 app.include_router(alumni_card_router)

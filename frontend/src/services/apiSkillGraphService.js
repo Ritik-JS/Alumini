@@ -2,10 +2,10 @@ import axios from './axiosConfig';
 
 // Real Skill Graph Service API
 class ApiSkillGraphService {
-  // Get skill graph data (skill network)
+  // Get skill graph data (flat skills list for visualization)
   async getSkillGraph(filters = {}) {
     try {
-      const response = await axios.get('/api/skill-graph/network', {
+      const response = await axios.get('/api/skills/list', {
         params: filters
       });
       return response.data;

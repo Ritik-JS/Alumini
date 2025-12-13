@@ -17,6 +17,54 @@ router = APIRouter(prefix="/api/skills", tags=["Skills"])
 skill_graph_service = SkillGraphService()
 
 
+@router.get("/list")
+async def get_skills_list(
+    min_popularity: float = Query(0.0, ge=0.0, le=100.0),
+    limit: int = Query(100, ge=1, le=500),
+    search: Optional[str] = Query(None, description="Search skills by name"),
+    industry: Optional[str] = Query(None, description="Filter by industry"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get flat list of skills for visualization
+    Returns array of skills with all properties
+    """
+    try:
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            # Get skills list
+            skills = await skill_graph_service.get_skills_list(
+                conn,
+                min_popularity=min_popularity,
+                limit=limit
+            )
+            
+            # Apply search filter if provided
+            if search:
+                search_lower = search.lower()
+                skills = [s for s in skills if search_lower in s['skill_name'].lower()]
+            
+            # Apply industry filter if provided
+            if industry and industry != 'all':
+                skills = [
+                    s for s in skills 
+                    if s.get('industry_connections') and industry in s['industry_connections']
+                ]
+            
+            return {
+                "success": True,
+                "data": skills,
+                "total": len(skills)
+            }
+    
+    except Exception as e:
+        logger.error(f"Error getting skills list: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch skills list: {str(e)}"
+        )
+
+
 @router.get("/graph")
 async def get_skill_graph(
     min_popularity: float = Query(0.0, ge=0.0, le=100.0),

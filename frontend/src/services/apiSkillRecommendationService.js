@@ -51,7 +51,7 @@ export const apiSkillRecommendationService = {
   // Get skill recommendations for a user
   async getRecommendations(userId) {
     try {
-      const response = await axios.get(`/api/recommendations/skills/${userId}`);
+      const response = await axios.get(`/api/skill-recommendations/recommendations/${userId}`);
       return {
         success: true,
         data: response.data.data || response.data || [],
@@ -89,7 +89,7 @@ export const apiSkillRecommendationService = {
   // Get top trending skills
   async getTopTrendingSkills(limit = 5) {
     try {
-      const response = await axios.get('/api/recommendations/skill-trends/top', {
+      const response = await axios.get('/api/skill-recommendations/trending', {
         params: { limit },
       });
       return {
