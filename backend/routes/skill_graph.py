@@ -258,6 +258,39 @@ async def get_related_skills_ai(
         )
 
 
+@router.get("/network/{skill_name}")
+async def get_focused_network(
+    skill_name: str,
+    limit: int = Query(10, ge=1, le=50),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get focused network for a specific skill
+    Returns nodes and edges for visualizing skill relationships
+    Perfect for D3.js graph visualization
+    """
+    try:
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            network = await skill_graph_service.get_focused_network(
+                conn,
+                skill_name,
+                limit=limit
+            )
+            
+            return {
+                "success": True,
+                "data": network
+            }
+    
+    except Exception as e:
+        logger.error(f"Error getting focused network: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch focused network: {str(e)}"
+        )
+
+
 @router.post("/rebuild")
 async def rebuild_skill_graph(
     current_user: dict = Depends(require_role(['admin']))

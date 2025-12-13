@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Network, Users, Briefcase, TrendingUp, Lightbulb, TrendingUpIcon, ExternalLink, Zap, ArrowUpCircle } from 'lucide-react';
+import { Search, Network, Users, Briefcase, TrendingUp, Lightbulb, TrendingUpIcon, ExternalLink, Zap, ArrowUpCircle, Grid3x3, GitBranch } from 'lucide-react';
 import { toast } from 'sonner';
+import SkillGraphVisualization from '@/components/SkillGraphVisualization';
 
 const SkillGraph = () => {
   const [skills, setSkills] = useState([]);
@@ -16,6 +17,9 @@ const SkillGraph = () => {
   const [loading, setLoading] = useState(true);
   const [recommendations, setRecommendations] = useState([]);
   const [trendingSkills, setTrendingSkills] = useState([]);
+  const [networkData, setNetworkData] = useState(null);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'network'
+  const [networkLoading, setNetworkLoading] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
     industry: ''
@@ -109,17 +113,63 @@ const SkillGraph = () => {
   };
 
   const handleSkillClick = async (skill) => {
+    const skillName = skill.skill_name || skill.id || skill.label;
     setSelectedSkill(skill);
+    
+    // Load focused network for this skill
+    await loadFocusedNetwork(skillName);
+    
     try {
-      const res = await skillGraphService.getAlumniBySkill(skill.skill_name);
+      const res = await skillGraphService.getAlumniBySkill(skillName);
       if (res.success) {
-        toast.success(`Found ${res.count} alumni with ${skill.skill_name}`);
+        toast.success(`Found ${res.count} alumni with ${skillName}`);
       } else {
-        toast.info(`${skill.alumni_count} alumni have ${skill.skill_name} skill`);
+        toast.info(`${skill.alumni_count || 0} alumni have ${skillName} skill`);
       }
     } catch (error) {
       console.error('Error loading alumni data:', error);
-      toast.info(`${skill.alumni_count} alumni have ${skill.skill_name} skill`);
+      toast.info(`${skill.alumni_count || 0} alumni have ${skillName} skill`);
+    }
+  };
+
+  const loadFocusedNetwork = async (skillName) => {
+    try {
+      setNetworkLoading(true);
+      const res = await skillGraphService.getFocusedNetwork(skillName, 10);
+      if (res?.success && res.data) {
+        setNetworkData(res.data);
+        // Automatically switch to network view when data is loaded
+        if (res.data.nodes && res.data.nodes.length > 0) {
+          setViewMode('network');
+        }
+      } else {
+        toast.error('Failed to load skill network');
+        setNetworkData(null);
+      }
+    } catch (error) {
+      console.error('Error loading focused network:', error);
+      toast.error('Failed to load skill network');
+      setNetworkData(null);
+    } finally {
+      setNetworkLoading(false);
+    }
+  };
+
+  const loadFullNetwork = async () => {
+    try {
+      setNetworkLoading(true);
+      const res = await skillGraphService.getSkillNetwork(0, 50);
+      if (res?.success && res.data) {
+        setNetworkData(res.data);
+        setViewMode('network');
+      } else {
+        toast.error('Failed to load full network');
+      }
+    } catch (error) {
+      console.error('Error loading full network:', error);
+      toast.error('Failed to load full network');
+    } finally {
+      setNetworkLoading(false);
     }
   };
 
@@ -367,34 +417,98 @@ const SkillGraph = () => {
           </Card>
         ) : (
           <>
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Skills Network</CardTitle>
-                <CardDescription>
-                  Click on any skill to see related alumni. Larger nodes have more alumni.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-4 justify-center p-8 bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg min-h-[400px]" data-testid="skill-nodes-container">
-                  {Array.isArray(skills) && skills.map(skill => (
-                    <button
-                      key={skill.id}
-                      onClick={() => handleSkillClick(skill)}
-                      className={`rounded-full text-white font-semibold transition-all transform hover:scale-110 shadow-lg ${
-                        getSkillColor(skill.popularity_score)
-                      } ${
-                        getSkillSize(skill.alumni_count)
-                      } ${
-                        selectedSkill?.id === skill.id ? 'ring-4 ring-yellow-400 scale-110' : ''
-                      }`}
-                      data-testid={`skill-node-${skill.id}`}
-                    >
-                      {skill.skill_name}
-                    </button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {/* View Mode Toggle */}
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  onClick={() => setViewMode('grid')}
+                  className="flex items-center gap-2"
+                  data-testid="grid-view-button"
+                >
+                  <Grid3x3 className="h-4 w-4" />
+                  Grid View
+                </Button>
+                <Button
+                  variant={viewMode === 'network' ? 'default' : 'outline'}
+                  onClick={() => {
+                    if (!networkData) {
+                      loadFullNetwork();
+                    } else {
+                      setViewMode('network');
+                    }
+                  }}
+                  className="flex items-center gap-2"
+                  data-testid="network-view-button"
+                >
+                  <GitBranch className="h-4 w-4" />
+                  Network View
+                </Button>
+              </div>
+              {viewMode === 'network' && (
+                <Button
+                  variant="outline"
+                  onClick={loadFullNetwork}
+                  disabled={networkLoading}
+                  data-testid="load-full-network-button"
+                >
+                  {networkLoading ? 'Loading...' : 'Load Full Network'}
+                </Button>
+              )}
+            </div>
+
+            {/* Grid View - Skill Bubbles */}
+            {viewMode === 'grid' && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle>Skills Network</CardTitle>
+                  <CardDescription>
+                    Click on any skill to see its network graph and related alumni. Larger nodes have more alumni.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-4 justify-center p-8 bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg min-h-[400px]" data-testid="skill-nodes-container">
+                    {Array.isArray(skills) && skills.map(skill => (
+                      <button
+                        key={skill.id}
+                        onClick={() => handleSkillClick(skill)}
+                        className={`rounded-full text-white font-semibold transition-all transform hover:scale-110 shadow-lg ${
+                          getSkillColor(skill.popularity_score)
+                        } ${
+                          getSkillSize(skill.alumni_count)
+                        } ${
+                          selectedSkill?.id === skill.id ? 'ring-4 ring-yellow-400 scale-110' : ''
+                        }`}
+                        data-testid={`skill-node-${skill.id}`}
+                      >
+                        {skill.skill_name}
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Network View - D3 Graph */}
+            {viewMode === 'network' && (
+              <div className="mb-8">
+                {networkLoading ? (
+                  <Card>
+                    <CardContent className="py-20 text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto" />
+                      <p className="mt-4 text-gray-600">Loading network visualization...</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <SkillGraphVisualization
+                    networkData={networkData}
+                    onNodeClick={handleSkillClick}
+                    selectedSkill={selectedSkill?.skill_name || selectedSkill?.id}
+                    height={600}
+                  />
+                )}
+              </div>
+            )}
 
             {/* Selected Skill Details */}
             {selectedSkill && (

@@ -129,7 +129,7 @@ class SkillGraphService:
                     ))
             
             await db_conn.commit()
-            logger.info(f"✅ Stored embeddings in database")
+            logger.info("✅ Stored embeddings in database")
             
             return embeddings_map
         
@@ -171,12 +171,12 @@ class SkillGraphService:
             index = faiss.IndexFlatIP(self.dimension)
             index.add(embeddings_normalized.astype('float32'))
             
-            logger.info(f"✅ FAISS index built successfully")
-            logger.info(f"   Index type: IndexFlatIP (cosine similarity)")
+            logger.info("✅ FAISS index built successfully")
+            logger.info("   Index type: IndexFlatIP (cosine similarity)")
             logger.info(f"   Total vectors: {index.ntotal}")
             
             # Calculate top-10 similar skills for each skill
-            logger.info(f"🔄 Calculating similarities...")
+            logger.info("🔄 Calculating similarities...")
             k = 11  # Top 11 (includes self, which we'll skip)
             similarities_count = 0
             
@@ -745,4 +745,96 @@ class SkillGraphService:
         
         except Exception as e:
             logger.error(f"Error getting AI-based related skills: {str(e)}")
+            raise
+    
+    async def get_focused_network(
+        self,
+        db_conn,
+        skill_name: str,
+        limit: int = 10
+    ) -> Dict:
+        """
+        Get focused network for a specific skill
+        Returns the skill and its top N related skills with edges showing similarity
+        Perfect for visualizing one skill's neighborhood
+        """
+        try:
+            # Get the central skill details
+            central_skill = await self.get_skill_details(db_conn, skill_name)
+            if not central_skill:
+                return {
+                    'nodes': [],
+                    'edges': [],
+                    'center_skill': skill_name,
+                    'error': 'Skill not found'
+                }
+            
+            # Get related skills using AI similarities
+            related = await self.get_related_skills_ai(db_conn, skill_name, limit)
+            
+            # Build nodes array
+            nodes = [{
+                'id': skill_name,
+                'label': skill_name,
+                'alumni_count': central_skill['alumni_count'],
+                'job_count': central_skill['job_count'],
+                'popularity': central_skill['popularity_score'],
+                'is_center': True
+            }]
+            
+            # Add related skill nodes
+            for rel in related:
+                nodes.append({
+                    'id': rel['skill'],
+                    'label': rel['skill'],
+                    'alumni_count': rel.get('alumni_count', 0),
+                    'job_count': rel.get('job_count', 0),
+                    'popularity': rel.get('popularity', 0.0),
+                    'is_center': False
+                })
+            
+            # Build edges array
+            edges = []
+            for rel in related:
+                edges.append({
+                    'source': skill_name,
+                    'target': rel['skill'],
+                    'similarity': rel.get('similarity_score', 0.0),
+                    'weight': rel.get('similarity_score', 0.0)
+                })
+            
+            # Also check for bidirectional relationships (similarity pairs)
+            async with db_conn.cursor() as cursor:
+                related_skill_names = [r['skill'] for r in related]
+                if related_skill_names:
+                    placeholders = ','.join(['%s'] * len(related_skill_names))
+                    # Find edges between related skills
+                    await cursor.execute(f"""
+                        SELECT skill_1, skill_2, similarity_score
+                        FROM skill_similarities
+                        WHERE skill_1 IN ({placeholders})
+                        AND skill_2 IN ({placeholders})
+                    """, related_skill_names + related_skill_names)
+                    
+                    cross_edges = await cursor.fetchall()
+                    for s1, s2, score in cross_edges:
+                        # Add edge if both skills are in our network
+                        if s1 in related_skill_names and s2 in related_skill_names:
+                            edges.append({
+                                'source': s1,
+                                'target': s2,
+                                'similarity': float(score),
+                                'weight': float(score)
+                            })
+            
+            return {
+                'nodes': nodes,
+                'edges': edges,
+                'center_skill': skill_name,
+                'total_nodes': len(nodes),
+                'total_edges': len(edges)
+            }
+        
+        except Exception as e:
+            logger.error(f"Error getting focused network: {str(e)}")
             raise
