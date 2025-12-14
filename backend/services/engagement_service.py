@@ -423,6 +423,8 @@ class EngagementService:
                 badges = await cursor.fetchall()
                 return [badge[0] for badge in badges]
         except Exception as e:
+            logger.error(f"Error getting user badge names: {str(e)}")
+            return []
 
     async def _calculate_trend(
         self,
