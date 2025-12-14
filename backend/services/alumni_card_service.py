@@ -47,13 +47,13 @@ class AlumniCardService:
             if existing_card and existing_card[5]:  # If active card exists
                 return await self._format_card_response(db_conn, existing_card, user_id)
             
-            # Get user and profile details
+            # Get user and profile details including social_links
             async with db_conn.cursor() as cursor:
                 await cursor.execute("""
                     SELECT 
                         u.email, u.role, u.created_at,
                         ap.name, ap.photo_url, ap.batch_year, 
-                        ap.current_company, ap.current_role
+                        ap.current_company, ap.current_role, ap.social_links
                     FROM users u
                     LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
                     WHERE u.id = %s
@@ -68,12 +68,14 @@ class AlumniCardService:
             name = user_data[3] if user_data[3] else email.split('@')[0]
             photo_url = user_data[4]
             batch_year = user_data[5]
+            social_links = json.loads(user_data[8]) if user_data[8] else {}
+            linkedin_url = social_links.get('linkedin', '') if social_links else ''
             
             # Generate unique card number
             card_number = await self._generate_card_number(db_conn, batch_year)
             
-            # Generate encrypted QR code data
-            qr_code_data = self._generate_qr_code_data(user_id, card_number, email)
+            # Generate encrypted QR code data with LinkedIn URL
+            qr_code_data = self._generate_qr_code_data(user_id, card_number, email, linkedin_url)
             
             # Check for duplicate names (AI validation)
             if name and batch_year:
@@ -119,7 +121,7 @@ class AlumniCardService:
                 await cursor.execute("""
                     SELECT 
                         ap.current_company, ap.current_role, ap.location, 
-                        ap.headline, ap.is_verified
+                        ap.headline, ap.is_verified, ap.social_links
                     FROM alumni_profiles ap
                     WHERE ap.user_id = %s
                 """, (user_id,))
@@ -130,6 +132,7 @@ class AlumniCardService:
             location = profile_data[2] if profile_data else None
             headline = profile_data[3] if profile_data else None
             is_verified = profile_data[4] if profile_data else False
+            profile_social_links = json.loads(profile_data[5]) if (profile_data and profile_data[5]) else {}
             
             # Determine AI validation based on duplicate check
             duplicate_check_result = await self.check_duplicate_by_name(db_conn, name, batch_year) if (name and batch_year) else {"duplicate_found": False}
@@ -162,7 +165,8 @@ class AlumniCardService:
                     "current_role": current_role,
                     "location": location,
                     "headline": headline,
-                    "is_verified": is_verified
+                    "is_verified": is_verified,
+                    "social_links": profile_social_links
                 },
                 # Keep flat structure for backward compatibility
                 "holder_name": name,
@@ -217,10 +221,11 @@ class AlumniCardService:
         self,
         user_id: str,
         card_number: str,
-        email: str
+        email: str,
+        linkedin_url: str = None
     ) -> str:
         """
-        Generate encrypted QR code data
+        Generate encrypted QR code data with LinkedIn URL
         Format: base64(sha256(user_id|card_number|email|secret))
         """
         # Create verification string using instance secret key
@@ -230,14 +235,21 @@ class AlumniCardService:
         hash_object = hashlib.sha256(verification_string.encode())
         hash_hex = hash_object.hexdigest()
         
-        # Create QR data payload
+        # Create QR data payload with LinkedIn URL
         qr_payload = {
             "card_number": card_number,
             "verification_hash": hash_hex,
+            "linkedin_url": linkedin_url if linkedin_url else None,
+            "profile_url": f"/profile/{user_id}",
             "issue_timestamp": int(datetime.now().timestamp())
         }
         
-        # Encode to base64
+        # If LinkedIn exists, make it the primary scan target
+        if linkedin_url:
+            # Return LinkedIn URL directly for easy QR scanning
+            return linkedin_url
+        
+        # Fallback to verification data if no LinkedIn
         qr_json = json.dumps(qr_payload)
         qr_base64 = base64.b64encode(qr_json.encode()).decode()
         
@@ -497,7 +509,7 @@ class AlumniCardService:
                         ac.expiry_date, ac.is_active, ac.verification_count, ac.last_verified,
                         u.email, u.role,
                         ap.name, ap.photo_url, ap.batch_year, ap.current_company, 
-                        ap.current_role, ap.location, ap.headline, ap.is_verified
+                        ap.current_role, ap.location, ap.headline, ap.is_verified, ap.social_links
                     FROM alumni_cards ac
                     JOIN users u ON ac.user_id = u.id
                     LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
@@ -511,6 +523,7 @@ class AlumniCardService:
             # Check for duplicate names to set AI validation status
             name = card_data[10] if card_data[10] else card_data[8].split('@')[0]
             batch_year = card_data[12]
+            social_links = json.loads(card_data[18]) if card_data[18] else {}
             
             duplicate_check_passed = True
             ai_confidence_score = 95  # Default high confidence
@@ -551,7 +564,8 @@ class AlumniCardService:
                     "current_role": card_data[14],
                     "location": card_data[15],
                     "headline": card_data[16],
-                    "is_verified": card_data[17]
+                    "is_verified": card_data[17],
+                    "social_links": social_links
                 },
                 # Keep flat structure for backward compatibility
                 "holder_name": card_data[10] if card_data[10] else card_data[8].split('@')[0],
@@ -678,6 +692,10 @@ class AlumniCardService:
             card_number = card_data.get('card_number', 'N/A')
             expiry_date = card_data.get('expiry_date', 'N/A')
             is_verified = profile.get('is_verified', False)
+            social_links = profile.get('social_links', {})
+            linkedin_url = social_links.get('linkedin', '') if social_links else ''
+            current_company = profile.get('current_company', '')
+            current_role = profile.get('current_role', '')
             
             # Header - AlumUnity
             draw.text((50, 50), "AlumUnity", font=title_font, fill='white')
@@ -703,8 +721,17 @@ class AlumniCardService:
             draw.text((400, y_offset), "CARD NUMBER", font=label_font, fill='#bfdbfe')
             draw.text((400, y_offset + 30), str(card_number), font=value_font, fill='white')
             
-            # Valid Until
+            # Current Role/Company
             y_offset += 110
+            if current_role or current_company:
+                draw.text((50, y_offset), "CURRENT POSITION", font=label_font, fill='#bfdbfe')
+                position_text = f"{current_role}" if current_role else ""
+                if current_company:
+                    position_text += f" at {current_company}" if position_text else current_company
+                draw.text((50, y_offset + 30), position_text[:40], font=label_font, fill='white')
+                y_offset += 80
+            
+            # Valid Until
             draw.text((50, y_offset), "VALID UNTIL", font=label_font, fill='#bfdbfe')
             if expiry_date and expiry_date != 'N/A':
                 try:
@@ -715,6 +742,14 @@ class AlumniCardService:
             else:
                 expiry_str = "N/A"
             draw.text((50, y_offset + 30), expiry_str, font=label_font, fill='white')
+            
+            # LinkedIn URL (if available)
+            if linkedin_url:
+                y_offset += 80
+                draw.text((50, y_offset), "LINKEDIN", font=label_font, fill='#bfdbfe')
+                # Truncate long URLs
+                display_url = linkedin_url.replace('https://', '').replace('www.', '')[:35]
+                draw.text((50, y_offset + 30), display_url, font=label_font, fill='#93c5fd')
             
             # QR Code placeholder (white box)
             qr_box_size = 180
