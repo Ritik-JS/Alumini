@@ -26,12 +26,7 @@ import {
   Award,
   Target,
   Plus,
-  Trash2,
-  Linkedin,
-  Github,
-  Twitter,
-  Globe,
-  ExternalLink
+  Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import CareerJourneyForm from '@/components/career/CareerJourneyForm';
@@ -76,12 +71,7 @@ const Profile = () => {
           education_details: [],
           skills: [],
           achievements: [],
-          social_links: {
-            linkedin: '',
-            github: '',
-            twitter: '',
-            website: ''
-          },
+          social_links: {},
           // Alumni-specific fields
           industry: '',
           years_of_experience: 0,
@@ -517,145 +507,6 @@ const Profile = () => {
                         </>
                       )}
                     </div>
-                  </CardContent>
-                </Card>
-
-                {/* Social Links Section */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Social Links</CardTitle>
-                    <CardDescription>Connect your professional and social profiles</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {isEditing ? (
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="linkedin" className="flex items-center gap-2">
-                            <Linkedin className="w-4 h-4 text-blue-600" />
-                            LinkedIn Profile URL
-                          </Label>
-                          <Input
-                            id="linkedin"
-                            value={profileData.social_links?.linkedin || ''}
-                            onChange={(e) => updateField('social_links', {
-                              ...(profileData.social_links || {}),
-                              linkedin: e.target.value
-                            })}
-                            placeholder="https://www.linkedin.com/in/yourprofile"
-                            data-testid="input-linkedin"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="github" className="flex items-center gap-2">
-                            <Github className="w-4 h-4" />
-                            GitHub Profile URL
-                          </Label>
-                          <Input
-                            id="github"
-                            value={profileData.social_links?.github || ''}
-                            onChange={(e) => updateField('social_links', {
-                              ...(profileData.social_links || {}),
-                              github: e.target.value
-                            })}
-                            placeholder="https://github.com/yourusername"
-                            data-testid="input-github"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="twitter" className="flex items-center gap-2">
-                            <Twitter className="w-4 h-4 text-blue-400" />
-                            Twitter/X Profile URL
-                          </Label>
-                          <Input
-                            id="twitter"
-                            value={profileData.social_links?.twitter || ''}
-                            onChange={(e) => updateField('social_links', {
-                              ...(profileData.social_links || {}),
-                              twitter: e.target.value
-                            })}
-                            placeholder="https://twitter.com/yourusername"
-                            data-testid="input-twitter"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="website" className="flex items-center gap-2">
-                            <Globe className="w-4 h-4 text-green-600" />
-                            Personal Website
-                          </Label>
-                          <Input
-                            id="website"
-                            value={profileData.social_links?.website || ''}
-                            onChange={(e) => updateField('social_links', {
-                              ...(profileData.social_links || {}),
-                              website: e.target.value
-                            })}
-                            placeholder="https://yourwebsite.com"
-                            data-testid="input-website"
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {profileData.social_links?.linkedin ? (
-                          <a 
-                            href={profileData.social_links.linkedin} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
-                          >
-                            <Linkedin className="w-5 h-5 text-blue-600" />
-                            <span className="text-sm flex-1">LinkedIn Profile</span>
-                            <ExternalLink className="w-4 h-4 text-gray-400" />
-                          </a>
-                        ) : null}
-                        
-                        {profileData.social_links?.github ? (
-                          <a 
-                            href={profileData.social_links.github} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
-                          >
-                            <Github className="w-5 h-5" />
-                            <span className="text-sm flex-1">GitHub Profile</span>
-                            <ExternalLink className="w-4 h-4 text-gray-400" />
-                          </a>
-                        ) : null}
-                        
-                        {profileData.social_links?.twitter ? (
-                          <a 
-                            href={profileData.social_links.twitter} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
-                          >
-                            <Twitter className="w-5 h-5 text-blue-400" />
-                            <span className="text-sm flex-1">Twitter/X Profile</span>
-                            <ExternalLink className="w-4 h-4 text-gray-400" />
-                          </a>
-                        ) : null}
-                        
-                        {profileData.social_links?.website ? (
-                          <a 
-                            href={profileData.social_links.website} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
-                          >
-                            <Globe className="w-5 h-5 text-green-600" />
-                            <span className="text-sm flex-1">Personal Website</span>
-                            <ExternalLink className="w-4 h-4 text-gray-400" />
-                          </a>
-                        ) : null}
-                        
-                        {!profileData.social_links?.linkedin && 
-                         !profileData.social_links?.github && 
-                         !profileData.social_links?.twitter && 
-                         !profileData.social_links?.website && (
-                          <p className="text-gray-400 italic">No social links added yet. Click Edit Profile to add your profiles.</p>
-                        )}
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
 
