@@ -443,6 +443,77 @@ INSERT INTO engagement_scores (id, user_id, total_score, contributions, rank_pos
 ('score-880e8400-e29b-41d4-a716', '880e8400-e29b-41d4-a716-446655440003', 127,
 '{"profile":15,"mentorship":20,"jobs":15,"events":24,"forum":53}', 5, 'Active', '2024-12-28 10:00:00');
 
+-- Contribution History (Activity timeline for weekly/monthly calculations)
+INSERT INTO contribution_history (id, user_id, contribution_type, points_earned, description, created_at) VALUES
+-- Sarah Johnson (user 660e) - Legend Level - Very Active
+-- Recent Week (Last 7 days)
+('ch-sarah-001', '660e8400-e29b-41d4-a716-446655440001', 'mentorship', 10, 'Completed mentorship session', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+('ch-sarah-002', '660e8400-e29b-41d4-a716-446655440001', 'forum_post', 5, 'Created helpful forum post', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+('ch-sarah-003', '660e8400-e29b-41d4-a716-446655440001', 'forum_comment', 2, 'Commented on discussion', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+('ch-sarah-004', '660e8400-e29b-41d4-a716-446655440001', 'event_attend', 8, 'Attended networking event', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+('ch-sarah-005', '660e8400-e29b-41d4-a716-446655440001', 'mentorship', 10, 'Completed mentorship session', DATE_SUB(NOW(), INTERVAL 6 DAY)),
+-- Previous Week (7-14 days ago)
+('ch-sarah-006', '660e8400-e29b-41d4-a716-446655440001', 'forum_post', 5, 'Created forum post', DATE_SUB(NOW(), INTERVAL 9 DAY)),
+('ch-sarah-007', '660e8400-e29b-41d4-a716-446655440001', 'mentorship', 10, 'Completed mentorship session', DATE_SUB(NOW(), INTERVAL 11 DAY)),
+('ch-sarah-008', '660e8400-e29b-41d4-a716-446655440001', 'event_attend', 8, 'Attended workshop', DATE_SUB(NOW(), INTERVAL 13 DAY)),
+-- This Month (varied activities)
+('ch-sarah-009', '660e8400-e29b-41d4-a716-446655440001', 'profile_update', 20, 'Completed profile 100%', DATE_SUB(NOW(), INTERVAL 20 DAY)),
+('ch-sarah-010', '660e8400-e29b-41d4-a716-446655440001', 'mentorship', 10, 'Completed mentorship session', DATE_SUB(NOW(), INTERVAL 22 DAY)),
+('ch-sarah-011', '660e8400-e29b-41d4-a716-446655440001', 'forum_post', 5, 'Created forum post', DATE_SUB(NOW(), INTERVAL 25 DAY)),
+
+-- Priya Patel (user aa0e) - Veteran Level - Very Active
+-- Recent Week
+('ch-priya-001', 'aa0e8400-e29b-41d4-a716-446655440005', 'mentorship', 10, 'Completed mentorship session', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+('ch-priya-002', 'aa0e8400-e29b-41d4-a716-446655440005', 'mentorship', 10, 'Completed mentorship session', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+('ch-priya-003', 'aa0e8400-e29b-41d4-a716-446655440005', 'event_attend', 8, 'Attended design workshop', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+('ch-priya-004', 'aa0e8400-e29b-41d4-a716-446655440005', 'forum_post', 5, 'Shared design insights', DATE_SUB(NOW(), INTERVAL 6 DAY)),
+-- Previous Week
+('ch-priya-005', 'aa0e8400-e29b-41d4-a716-446655440005', 'mentorship', 10, 'Completed mentorship session', DATE_SUB(NOW(), INTERVAL 8 DAY)),
+('ch-priya-006', 'aa0e8400-e29b-41d4-a716-446655440005', 'event_attend', 8, 'Attended UX conference', DATE_SUB(NOW(), INTERVAL 10 DAY)),
+('ch-priya-007', 'aa0e8400-e29b-41d4-a716-446655440005', 'forum_comment', 2, 'Helped with design question', DATE_SUB(NOW(), INTERVAL 12 DAY)),
+-- This Month
+('ch-priya-008', 'aa0e8400-e29b-41d4-a716-446655440005', 'profile_update', 20, 'Updated profile', DATE_SUB(NOW(), INTERVAL 18 DAY)),
+('ch-priya-009', 'aa0e8400-e29b-41d4-a716-446655440005', 'mentorship', 10, 'Completed mentorship session', DATE_SUB(NOW(), INTERVAL 21 DAY)),
+('ch-priya-010', 'aa0e8400-e29b-41d4-a716-446655440005', 'event_attend', 8, 'Attended networking event', DATE_SUB(NOW(), INTERVAL 27 DAY)),
+
+-- Lisa Anderson (user cc0e) - Veteran Level - Active
+-- Recent Week
+('ch-lisa-001', 'cc0e8400-e29b-41d4-a716-446655440007', 'mentorship', 10, 'ML mentorship session', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+('ch-lisa-002', 'cc0e8400-e29b-41d4-a716-446655440007', 'forum_post', 5, 'Shared ML tutorial', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+('ch-lisa-003', 'cc0e8400-e29b-41d4-a716-446655440007', 'event_attend', 8, 'Attended AI conference', DATE_SUB(NOW(), INTERVAL 6 DAY)),
+-- Previous Week
+('ch-lisa-004', 'cc0e8400-e29b-41d4-a716-446655440007', 'forum_comment', 2, 'Answered data science question', DATE_SUB(NOW(), INTERVAL 10 DAY)),
+('ch-lisa-005', 'cc0e8400-e29b-41d4-a716-446655440007', 'mentorship', 10, 'Data science mentorship', DATE_SUB(NOW(), INTERVAL 11 DAY)),
+-- This Month
+('ch-lisa-006', 'cc0e8400-e29b-41d4-a716-446655440007', 'profile_update', 19, 'Updated skills', DATE_SUB(NOW(), INTERVAL 19 DAY)),
+('ch-lisa-007', 'cc0e8400-e29b-41d4-a716-446655440007', 'mentorship', 10, 'Completed mentorship session', DATE_SUB(NOW(), INTERVAL 24 DAY)),
+('ch-lisa-008', 'cc0e8400-e29b-41d4-a716-446655440007', 'event_attend', 8, 'Attended tech meetup', DATE_SUB(NOW(), INTERVAL 28 DAY)),
+
+-- Michael Chen (user 770e) - Active Level
+-- Recent Week
+('ch-michael-001', '770e8400-e29b-41d4-a716-446655440002', 'forum_post', 5, 'Shared PM insights', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+('ch-michael-002', '770e8400-e29b-41d4-a716-446655440002', 'event_attend', 8, 'Attended product meetup', DATE_SUB(NOW(), INTERVAL 5 DAY)),
+-- Previous Week
+('ch-michael-003', '770e8400-e29b-41d4-a716-446655440002', 'mentorship', 10, 'PM mentorship session', DATE_SUB(NOW(), INTERVAL 9 DAY)),
+('ch-michael-004', '770e8400-e29b-41d4-a716-446655440002', 'forum_comment', 2, 'Product advice', DATE_SUB(NOW(), INTERVAL 12 DAY)),
+-- This Month
+('ch-michael-005', '770e8400-e29b-41d4-a716-446655440002', 'profile_update', 19, 'Updated experience', DATE_SUB(NOW(), INTERVAL 20 DAY)),
+('ch-michael-006', '770e8400-e29b-41d4-a716-446655440002', 'mentorship', 10, 'Mentorship session', DATE_SUB(NOW(), INTERVAL 23 DAY)),
+('ch-michael-007', '770e8400-e29b-41d4-a716-446655440002', 'event_attend', 8, 'Attended workshop', DATE_SUB(NOW(), INTERVAL 26 DAY)),
+
+-- Emily Rodriguez (user 880e) - Student - Active
+-- Recent Week
+('ch-emily-001', '880e8400-e29b-41d4-a716-446655440003', 'job_post', 5, 'Applied for internship', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+('ch-emily-002', '880e8400-e29b-41d4-a716-446655440003', 'forum_post', 5, 'Asked career question', DATE_SUB(NOW(), INTERVAL 4 DAY)),
+('ch-emily-003', '880e8400-e29b-41d4-a716-446655440003', 'event_attend', 8, 'Attended career fair', DATE_SUB(NOW(), INTERVAL 6 DAY)),
+-- Previous Week
+('ch-emily-004', '880e8400-e29b-41d4-a716-446655440003', 'forum_comment', 2, 'Engaged in discussion', DATE_SUB(NOW(), INTERVAL 8 DAY)),
+('ch-emily-005', '880e8400-e29b-41d4-a716-446655440003', 'job_post', 5, 'Applied for job', DATE_SUB(NOW(), INTERVAL 11 DAY)),
+-- This Month
+('ch-emily-006', '880e8400-e29b-41d4-a716-446655440003', 'profile_update', 15, 'Updated student profile', DATE_SUB(NOW(), INTERVAL 16 DAY)),
+('ch-emily-007', '880e8400-e29b-41d4-a716-446655440003', 'mentorship', 20, 'Received mentorship', DATE_SUB(NOW(), INTERVAL 22 DAY)),
+('ch-emily-008', '880e8400-e29b-41d4-a716-446655440003', 'forum_post', 5, 'Posted question', DATE_SUB(NOW(), INTERVAL 29 DAY));
+
 -- ============================================================================
 -- PHASE 9: INNOVATIVE FEATURES
 -- ============================================================================
@@ -642,6 +713,8 @@ UNION ALL
 SELECT 'User Badges', COUNT(*) FROM user_badges
 UNION ALL
 SELECT 'Engagement Scores', COUNT(*) FROM engagement_scores
+UNION ALL
+SELECT 'Contribution History', COUNT(*) FROM contribution_history
 UNION ALL
 SELECT 'Skill Graph', COUNT(*) FROM skill_graph
 UNION ALL

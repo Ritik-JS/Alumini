@@ -148,6 +148,32 @@ async def get_verification_requests(
         }
     except HTTPException:
         raise
+
+
+@router.post("/profiles/create-missing", response_model=dict)
+async def create_missing_alumni_profiles(
+    current_user: dict = Depends(require_admin)
+):
+    """
+    Create default profiles for verified alumni users who don't have profiles yet (Admin only)
+    
+    This is a migration/fix endpoint to handle existing users who registered
+    before automatic profile creation was implemented.
+    """
+    try:
+        result = await AdminService.create_missing_alumni_profiles()
+        
+        return {
+            "success": True,
+            "message": f"Created {result['created_count']} missing alumni profiles",
+            "data": result
+        }
+    except Exception as e:
+        logger.error(f"Error creating missing profiles: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create missing profiles"
+        )
     except Exception as e:
         logger.error(f"Error fetching verification requests: {e}")
         raise HTTPException(

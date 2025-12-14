@@ -22,6 +22,52 @@ class AuthService:
     """Service for authentication operations"""
     
     @staticmethod
+    async def _create_default_alumni_profile(conn: aiomysql.Connection, user: UserInDB) -> None:
+        """Create a default alumni profile for newly verified alumni users"""
+        try:
+            async with conn.cursor(aiomysql.DictCursor) as cursor:
+                # Check if profile already exists
+                await cursor.execute(
+                    "SELECT id FROM alumni_profiles WHERE user_id = %s",
+                    (user.id,)
+                )
+                existing = await cursor.fetchone()
+                
+                if existing:
+                    logger.info(f"Alumni profile already exists for user {user.id}")
+                    return
+                
+                # Extract name from email (before @)
+                default_name = user.email.split('@')[0].replace('.', ' ').replace('_', ' ').title()
+                
+                # Create basic alumni profile
+                query = """
+                INSERT INTO alumni_profiles (
+                    user_id, name, bio, headline, 
+                    profile_completion_percentage, is_verified
+                ) VALUES (
+                    %s, %s, %s, %s, %s, %s
+                )
+                """
+                await cursor.execute(query, (
+                    user.id,
+                    default_name,
+                    f"Alumni member at AlumUnity",  # Default bio
+                    "AlumUnity Alumni",  # Default headline
+                    10,  # Basic completion percentage
+                    False  # Not admin-verified yet
+                ))
+                
+                if not conn.get_autocommit():
+                    await conn.commit()
+                
+                logger.info(f"Created default alumni profile for user {user.id}")
+                
+        except Exception as e:
+            logger.error(f"Failed to create default alumni profile for user {user.id}: {str(e)}")
+            # Don't raise exception - profile creation failure shouldn't block verification
+    
+    @staticmethod
     async def register_user(conn: aiomysql.Connection, user_data: UserCreate) -> Tuple[UserInDB, str]:
         """Register a new user and send verification email"""
         # Check if email already exists
@@ -87,6 +133,10 @@ class AuthService:
         
         # Update user verification status
         await UserService.update_user_verification(conn, user.id, True)
+        
+        # Auto-create alumni profile if user is alumni and doesn't have one
+        if user.role == 'alumni':
+            await AuthService._create_default_alumni_profile(conn, user)
         
         # Update last login (since we're auto-logging them in)
         await UserService.update_last_login(conn, user.id)

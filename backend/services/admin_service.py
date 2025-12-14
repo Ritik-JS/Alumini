@@ -927,3 +927,75 @@ class AdminService:
                     "limit": limit,
                     "total_pages": (total + limit - 1) // limit
                 }
+
+    
+    @staticmethod
+    async def create_missing_alumni_profiles() -> Dict[str, Any]:
+        """
+        Create default profiles for verified alumni users who don't have profiles yet.
+        This is a migration/fix method for existing users.
+        """
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cursor:
+                # Find all verified alumni users without profiles
+                query = """
+                    SELECT u.id, u.email, u.created_at
+                    FROM users u
+                    LEFT JOIN alumni_profiles ap ON u.id = ap.user_id
+                    WHERE u.role = 'alumni' 
+                      AND u.is_verified = TRUE
+                      AND u.is_active = TRUE
+                      AND ap.id IS NULL
+                """
+                await cursor.execute(query)
+                users_without_profiles = await cursor.fetchall()
+                
+                created_count = 0
+                created_users = []
+                
+                for user in users_without_profiles:
+                    try:
+                        # Extract name from email
+                        default_name = user['email'].split('@')[0].replace('.', ' ').replace('_', ' ').title()
+                        
+                        # Create basic alumni profile
+                        insert_query = """
+                        INSERT INTO alumni_profiles (
+                            user_id, name, bio, headline, 
+                            profile_completion_percentage, is_verified
+                        ) VALUES (
+                            %s, %s, %s, %s, %s, %s
+                        )
+                        """
+                        await cursor.execute(insert_query, (
+                            user['id'],
+                            default_name,
+                            f"Alumni member at AlumUnity",
+                            "AlumUnity Alumni",
+                            10,  # Basic completion percentage
+                            False  # Not admin-verified yet
+                        ))
+                        
+                        created_count += 1
+                        created_users.append({
+                            "user_id": user['id'],
+                            "email": user['email'],
+                            "name": default_name
+                        })
+                        
+                        logger.info(f"Created missing profile for user {user['id']} ({user['email']})")
+                        
+                    except Exception as e:
+                        logger.error(f"Failed to create profile for user {user['id']}: {str(e)}")
+                        continue
+                
+                if not conn.get_autocommit():
+                    await conn.commit()
+                
+                return {
+                    "created_count": created_count,
+                    "total_missing": len(users_without_profiles),
+                    "created_users": created_users
+                }
+

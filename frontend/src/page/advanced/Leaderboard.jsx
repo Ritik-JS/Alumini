@@ -126,7 +126,7 @@ const Leaderboard = () => {
         </div>
 
         {/* My Score Card */}
-        {myScore && myScore.rank_position !== undefined && (
+        {myScore && myScore.total_score !== undefined && (
           <Card className="mb-8 border-2 border-blue-500" data-testid="my-score-card">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
               <CardTitle className="flex items-center justify-between">
@@ -152,15 +152,19 @@ const Leaderboard = () => {
                 </div>
                 <div className="space-y-4">
                   <h3 className="font-semibold">Score Breakdown</h3>
-                  {Object.entries(myScore.score_breakdown || myScore.contributions || {}).map(([key, value]) => (
-                    <div key={key}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="capitalize">{key.replace(/_/g, ' ')}</span>
-                        <span className="font-semibold">{value || 0}</span>
+                  {myScore.score_breakdown || myScore.contributions ? (
+                    Object.entries(myScore.score_breakdown || myScore.contributions || {}).map(([key, value]) => (
+                      <div key={key}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="capitalize">{key.replace(/_/g, ' ')}</span>
+                          <span className="font-semibold">{value || 0}</span>
+                        </div>
+                        <Progress value={(value / 1000) * 100} className="h-2" />
                       </div>
-                      <Progress value={(value / 1000) * 100} className="h-2" />
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No contribution data available yet</p>
+                  )}
                 </div>
               </div>
             </CardContent>
