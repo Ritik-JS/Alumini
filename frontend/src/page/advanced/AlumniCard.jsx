@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { alumniCardService } from '@/services';
 import MainLayout from '@/components/layout/MainLayout';
-import { QRCodeSVG } from 'qrcode.react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Download, Share2, Printer, CheckCircle, QrCode, Search, Camera, Shield, AlertCircle, Clock, TrendingUp, Linkedin, ExternalLink } from 'lucide-react';
+import { CreditCard, Download, Share2, Printer, CheckCircle, QrCode, Search, Camera, Shield, AlertCircle, Clock, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import QRScanner from '@/components/advanced/QRScanner';
@@ -99,37 +98,16 @@ const AlumniCard = () => {
       const response = await alumniCardService.downloadCard(cardData.id);
       
       if (response.success && response.data) {
-        // If response.data is base64 string
-        if (typeof response.data === 'string') {
-          // Decode base64 and create blob
-          const byteCharacters = atob(response.data);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          const blob = new Blob([byteArray], { type: 'image/png' });
-          
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `alumni_card_${cardData.card_number}.png`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
-        } else {
-          // Handle binary data
-          const blob = new Blob([response.data], { type: 'image/png' });
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `alumni_card_${cardData.card_number}.png`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
-        }
+        // Create a blob URL and trigger download
+        const blob = new Blob([response.data], { type: 'image/png' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `alumni_card_${cardData.card_number}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
         
         toast.success('Card downloaded successfully!');
       } else {
@@ -267,41 +245,14 @@ const AlumniCard = () => {
                             })}
                           </p>
                         </div>
-                        
-                        {/* LinkedIn Link */}
-                        {cardData.profile?.social_links?.linkedin && (
-                          <div>
-                            <p className="text-blue-200 text-xs uppercase tracking-wide mb-1">LinkedIn</p>
-                            <a 
-                              href={cardData.profile.social_links.linkedin}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm font-semibold hover:underline flex items-center gap-1"
-                            >
-                              <Linkedin className="h-3 w-3" />
-                              View Profile
-                            </a>
-                          </div>
-                        )}
                       </div>
 
                       {/* QR Code */}
                       <div className="flex-shrink-0">
                         <div className="w-28 h-28 bg-white rounded-lg p-2 flex items-center justify-center">
-                          {cardData.qr_code_data ? (
-                            <QRCodeSVG 
-                              value={cardData.qr_code_data}
-                              size={104}
-                              level="M"
-                              includeMargin={false}
-                            />
-                          ) : (
-                            <QrCode className="h-full w-full text-gray-800" />
-                          )}
+                          <QrCode className="h-full w-full text-gray-800" />
                         </div>
-                        <p className="text-xs text-blue-200 text-center mt-2">
-                          {cardData.profile?.social_links?.linkedin ? 'Scan for LinkedIn' : 'Scan to verify'}
-                        </p>
+                        <p className="text-xs text-blue-200 text-center mt-2">Scan to verify</p>
                       </div>
                     </div>
                   </div>
