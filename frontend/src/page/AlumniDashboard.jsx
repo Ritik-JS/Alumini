@@ -97,33 +97,36 @@ const AlumniDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-purple-50/30">
       <MainNavbar />
       
       <div className="flex flex-1">
         <Sidebar />
         
-        <main className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 p-8">
+          <div className="max-w-7xl mx-auto space-y-8">
             {/* Welcome Section */}
-            <div className="bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg p-6 text-white relative">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold">Welcome back, {profile?.name || 'Alumni'}! 🎓</h1>
-                  <p className="mt-2 opacity-90">
-                    Thank you for giving back to the community. Your contributions make a difference!
-                  </p>
+            <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-700 rounded-2xl p-8 text-white relative overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300">
+              <div className="absolute inset-0 bg-grid-white/[0.05] pointer-events-none"></div>
+              <div className="relative z-10">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-3 animate-fade-in">
+                    <h1 className="text-4xl font-bold tracking-tight">Welcome back, {profile?.name || 'Alumni'}! 🎓</h1>
+                    <p className="mt-2 text-purple-100 text-lg max-w-2xl leading-relaxed">
+                      Thank you for giving back to the community. Your contributions make a difference!
+                    </p>
+                  </div>
+                  {engagementScore && engagementScore.total_score > 0 && (
+                    <Badge 
+                      className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-white/30 text-lg px-5 py-3 cursor-pointer flex items-center gap-2 transition-all duration-300 hover:scale-105 shadow-lg"
+                      onClick={() => navigate('/leaderboard')}
+                      data-testid="engagement-points-badge"
+                    >
+                      <Trophy className="h-5 w-5" />
+                      {engagementScore.total_score} pts
+                    </Badge>
+                  )}
                 </div>
-                {engagementScore && engagementScore.total_score > 0 && (
-                  <Badge 
-                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 text-lg px-4 py-2 cursor-pointer flex items-center gap-2"
-                    onClick={() => navigate('/leaderboard')}
-                    data-testid="engagement-points-badge"
-                  >
-                    <Trophy className="h-5 w-5" />
-                    {engagementScore.total_score} pts
-                  </Badge>
-                )}
               </div>
             </div>
 
@@ -132,19 +135,21 @@ const AlumniDashboard = () => {
               {stats.map((stat, index) => {
                 const Icon = stat.icon;
                 return (
-                  <Card key={index}>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
+                  <Card key={index} className="hover:shadow-lg transition-all duration-300 border-gray-200 hover:border-purple-200 group cursor-pointer" style={{ animationDelay: `${index * 100}ms` }}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                      <CardTitle className="text-sm font-medium text-gray-600 group-hover:text-purple-600 transition-colors">
                         {stat.title}
                       </CardTitle>
-                      <Icon className="h-4 w-4 text-gray-600" />
+                      <div className="p-2.5 bg-purple-50 rounded-xl group-hover:bg-purple-100 transition-all duration-300 group-hover:scale-110">
+                        <Icon className="h-5 w-5 text-purple-600" />
+                      </div>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{stat.value}</div>
-                      <p className={`text-xs mt-1 ${
+                    <CardContent className="space-y-1">
+                      <div className="text-3xl font-bold text-gray-900 group-hover:text-purple-700 transition-colors">{stat.value}</div>
+                      <p className={`text-sm font-medium ${
                         stat.changeType === 'positive' ? 'text-green-600' :
                         stat.changeType === 'negative' ? 'text-red-600' :
-                        'text-gray-600'
+                        'text-gray-500'
                       }`}>
                         {stat.change}
                       </p>
@@ -155,27 +160,33 @@ const AlumniDashboard = () => {
             </div>
 
             {/* Quick Actions */}
-            <Card>
+            <Card className="shadow-sm hover:shadow-md transition-shadow duration-300">
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Manage your contributions</CardDescription>
+                <CardTitle className="text-xl">Quick Actions</CardTitle>
+                <CardDescription className="text-base">Manage your contributions</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Link to="/jobs/post" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-purple-500 transition-all">
-                    <Briefcase className="h-8 w-8 text-purple-600 mb-2" />
-                    <div className="text-sm font-medium text-gray-900">Post a Job</div>
-                    <div className="text-xs text-gray-500 mt-1">Help students find opportunities</div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Link to="/jobs/post" className="group p-6 border-2 border-gray-100 rounded-xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                    <div className="p-3 bg-purple-100 rounded-xl w-fit group-hover:bg-purple-200 transition-colors duration-300 mb-3">
+                      <Briefcase className="h-7 w-7 text-purple-600" />
+                    </div>
+                    <div className="text-base font-semibold text-gray-900 group-hover:text-purple-700 transition-colors">Post a Job</div>
+                    <div className="text-sm text-gray-600 mt-2 leading-relaxed">Help students find opportunities</div>
                   </Link>
-                  <Link to="/events/create" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-purple-500 transition-all">
-                    <Calendar className="h-8 w-8 text-blue-600 mb-2" />
-                    <div className="text-sm font-medium text-gray-900">Create Event</div>
-                    <div className="text-xs text-gray-500 mt-1">Organize workshops and meetups</div>
+                  <Link to="/events/create" className="group p-6 border-2 border-gray-100 rounded-xl hover:bg-blue-50 hover:border-blue-300 transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                    <div className="p-3 bg-blue-100 rounded-xl w-fit group-hover:bg-blue-200 transition-colors duration-300 mb-3">
+                      <Calendar className="h-7 w-7 text-blue-600" />
+                    </div>
+                    <div className="text-base font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">Create Event</div>
+                    <div className="text-sm text-gray-600 mt-2 leading-relaxed">Organize workshops and meetups</div>
                   </Link>
-                  <Link to="/mentorship/dashboard" className="p-4 border rounded-lg hover:bg-gray-50 hover:border-purple-500 transition-all">
-                    <Users className="h-8 w-8 text-green-600 mb-2" />
-                    <div className="text-sm font-medium text-gray-900">Mentorship</div>
-                    <div className="text-xs text-gray-500 mt-1">Guide the next generation</div>
+                  <Link to="/mentorship/dashboard" className="group p-6 border-2 border-gray-100 rounded-xl hover:bg-green-50 hover:border-green-300 transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                    <div className="p-3 bg-green-100 rounded-xl w-fit group-hover:bg-green-200 transition-colors duration-300 mb-3">
+                      <Users className="h-7 w-7 text-green-600" />
+                    </div>
+                    <div className="text-base font-semibold text-gray-900 group-hover:text-green-700 transition-colors">Mentorship</div>
+                    <div className="text-sm text-gray-600 mt-2 leading-relaxed">Guide the next generation</div>
                   </Link>
                 </div>
               </CardContent>
