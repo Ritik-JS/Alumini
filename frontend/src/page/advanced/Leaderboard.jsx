@@ -132,7 +132,7 @@ const Leaderboard = () => {
               <CardTitle className="flex items-center justify-between">
                 <span>Your Score</span>
                 <Badge variant="secondary" className="text-lg px-4 py-2">
-                  Rank #{myScore.rank_position}
+                  Rank #{myScore.rank_position || myScore.rank || '-'}
                 </Badge>
               </CardTitle>
             </CardHeader>
@@ -140,23 +140,23 @@ const Leaderboard = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <div className="text-center mb-6">
-                    <p className="text-5xl font-bold text-blue-600">{myScore.total_score}</p>
+                    <p className="text-5xl font-bold text-blue-600">{myScore.total_score || 0}</p>
                     <p className="text-gray-600 mt-1">Total Points</p>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>This Week: {myScore.this_week_points}</span>
-                      <span>This Month: {myScore.this_month_points}</span>
+                      <span>This Week: {myScore.this_week_points || 0}</span>
+                      <span>This Month: {myScore.this_month_points || 0}</span>
                     </div>
                   </div>
                 </div>
                 <div className="space-y-4">
                   <h3 className="font-semibold">Score Breakdown</h3>
-                  {Object.entries(myScore.score_breakdown).map(([key, value]) => (
+                  {Object.entries(myScore.score_breakdown || myScore.contributions || {}).map(([key, value]) => (
                     <div key={key}>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="capitalize">{key.replace('_', ' ')}</span>
-                        <span className="font-semibold">{value}</span>
+                        <span className="capitalize">{key.replace(/_/g, ' ')}</span>
+                        <span className="font-semibold">{value || 0}</span>
                       </div>
                       <Progress value={(value / 1000) * 100} className="h-2" />
                     </div>
@@ -245,53 +245,60 @@ const Leaderboard = () => {
               </Card>
             ) : (
               <div className="space-y-3" data-testid="leaderboard-list">
-                {leaderboard.map((entry, idx) => (
-                  <Card
-                    key={entry.user_id}
-                    className={`transition-all hover:shadow-md ${
-                      entry.rank <= 3 ? 'border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50' : ''
-                    }`}
-                    data-testid={`leaderboard-entry-${entry.rank}`}
-                  >
-                    <CardContent className="py-4">
-                      <div className="flex items-center gap-4">
-                        {/* Rank */}
-                        <div className="flex-shrink-0 w-16 text-center">
-                          {getRankIcon(entry.rank)}
-                        </div>
-
-                        {/* Avatar & Info */}
-                        <Avatar className="h-14 w-14">
-                          <AvatarImage src={entry.photo_url} />
-                          <AvatarFallback>{entry.name.substring(0, 2)}</AvatarFallback>
-                        </Avatar>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-lg truncate">{entry.name}</h3>
-                            <Badge variant="outline" className="text-xs capitalize">
-                              {entry.role}
-                            </Badge>
-                            {getTrendIcon(entry.trend)}
+                {leaderboard.map((entry, idx) => {
+                  // Map backend fields to frontend expectations
+                  const rank = entry.rank || entry.rank_position || (idx + 1);
+                  const badges = entry.badges || [];
+                  const trend = entry.trend || 'stable';
+                  
+                  return (
+                    <Card
+                      key={entry.user_id}
+                      className={`transition-all hover:shadow-md ${
+                        rank <= 3 ? 'border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50' : ''
+                      }`}
+                      data-testid={`leaderboard-entry-${rank}`}
+                    >
+                      <CardContent className="py-4">
+                        <div className="flex items-center gap-4">
+                          {/* Rank */}
+                          <div className="flex-shrink-0 w-16 text-center">
+                            {getRankIcon(rank)}
                           </div>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {entry.badges.slice(0, 3).map(badge => (
-                              <Badge key={badge} variant="secondary" className="text-xs">
-                                {badge}
+
+                          {/* Avatar & Info */}
+                          <Avatar className="h-14 w-14">
+                            <AvatarImage src={entry.photo_url} />
+                            <AvatarFallback>{entry.name?.substring(0, 2) || 'UN'}</AvatarFallback>
+                          </Avatar>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-lg truncate">{entry.name || 'Unknown'}</h3>
+                              <Badge variant="outline" className="text-xs capitalize">
+                                {entry.role || 'user'}
                               </Badge>
-                            ))}
+                              {getTrendIcon(trend)}
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {badges.slice(0, 3).map((badge, badgeIdx) => (
+                                <Badge key={`${entry.user_id}-badge-${badgeIdx}`} variant="secondary" className="text-xs">
+                                  {badge}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Score */}
+                          <div className="text-right">
+                            <p className="text-3xl font-bold text-blue-600">{entry.total_score || 0}</p>
+                            <p className="text-xs text-gray-600">points</p>
                           </div>
                         </div>
-
-                        {/* Score */}
-                        <div className="text-right">
-                          <p className="text-3xl font-bold text-blue-600">{entry.total_score}</p>
-                          <p className="text-xs text-gray-600">points</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </TabsContent>

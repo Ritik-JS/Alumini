@@ -383,12 +383,96 @@ class EngagementService:
         else:
             return requirements_data
     
+
+    async def _calculate_period_points(
+        self,
+        db_conn,
+        user_id: str,
+        days: int
+    ) -> int:
+        """Calculate points earned in the last N days"""
+        try:
+            async with db_conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT COALESCE(SUM(points_earned), 0) as total
+                    FROM contribution_history
+                    WHERE user_id = %s
+                        AND created_at >= DATE_SUB(NOW(), INTERVAL %s DAY)
+                """, (user_id, days))
+                result = await cursor.fetchone()
+                return int(result[0]) if result else 0
+        except Exception as e:
+            logger.error(f"Error calculating period points: {str(e)}")
+            return 0
+    
+    async def _get_user_badge_names(
+        self,
+        db_conn,
+        user_id: str
+    ) -> List[str]:
+        """Get list of badge names for a user"""
+        try:
+            async with db_conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT b.name
+                    FROM user_badges ub
+                    JOIN badges b ON ub.badge_id = b.id
+                    WHERE ub.user_id = %s
+                    ORDER BY ub.earned_at DESC
+                """, (user_id,))
+                badges = await cursor.fetchall()
+                return [badge[0] for badge in badges]
+        except Exception as e:
+
+    async def _calculate_trend(
+        self,
+        db_conn,
+        user_id: str
+    ) -> str:
+        """
+        Calculate user's activity trend (up, down, stable)
+        Compares last 7 days vs previous 7 days
+        """
+        try:
+            async with db_conn.cursor() as cursor:
+                await cursor.execute("""
+                    SELECT 
+                        COALESCE(SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) 
+                                          THEN points_earned ELSE 0 END), 0) as last_week,
+                        COALESCE(SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY) 
+                                          AND created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)
+                                          THEN points_earned ELSE 0 END), 0) as previous_week
+                    FROM contribution_history
+                    WHERE user_id = %s
+                        AND created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)
+                """, (user_id,))
+                result = await cursor.fetchone()
+                
+                if result:
+                    last_week = result[0] or 0
+                    previous_week = result[1] or 0
+                    
+                    if last_week > previous_week * 1.1:  # 10% increase
+                        return 'up'
+                    elif last_week < previous_week * 0.9:  # 10% decrease
+                        return 'down'
+                    else:
+                        return 'stable'
+                
+                return 'stable'
+        except Exception as e:
+            logger.error(f"Error calculating trend: {str(e)}")
+            return 'stable'
+
+            logger.error(f"Error getting user badge names: {str(e)}")
+            return []
+
     async def get_user_score(
         self,
         db_conn,
         user_id: str
     ) -> Optional[Dict]:
-        """Get engagement score for a specific user"""
+        """Get engagement score for a specific user with enhanced fields"""
         try:
             async with db_conn.cursor() as cursor:
                 await cursor.execute("""
@@ -414,17 +498,29 @@ class EngagementService:
                 elif not contributions_data:
                     contributions_data = {}
                 
+                # Calculate weekly and monthly points from contribution_history
+                this_week_points = await self._calculate_period_points(db_conn, user_id, 7)
+                this_month_points = await self._calculate_period_points(db_conn, user_id, 30)
+                
+                # Get user badges
+                user_badges = await self._get_user_badge_names(db_conn, user_id)
+                
                 return {
                     'id': result[0],
                     'user_id': result[1],
                     'total_score': result[2],
                     'contributions': contributions_data,
+                    'score_breakdown': contributions_data,  # Alias for frontend compatibility
                     'rank_position': result[4],
+                    'rank': result[4],  # Alias for frontend compatibility
                     'level': result[5] if result[5] else self._determine_level(result[2]),
                     'last_calculated': result[6],
                     'name': result[7],
                     'photo_url': result[8],
-                    'role': result[9]
+                    'role': result[9],
+                    'this_week_points': this_week_points,
+                    'this_month_points': this_month_points,
+                    'badges': user_badges
                 }
             
             return None
@@ -441,7 +537,7 @@ class EngagementService:
         role_filter: Optional[str] = None
     ) -> Dict:
         """
-        Get engagement leaderboard
+        Get engagement leaderboard with enhanced fields
         """
         try:
             # Get top users from engagement_leaderboard view
@@ -467,7 +563,9 @@ class EngagementService:
             
             # Format leaderboard entries
             entries = []
-            for entry in leaderboard:
+            for idx, entry in enumerate(leaderboard):
+                user_id = entry[0]
+                
                 # Parse contributions JSON if it's a string (MySQL stores JSON as string)
                 contributions_data = entry[7]
                 if contributions_data and isinstance(contributions_data, str):
@@ -478,15 +576,24 @@ class EngagementService:
                 elif not contributions_data:
                     contributions_data = {}
                 
+                # Get user badges
+                user_badges = await self._get_user_badge_names(db_conn, user_id)
+                
+                # Calculate trend (compare last week vs previous week)
+                trend = await self._calculate_trend(db_conn, user_id)
+                
                 entries.append({
-                    'user_id': entry[0],
+                    'user_id': user_id,
                     'name': entry[1],
                     'photo_url': entry[2],
                     'role': entry[3],
                     'total_score': entry[4],
                     'rank_position': entry[5],
+                    'rank': entry[5],  # Alias for frontend compatibility
                     'level': entry[6] if entry[6] else self._determine_level(entry[4]),
-                    'contributions': contributions_data
+                    'contributions': contributions_data,
+                    'badges': user_badges,
+                    'trend': trend
                 })
             
             # Get current user's rank if provided
