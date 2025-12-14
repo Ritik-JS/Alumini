@@ -12,10 +12,10 @@ const Home = () => {
   const navigate = useNavigate();
 
   const stats = [
-    { label: 'Active Alumni', value: '5,000+', icon: Users },
-    { label: 'Success Stories', value: '1,200+', icon: Award },
-    { label: 'Job Placements', value: '800+', icon: Briefcase },
-    { label: 'Events Hosted', value: '200+', icon: Calendar },
+    { label: 'Active Alumni', value: '5,000+', icon: Users, gradient: 'from-violet-500 to-purple-500' },
+    { label: 'Success Stories', value: '1,200+', icon: Award, gradient: 'from-amber-500 to-orange-500' },
+    { label: 'Job Placements', value: '800+', icon: Briefcase, gradient: 'from-emerald-500 to-teal-500' },
+    { label: 'Events Hosted', value: '200+', icon: Calendar, gradient: 'from-blue-500 to-cyan-500' },
   ];
 
   const features = [
@@ -23,31 +23,37 @@ const Home = () => {
       icon: Users,
       title: 'Alumni Directory',
       description: 'Connect with thousands of alumni from various industries and locations',
+      gradient: 'from-violet-500 to-purple-500',
     },
     {
       icon: Briefcase,
       title: 'Job Portal',
       description: 'Discover exclusive job opportunities posted by alumni and recruiters',
+      gradient: 'from-blue-500 to-cyan-500',
     },
     {
       icon: Calendar,
       title: 'Events & Webinars',
       description: 'Attend workshops, conferences, and networking events',
+      gradient: 'from-pink-500 to-rose-500',
     },
     {
       icon: UserCheck,
       title: 'Mentorship Program',
       description: 'Get guidance from experienced alumni in your field of interest',
+      gradient: 'from-emerald-500 to-teal-500',
     },
     {
       icon: MessageSquare,
       title: 'Community Forum',
       description: 'Engage in discussions, share knowledge, and build connections',
+      gradient: 'from-orange-500 to-amber-500',
     },
     {
       icon: Award,
       title: 'Achievements & Badges',
       description: 'Earn recognition for your contributions and engagement',
+      gradient: 'from-indigo-500 to-blue-500',
     },
   ];
 
@@ -56,21 +62,29 @@ const Home = () => {
       icon: Users,
       title: 'Community First',
       description: 'We believe in the power of community and fostering meaningful connections between alumni, students, and recruiters.',
+      color: 'text-violet-600',
+      bg: 'bg-violet-100',
     },
     {
       icon: Target,
       title: 'Career Growth',
       description: 'Empowering members to achieve their professional goals through mentorship, job opportunities, and skill development.',
+      color: 'text-blue-600',
+      bg: 'bg-blue-100',
     },
     {
       icon: Heart,
       title: 'Give Back',
       description: 'Encouraging alumni to share their knowledge and experiences with the next generation of professionals.',
+      color: 'text-pink-600',
+      bg: 'bg-pink-100',
     },
     {
       icon: TrendingUp,
       title: 'Continuous Learning',
       description: 'Providing access to resources, events, and knowledge that help our community stay ahead in their careers.',
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-100',
     },
   ];
 
@@ -124,51 +138,67 @@ const Home = () => {
       icon: Users,
       title: 'Alumni Directory',
       description: 'Connect with thousands of alumni across various industries, locations, and career stages. Build your professional network.',
+      gradient: 'from-violet-500 to-purple-500',
     },
     {
       icon: Briefcase,
       title: 'Job Portal',
       description: 'Access exclusive job opportunities posted by alumni and top recruiters. Get referrals and increase your chances of landing your dream job.',
+      gradient: 'from-blue-500 to-cyan-500',
     },
     {
-      icon: MessageSquare,
+      icon: UserCheck,
       title: 'Mentorship Program',
       description: 'Get personalized guidance from experienced alumni. Book one-on-one sessions and accelerate your career growth.',
+      gradient: 'from-emerald-500 to-teal-500',
     },
     {
       icon: Calendar,
       title: 'Events & Workshops',
       description: 'Attend networking events, technical workshops, webinars, and conferences organized by the community.',
+      gradient: 'from-pink-500 to-rose-500',
     },
     {
       icon: MessageSquare,
       title: 'Community Forum',
       description: 'Engage in discussions, ask questions, share knowledge, and learn from the collective wisdom of the community.',
+      gradient: 'from-orange-500 to-amber-500',
     },
     {
       icon: Award,
       title: 'Recognition & Badges',
       description: 'Earn badges and recognition for your contributions. Climb the leaderboard and showcase your engagement.',
+      gradient: 'from-indigo-500 to-blue-500',
     },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <MainNavbar />
 
       {/* Hero Section */}
-      <section className="flex-1 flex items-center justify-center px-4 py-12 md:py-20 bg-gradient-to-br from-blue-50 via-white to-purple-50" data-testid="hero-section">
+      <section className="flex-1 flex items-center justify-center px-4 py-20 md:py-28 relative overflow-hidden" data-testid="hero-section">
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-violet-300/30 to-purple-300/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-300/30 to-cyan-300/30 rounded-full blur-3xl"></div>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="max-w-4xl text-center space-y-8"
+          className="max-w-5xl text-center space-y-8 relative z-10"
         >
-          <div className="space-y-4">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900" data-testid="hero-title">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm border border-violet-200 rounded-full shadow-sm">
+              <Sparkles className="w-4 h-4 text-violet-600" />
+              <span className="text-sm font-medium text-violet-900">Welcome to the Future of Alumni Networking</span>
+            </div>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent leading-tight" data-testid="hero-title">
               Connect, Grow, and Succeed Together
             </h1>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto" data-testid="hero-description">
+            <p className="text-xl sm:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed" data-testid="hero-description">
               Join thousands of alumni, students, and recruiters in building a stronger professional community
             </p>
           </div>
@@ -178,7 +208,7 @@ const Home = () => {
               <Button 
                 size="lg" 
                 onClick={() => navigate('/dashboard')} 
-                className="text-base sm:text-lg px-6 sm:px-8"
+                className="text-lg px-8 py-6 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-lg shadow-violet-500/50"
                 data-testid="go-to-dashboard-btn"
               >
                 Go to Dashboard
@@ -189,7 +219,7 @@ const Home = () => {
                 <Button 
                   size="lg" 
                   onClick={() => navigate('/register')} 
-                  className="text-base sm:text-lg px-6 sm:px-8"
+                  className="text-lg px-8 py-6 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-lg shadow-violet-500/50"
                   data-testid="get-started-btn"
                 >
                   Get Started
@@ -199,7 +229,7 @@ const Home = () => {
                   size="lg" 
                   variant="outline" 
                   onClick={() => navigate('/login')} 
-                  className="text-base sm:text-lg px-6 sm:px-8"
+                  className="text-lg px-8 py-6 border-2 border-violet-300 hover:bg-violet-50 hover:border-violet-400"
                   data-testid="sign-in-btn"
                 >
                   Sign In
@@ -211,7 +241,7 @@ const Home = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 px-4 bg-gray-50" data-testid="stats-section">
+      <section className="py-20 px-4 bg-white" data-testid="stats-section">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => {
@@ -223,14 +253,16 @@ const Home = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="text-center"
+                  className="relative group"
                   data-testid={`stat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}
                 >
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                    <Icon className="w-8 h-8 text-blue-600" />
+                  <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-white to-gray-50 border border-gray-200 shadow-lg hover:shadow-xl transition-all">
+                    <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${stat.gradient} rounded-2xl mb-4 shadow-lg`}>
+                      <Icon className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="text-4xl font-bold bg-gradient-to-br ${stat.gradient} bg-clip-text text-transparent mb-2">{stat.value}</div>
+                    <div className="text-gray-600 font-medium">{stat.label}</div>
                   </div>
-                  <div className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</div>
-                  <div className="text-gray-600">{stat.label}</div>
                 </motion.div>
               );
             })}
@@ -239,8 +271,14 @@ const Home = () => {
       </section>
 
       {/* Innovative Features Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" data-testid="innovative-features-section">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-24 px-4 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden" data-testid="innovative-features-section">
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 right-20 w-72 h-72 bg-violet-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 left-20 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -248,14 +286,14 @@ const Home = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full mb-6">
-              <Sparkles className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-medium text-blue-400">Next-Generation Innovation</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full mb-6">
+              <Sparkles className="w-4 h-4 text-violet-400" />
+              <span className="text-sm font-medium text-violet-300">Next-Generation Innovation</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6" data-testid="innovative-features-title">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6" data-testid="innovative-features-title">
               Patentable Technology Stack
             </h2>
-            <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Revolutionary features that set us apart with cutting-edge algorithms and intelligent systems
             </p>
           </motion.div>
@@ -270,20 +308,18 @@ const Home = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="relative group"
+                  className="group"
                   data-testid={`innovative-feature-${feature.title.toLowerCase().replace(/\s+/g, '-')}`}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl blur-xl" 
-                       style={{ background: `linear-gradient(to bottom right, ${feature.gradient})` }}></div>
-                  <div className="relative bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-8 rounded-2xl hover:border-gray-600 transition-all duration-300 h-full">
-                    <div className={`w-14 h-14 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center mb-6 shadow-lg`}>
-                      <Icon className="w-7 h-7 text-white" />
+                  <div className="relative h-full bg-white/5 backdrop-blur-sm border border-white/10 p-8 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all">
+                    <div className={`w-16 h-16 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform`}>
+                      <Icon className="w-8 h-8 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-white mb-3">{feature.title}</h3>
-                    <p className="text-gray-400 mb-4 text-sm leading-relaxed">{feature.description}</p>
-                    <div className="flex items-start gap-2 pt-4 border-t border-gray-700">
-                      <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-1.5 flex-shrink-0"></div>
-                      <p className="text-blue-400 font-medium text-sm">{feature.marketValue}</p>
+                    <p className="text-gray-400 mb-4 leading-relaxed">{feature.description}</p>
+                    <div className="flex items-start gap-2 pt-4 border-t border-white/10">
+                      <div className="w-1.5 h-1.5 bg-violet-400 rounded-full mt-1.5"></div>
+                      <p className="text-violet-400 font-medium text-sm">{feature.marketValue}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -294,40 +330,40 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-12 md:py-20 px-4 bg-white" data-testid="features-section">
+      <section id="features" className="py-24 px-4 bg-gradient-to-br from-white via-violet-50/30 to-white" data-testid="features-section">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-12 md:mb-16"
+            className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4" data-testid="features-title">
+            <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent mb-4" data-testid="features-title">
               Everything You Need in One Place
             </h2>
-            <p className="text-lg sm:text-xl text-gray-600">
+            <p className="text-xl text-gray-600">
               Powerful features to help you connect and grow professionally
             </p>
           </motion.div>
 
-          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <StaggerItem key={index}>
                   <motion.div
-                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                    className="p-6 border border-gray-200 rounded-xl hover:shadow-lg transition-shadow h-full"
+                    whileHover={{ y: -4 }}
+                    className="relative h-full p-8 bg-white rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-all"
                     data-testid={`feature-${feature.title.toLowerCase().replace(/\s+/g, '-')}`}
                   >
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6 text-blue-600" />
+                    <div className={`w-14 h-14 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center mb-6 shadow-lg`}>
+                      <Icon className="w-7 h-7 text-white" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h3 className="text-2xl font-semibold text-gray-900 mb-3">
                       {feature.title}
                     </h3>
-                    <p className="text-gray-600">{feature.description}</p>
+                    <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                   </motion.div>
                 </StaggerItem>
               );
@@ -337,16 +373,16 @@ const Home = () => {
       </section>
 
       {/* Mission & Values Section */}
-      <section id="about" className="py-20 px-4 bg-white" data-testid="mission-section">
-        <div className="max-w-4xl mx-auto">
+      <section id="about" className="py-24 px-4 bg-white" data-testid="mission-section">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Our Mission</h2>
-            <p className="text-lg text-gray-600 leading-relaxed">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Our Mission</h2>
+            <p className="text-xl text-gray-600 leading-relaxed max-w-4xl mx-auto">
               To create a vibrant ecosystem where alumni can give back, students can learn and grow, 
               and recruiters can find exceptional talent. We're building more than just a platform – 
               we're nurturing a community that thrives on collaboration, mentorship, and mutual success.
@@ -364,17 +400,17 @@ const Home = () => {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex gap-4"
+                  className="flex gap-6 p-8 bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-all"
                   data-testid={`value-${value.title.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Icon className="w-6 h-6 text-blue-600" />
+                    <div className={`w-14 h-14 ${value.bg} rounded-xl flex items-center justify-center shadow-md`}>
+                      <Icon className={`w-7 h-7 ${value.color}`} />
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{value.title}</h3>
-                    <p className="text-gray-600">{value.description}</p>
+                    <h3 className="text-2xl font-semibold text-gray-900 mb-3">{value.title}</h3>
+                    <p className="text-gray-600 leading-relaxed">{value.description}</p>
                   </div>
                 </motion.div>
               );
@@ -384,7 +420,7 @@ const Home = () => {
       </section>
 
       {/* What We Offer Section */}
-      <section className="py-20 px-4 bg-gray-50" data-testid="detailed-features-section">
+      <section className="py-24 px-4 bg-gradient-to-br from-violet-50 via-purple-50 to-blue-50" data-testid="detailed-features-section">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -392,8 +428,8 @@ const Home = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">What We Offer</h2>
-            <p className="text-lg text-gray-600">
+            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent mb-6">What We Offer</h2>
+            <p className="text-xl text-gray-600">
               Comprehensive tools and features to support your professional journey
             </p>
           </motion.div>
@@ -408,14 +444,14 @@ const Home = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-shadow"
+                  className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl border border-white/60 shadow-xl hover:shadow-2xl transition-all"
                   data-testid={`detailed-feature-${feature.title.toLowerCase().replace(/\s+/g, '-')}`}
                 >
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                    <Icon className="w-6 h-6 text-blue-600" />
+                  <div className={`w-14 h-14 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center mb-6 shadow-lg`}>
+                    <Icon className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-4">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                 </motion.div>
               );
             })}
@@ -424,18 +460,24 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 md:py-20 px-4 bg-gradient-to-br from-blue-600 to-blue-700" data-testid="cta-section">
+      <section className="py-24 px-4 bg-gradient-to-br from-violet-600 via-purple-600 to-blue-600 relative overflow-hidden" data-testid="cta-section">
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="max-w-4xl mx-auto text-center space-y-8"
+          className="max-w-4xl mx-auto text-center space-y-8 relative z-10"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-white" data-testid="cta-title">
+          <h2 className="text-4xl sm:text-5xl font-bold text-white" data-testid="cta-title">
             Join Our Community Today
           </h2>
-          <p className="text-lg sm:text-xl text-blue-100">
+          <p className="text-xl text-white/90">
             Be part of a network that's shaping the future of professional growth
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -444,7 +486,7 @@ const Home = () => {
                 size="lg"
                 variant="secondary"
                 onClick={() => navigate('/dashboard')}
-                className="text-base sm:text-lg px-6 sm:px-8"
+                className="text-lg px-8 py-6 bg-white text-violet-600 hover:bg-gray-100 shadow-xl"
                 data-testid="cta-dashboard-btn"
               >
                 Go to Dashboard
@@ -453,9 +495,8 @@ const Home = () => {
               <>
                 <Button
                   size="lg"
-                  variant="secondary"
                   onClick={() => navigate('/register')}
-                  className="text-base sm:text-lg px-6 sm:px-8"
+                  className="text-lg px-8 py-6 bg-white text-violet-600 hover:bg-gray-100 shadow-xl"
                   data-testid="cta-register-btn"
                 >
                   Create Free Account
@@ -464,7 +505,7 @@ const Home = () => {
                   size="lg"
                   variant="outline"
                   onClick={() => navigate('/login')}
-                  className="text-base sm:text-lg px-6 sm:px-8 bg-transparent text-white border-white hover:bg-white hover:text-blue-600"
+                  className="text-lg px-8 py-6 bg-transparent text-white border-2 border-white hover:bg-white/10"
                   data-testid="cta-signin-btn"
                 >
                   Sign In
