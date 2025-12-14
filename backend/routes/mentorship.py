@@ -218,6 +218,152 @@ async def update_mentor_profile(
     return await update_mentor_availability(profile_data, current_user)
 
 
+@router.get("/mentors/user/{user_id}", response_model=dict)
+async def get_mentor_by_user_id(user_id: str):
+    """
+    Get mentor profile by user ID
+    
+    Public endpoint - Get mentor profile for a specific user
+    Returns mentor profile with nested alumni profile data
+    """
+    try:
+        mentor = await MentorshipService.get_mentor_profile(user_id)
+        
+        if not mentor:
+            return {
+                "success": False,
+                "error": "Mentor profile not found",
+                "data": None
+            }
+        
+        return {
+            "success": True,
+            "data": mentor
+        }
+    except Exception as e:
+        logger.error(f"Error fetching mentor by user ID: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch mentor profile"
+        )
+
+
+@router.post("/mentors/filter", response_model=dict)
+async def filter_mentors(
+    filter_params: dict = Body(...),
+    current_user: dict = Depends(get_current_user) if False else None
+):
+    """
+    Filter mentors with advanced criteria (POST version for complex filters)
+    
+    Accepts:
+    - expertise: List[str] - Filter by multiple expertise areas
+    - minRating: float - Minimum rating
+    - availableOnly: bool - Show only available mentors
+    - search: str - Search query
+    - sortBy: str - Sort field (rating, experience, availability, name)
+    - page: int - Page number
+    - pageSize: int - Results per page
+    """
+    try:
+        # Extract parameters with defaults
+        expertise_list = filter_params.get('expertise', [])
+        min_rating = filter_params.get('minRating', 0)
+        available_only = filter_params.get('availableOnly', True)
+        search_query = filter_params.get('search', '')
+        sort_by = filter_params.get('sortBy', 'rating')
+        page = filter_params.get('page', 1)
+        page_size = filter_params.get('pageSize', 12)
+        
+        # Build search params - handle multiple expertise areas
+        search_params = MentorSearchParams(
+            expertise=expertise_list[0] if expertise_list else None,  # For now, use first expertise
+            min_rating=min_rating if min_rating > 0 else None,
+            available_only=available_only,
+            page=page,
+            limit=page_size
+        )
+        
+        result = await MentorshipService.search_mentors(search_params)
+        mentors = result.get('mentors', [])
+        
+        # Apply additional client-side filtering for multiple expertise
+        if len(expertise_list) > 1:
+            mentors = [
+                m for m in mentors
+                if any(exp in (m.get('expertise_areas') or []) for exp in expertise_list)
+            ]
+        
+        # Apply search filter if provided
+        if search_query:
+            search_lower = search_query.lower()
+            mentors = [
+                m for m in mentors
+                if (search_lower in (m.get('profile', {}).get('name', '') or '').lower() or
+                    search_lower in (m.get('profile', {}).get('current_role', '') or '').lower() or
+                    any(search_lower in (exp or '').lower() for exp in (m.get('expertise_areas') or [])))
+            ]
+        
+        # Apply sorting
+        if sort_by == 'rating':
+            mentors.sort(key=lambda x: x.get('rating', 0), reverse=True)
+        elif sort_by == 'experience':
+            mentors.sort(key=lambda x: x.get('total_sessions', 0), reverse=True)
+        elif sort_by == 'availability':
+            mentors.sort(key=lambda x: x.get('max_mentees', 0) - x.get('current_mentees_count', 0), reverse=True)
+        elif sort_by == 'name':
+            mentors.sort(key=lambda x: x.get('profile', {}).get('name', ''))
+        
+        # Paginate results
+        start_idx = (page - 1) * page_size
+        end_idx = start_idx + page_size
+        paginated_mentors = mentors[start_idx:end_idx]
+        
+        total_pages = (len(mentors) + page_size - 1) // page_size
+        
+        return {
+            "success": True,
+            "data": {
+                "mentors": paginated_mentors,
+                "total": len(mentors),
+                "page": page,
+                "pageSize": page_size,
+                "totalPages": total_pages
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error filtering mentors: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to filter mentors"
+        )
+
+
+@router.get("/mentorship/my-mentees", response_model=dict)
+async def get_my_mentees(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get active mentees for current user as mentor
+    
+    Returns all accepted mentorship requests where current user is the mentor
+    Includes student profile information
+    """
+    try:
+        mentees = await MentorshipService.get_received_requests(current_user['id'], 'accepted')
+        return {
+            "success": True,
+            "data": mentees,
+            "total": len(mentees)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching my mentees: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch mentees"
+        )
+
+
 # ============================================================================
 # MENTORSHIP REQUEST ENDPOINTS
 # ============================================================================
@@ -402,6 +548,37 @@ async def get_sent_requests(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch sent requests"
+        )
+
+
+@router.put("/mentorship/requests/{request_id}/cancel", response_model=dict)
+async def cancel_mentorship_request(
+    request_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Cancel mentorship request (Student only)
+    
+    Only the student who sent the request can cancel it
+    Can cancel requests in 'pending' or 'accepted' status
+    """
+    try:
+        request = await MentorshipService.cancel_mentorship_request(request_id, current_user['id'])
+        return {
+            "success": True,
+            "message": "Mentorship request cancelled successfully",
+            "data": request
+        }
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Error cancelling mentorship request: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to cancel mentorship request"
         )
 
 
@@ -642,6 +819,88 @@ async def get_sessions(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch sessions"
+        )
+
+
+@router.get("/mentorship/sessions/upcoming", response_model=dict)
+async def get_upcoming_sessions(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get upcoming sessions for current user
+    
+    Returns all scheduled sessions with future dates where user is either mentor or student
+    """
+    try:
+        from datetime import datetime
+        
+        # Get all sessions
+        all_sessions = await MentorshipService.get_sessions(current_user['id'], None)
+        
+        # Filter for upcoming sessions (scheduled status and future date)
+        now = datetime.now()
+        upcoming = [
+            s for s in all_sessions
+            if s.get('status') == 'scheduled' and 
+            s.get('scheduled_date') and
+            datetime.fromisoformat(str(s['scheduled_date']).replace('Z', '+00:00')) > now
+        ]
+        
+        # Sort by date
+        upcoming.sort(key=lambda x: x.get('scheduled_date', ''))
+        
+        return {
+            "success": True,
+            "data": upcoming,
+            "total": len(upcoming)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching upcoming sessions: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch upcoming sessions"
+        )
+
+
+@router.get("/mentorship/sessions/past", response_model=dict)
+async def get_past_sessions(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get past sessions for current user
+    
+    Returns completed, cancelled, or missed sessions where user is either mentor or student
+    """
+    try:
+        from datetime import datetime
+        
+        # Get all sessions
+        all_sessions = await MentorshipService.get_sessions(current_user['id'], None)
+        
+        # Filter for past sessions (completed, cancelled, missed, or past scheduled date)
+        now = datetime.now()
+        past = [
+            s for s in all_sessions
+            if s.get('status') in ['completed', 'cancelled', 'missed'] or (
+                s.get('status') == 'scheduled' and
+                s.get('scheduled_date') and
+                datetime.fromisoformat(str(s['scheduled_date']).replace('Z', '+00:00')) <= now
+            )
+        ]
+        
+        # Sort by date (most recent first)
+        past.sort(key=lambda x: x.get('scheduled_date', ''), reverse=True)
+        
+        return {
+            "success": True,
+            "data": past,
+            "total": len(past)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching past sessions: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch past sessions"
         )
 
 

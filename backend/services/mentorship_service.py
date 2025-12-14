@@ -525,6 +525,45 @@ class MentorshipService:
                 return await MentorshipService.get_request_with_details(request_id)
     
     @staticmethod
+    async def cancel_mentorship_request(request_id: str, student_id: str) -> Dict[str, Any]:
+        """Cancel mentorship request (Student only)"""
+        pool = await get_db_pool()
+        async with pool.acquire() as conn:
+            async with conn.cursor(aiomysql.DictCursor) as cursor:
+                # Get request details
+                await cursor.execute(
+                    """
+                    SELECT id, student_id, status
+                    FROM mentorship_requests
+                    WHERE id = %s
+                    """,
+                    (request_id,)
+                )
+                request = await cursor.fetchone()
+                
+                if not request:
+                    raise ValueError("Mentorship request not found")
+                
+                if request['student_id'] != student_id:
+                    raise ValueError("You are not authorized to cancel this request")
+                
+                if request['status'] not in ['pending', 'accepted']:
+                    raise ValueError(f"Cannot cancel request with status: {request['status']}")
+                
+                # Update request status
+                await cursor.execute(
+                    """
+                    UPDATE mentorship_requests
+                    SET status = 'cancelled', updated_at = NOW()
+                    WHERE id = %s
+                    """,
+                    (request_id,)
+                )
+                await conn.commit()
+                
+                return await MentorshipService.get_request_with_details(request_id)
+    
+    @staticmethod
     async def get_received_requests(mentor_id: str, status: Optional[str] = None) -> List[Dict[str, Any]]:
         """Get mentorship requests received by mentor - Returns enriched nested structure"""
         pool = await get_db_pool()
