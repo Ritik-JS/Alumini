@@ -693,42 +693,85 @@ class EngagementService:
             raise
     
     async def get_all_badges(self, db_conn) -> List[Dict]:
-        """Get all available badges"""
+        """Get all available badges with unlocked count"""
         try:
             async with db_conn.cursor() as cursor:
+                # Get badges with count of users who have unlocked each badge
                 await cursor.execute("""
                     SELECT 
-                        id, name, description, icon_url, requirements,
-                        rarity, points, created_at
-                    FROM badges
+                        b.id, b.name, b.description, b.icon_url, b.requirements,
+                        b.rarity, b.points, b.created_at,
+                        COUNT(DISTINCT ub.user_id) as unlocked_by
+                    FROM badges b
+                    LEFT JOIN user_badges ub ON b.id = ub.badge_id
+                    GROUP BY b.id, b.name, b.description, b.icon_url, b.requirements,
+                             b.rarity, b.points, b.created_at
                     ORDER BY 
-                        CASE rarity
+                        CASE b.rarity
                             WHEN 'legendary' THEN 4
                             WHEN 'epic' THEN 3
                             WHEN 'rare' THEN 2
                             WHEN 'common' THEN 1
                         END DESC,
-                        points DESC
+                        b.points DESC
                 """)
                 badges = await cursor.fetchall()
             
-            return [
-                {
+            result = []
+            for b in badges:
+                requirements = self._parse_requirements(b[4])
+                
+                # Generate human-readable requirement string
+                requirement_str = self._format_requirement_string(requirements)
+                
+                result.append({
                     'id': b[0],
                     'name': b[1],
                     'description': b[2],
                     'icon_url': b[3],
-                    'requirements': self._parse_requirements(b[4]),
+                    'requirements': requirements,
+                    'requirement': requirement_str,  # Add singular string version
                     'rarity': b[5],
                     'points': b[6],
-                    'created_at': b[7]
-                }
-                for b in badges
-            ]
+                    'created_at': b[7],
+                    'unlocked_by': b[8] or 0  # Count of users who unlocked this badge
+                })
+            
+            return result
             
         except Exception as e:
             logger.error(f"Error getting badges: {str(e)}")
             raise
+    
+    def _format_requirement_string(self, requirements: Dict) -> str:
+        """Convert requirements dict to human-readable string"""
+        if not requirements or not isinstance(requirements, dict):
+            return "Complete specific actions"
+        
+        req_type = requirements.get('type', '')
+        count = requirements.get('count', 1)
+        
+        if req_type == 'login':
+            return f"Login {count} time(s)"
+        elif req_type == 'profile':
+            completion = requirements.get('completion', 100)
+            return f"Complete {completion}% of profile"
+        elif req_type == 'mentorship':
+            sessions = requirements.get('sessions', count)
+            return f"Complete {sessions} mentorship session(s)"
+        elif req_type == 'job_applications':
+            return f"Apply to {count} job(s)"
+        elif req_type == 'forum_posts':
+            return f"Create {count} forum post(s)"
+        elif req_type == 'events':
+            return f"Attend {count} event(s)"
+        elif req_type == 'capsules':
+            return f"Create {count} knowledge capsule(s)"
+        elif req_type == 'leaderboard':
+            rank = requirements.get('rank', 10)
+            return f"Reach top {rank} on leaderboard"
+        else:
+            return "Complete specific actions"
     
     async def get_user_badges(
         self,

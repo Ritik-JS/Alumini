@@ -421,27 +421,49 @@ INSERT INTO badges (id, name, description, icon_url, requirements, rarity, point
 ('badge-active-mentor', 'Active Mentor', 'Conduct 10 mentorship sessions', 'https://cdn.alumni.edu/badges/active-mentor.svg', '{"type":"mentorship","sessions":10}', 'rare', 200, '2023-01-01 00:00:00'),
 ('badge-job-hunter', 'Job Hunter', 'Apply for 20 jobs', 'https://cdn.alumni.edu/badges/job-hunter.svg', '{"type":"job_applications","count":20}', 'common', 100, '2023-01-01 00:00:00'),
 ('badge-community-leader', 'Community Leader', 'Create 50 forum posts', 'https://cdn.alumni.edu/badges/community-leader.svg', '{"type":"forum_posts","count":50}', 'epic', 300, '2023-01-01 00:00:00'),
-('badge-event-enthusiast', 'Event Enthusiast', 'Attend 15 events', 'https://cdn.alumni.edu/badges/event-enthusiast.svg', '{"type":"events","count":15}', 'rare', 150, '2023-01-01 00:00:00');
+('badge-event-enthusiast', 'Event Enthusiast', 'Attend 15 events', 'https://cdn.alumni.edu/badges/event-enthusiast.svg', '{"type":"events","count":15}', 'rare', 150, '2023-01-01 00:00:00'),
+('badge-top-mentor', 'Top Mentor', 'Conduct 25+ mentorship sessions with high ratings', 'https://cdn.alumni.edu/badges/top-mentor.svg', '{"type":"mentorship","sessions":25}', 'legendary', 500, '2023-01-01 00:00:00'),
+('badge-community-champion', 'Community Champion', 'Outstanding community engagement across all areas', 'https://cdn.alumni.edu/badges/community-champion.svg', '{"type":"community","engagement":1000}', 'legendary', 600, '2023-01-01 00:00:00'),
+('badge-knowledge-guru', 'Knowledge Guru', 'Share knowledge extensively through forum posts', 'https://cdn.alumni.edu/badges/knowledge-guru.svg', '{"type":"forum_posts","count":100}', 'epic', 400, '2023-01-01 00:00:00'),
+('badge-mentor-elite', 'Mentor Elite', 'Elite mentor with exceptional feedback', 'https://cdn.alumni.edu/badges/mentor-elite.svg', '{"type":"mentorship","sessions":15,"rating":4.8}', 'rare', 250, '2023-01-01 00:00:00'),
+('badge-event-host', 'Event Host', 'Host 5+ community events', 'https://cdn.alumni.edu/badges/event-host.svg', '{"type":"events","hosted":5}', 'rare', 200, '2023-01-01 00:00:00'),
+('badge-career-helper', 'Career Helper', 'Help 20+ alumni with career advice', 'https://cdn.alumni.edu/badges/career-helper.svg', '{"type":"career","helped":20}', 'rare', 180, '2023-01-01 00:00:00'),
+('badge-forum-star', 'Forum Star', 'Create popular forum discussions', 'https://cdn.alumni.edu/badges/forum-star.svg', '{"type":"forum_posts","count":30}', 'rare', 150, '2023-01-01 00:00:00'),
+('badge-helpful-alumni', 'Helpful Alumni', 'Consistently help other community members', 'https://cdn.alumni.edu/badges/helpful-alumni.svg', '{"type":"helpful","count":50}', 'rare', 180, '2023-01-01 00:00:00'),
+('badge-active-member', 'Active Member', 'Regular and active participation', 'https://cdn.alumni.edu/badges/active-member.svg', '{"type":"activity","days":30}', 'common', 100, '2023-01-01 00:00:00'),
+('badge-rising-star', 'Rising Star', 'Rapidly growing engagement', 'https://cdn.alumni.edu/badges/rising-star.svg', '{"type":"growth","rate":50}', 'rare', 150, '2023-01-01 00:00:00');
 
 -- User Badges
 INSERT INTO user_badges (id, user_id, badge_id, earned_at) VALUES
 ('ub-110e8400-e29b-41d4-a716', '660e8400-e29b-41d4-a716-446655440001', 'badge-first-login', '2023-03-20 09:15:00'),
-('ub-220e8400-e29b-41d4-a716', '660e8400-e29b-41d4-a716-446655440001', 'badge-profile-complete', '2023-03-22 14:30:00'),
-('ub-330e8400-e29b-41d4-a716', '660e8400-e29b-41d4-a716-446655440001', 'badge-active-mentor', '2024-05-15 10:00:00'),
-('ub-440e8400-e29b-41d4-a716', 'aa0e8400-e29b-41d4-a716-446655440005', 'badge-active-mentor', '2024-07-20 11:30:00');
+('ub-120e8400-e29b-41d4-a716', '660e8400-e29b-41d4-a716-446655440001', 'badge-profile-complete', '2023-03-22 14:30:00'),
+('ub-130e8400-e29b-41d4-a716', '660e8400-e29b-41d4-a716-446655440001', 'badge-top-mentor', '2024-05-15 10:00:00'),
+('ub-140e8400-e29b-41d4-a716', '660e8400-e29b-41d4-a716-446655440001', 'badge-community-champion', '2024-06-20 14:30:00'),
+('ub-150e8400-e29b-41d4-a716', '660e8400-e29b-41d4-a716-446655440001', 'badge-knowledge-guru', '2024-07-10 11:15:00'),
+('ub-210e8400-e29b-41d4-a716', '770e8400-e29b-41d4-a716-446655440002', 'badge-first-login', '2023-04-15 08:30:00'),
+('ub-220e8400-e29b-41d4-a716', '770e8400-e29b-41d4-a716-446655440002', 'badge-mentor-elite', '2024-03-20 10:00:00'),
+('ub-230e8400-e29b-41d4-a716', '770e8400-e29b-41d4-a716-446655440002', 'badge-event-host', '2024-05-18 16:45:00'),
+('ub-240e8400-e29b-41d4-a716', '770e8400-e29b-41d4-a716-446655440002', 'badge-career-helper', '2024-06-25 09:20:00'),
+('ub-310e8400-e29b-41d4-a716', 'aa0e8400-e29b-41d4-a716-446655440005', 'badge-first-login', '2023-05-10 12:00:00'),
+('ub-320e8400-e29b-41d4-a716', 'aa0e8400-e29b-41d4-a716-446655440005', 'badge-forum-star', '2024-04-12 14:30:00'),
+('ub-330e8400-e29b-41d4-a716', 'aa0e8400-e29b-41d4-a716-446655440005', 'badge-helpful-alumni', '2024-06-08 10:15:00'),
+('ub-340e8400-e29b-41d4-a716', 'aa0e8400-e29b-41d4-a716-446655440005', 'badge-active-member', '2024-07-01 18:00:00'),
+('ub-410e8400-e29b-41d4-a716', '880e8400-e29b-41d4-a716-446655440003', 'badge-first-login', '2023-06-20 15:30:00'),
+('ub-420e8400-e29b-41d4-a716', '880e8400-e29b-41d4-a716-446655440003', 'badge-rising-star', '2024-08-05 11:45:00'),
+('ub-430e8400-e29b-41d4-a716', '880e8400-e29b-41d4-a716-446655440003', 'badge-active-member', '2024-08-10 13:20:00');
 
 -- Engagement Scores
 INSERT INTO engagement_scores (id, user_id, total_score, contributions, rank_position, level, last_calculated) VALUES
-('score-660e8400-e29b-41d4-a716', '660e8400-e29b-41d4-a716-446655440001', 485, 
-'{"profile":20,"mentorship":240,"jobs":0,"events":32,"forum":193}', 1, 'Legend', '2024-12-28 10:00:00'),
-('score-aa0e8400-e29b-41d4-a716', 'aa0e8400-e29b-41d4-a716-446655440005', 442,
-'{"profile":20,"mentorship":320,"jobs":0,"events":40,"forum":62}', 2, 'Veteran', '2024-12-28 10:00:00'),
-('score-cc0e8400-e29b-41d4-a716', 'cc0e8400-e29b-41d4-a716-446655440007', 358,
-'{"profile":19,"mentorship":210,"jobs":0,"events":56,"forum":73}', 3, 'Veteran', '2024-12-28 10:00:00'),
-('score-770e8400-e29b-41d4-a716', '770e8400-e29b-41d4-a716-446655440002', 294,
-'{"profile":19,"mentorship":180,"jobs":0,"events":32,"forum":63}', 4, 'Active', '2024-12-28 10:00:00'),
-('score-880e8400-e29b-41d4-a716', '880e8400-e29b-41d4-a716-446655440003', 127,
-'{"profile":15,"mentorship":20,"jobs":15,"events":24,"forum":53}', 5, 'Active', '2024-12-28 10:00:00');
+('score-660e8400-e29b-41d4-a716', '660e8400-e29b-41d4-a716-446655440001', 2850, 
+'{"profile":20,"mentorship":1200,"jobs":50,"events":380,"forum":1200}', 1, 'Legend', '2024-12-28 10:00:00'),
+('score-770e8400-e29b-41d4-a716', '770e8400-e29b-41d4-a716-446655440002', 2640,
+'{"profile":20,"mentorship":1100,"jobs":40,"events":480,"forum":1000}', 2, 'Legend', '2024-12-28 10:00:00'),
+('score-aa0e8400-e29b-41d4-a716', 'aa0e8400-e29b-41d4-a716-446655440005', 2420,
+'{"profile":20,"mentorship":900,"jobs":30,"events":420,"forum":1050}', 3, 'Veteran', '2024-12-28 10:00:00'),
+('score-880e8400-e29b-41d4-a716', '880e8400-e29b-41d4-a716-446655440003', 1980,
+'{"profile":18,"mentorship":600,"jobs":80,"events":320,"forum":962}', 4, 'Veteran', '2024-12-28 10:00:00'),
+('score-cc0e8400-e29b-41d4-a716', 'cc0e8400-e29b-41d4-a716-446655440007', 1650,
+'{"profile":19,"mentorship":500,"jobs":60,"events":280,"forum":791}', 5, 'Active', '2024-12-28 10:00:00');
 
 -- Contribution History (Activity timeline for weekly/monthly calculations)
 INSERT INTO contribution_history (id, user_id, contribution_type, points_earned, description, created_at) VALUES

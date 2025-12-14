@@ -45,21 +45,45 @@ const Leaderboard = () => {
         engagementAIService.getEngagementInsights(currentUser.id)
       ]);
 
+      // Fix: Backend returns { entries: [...] } not { leaderboard: [...] }
       if (leaderboardRes.success) {
-        const leaderboardData = leaderboardRes.data?.leaderboard || 
+        const leaderboardData = leaderboardRes.data?.entries || 
+                               leaderboardRes.data?.leaderboard || 
                                leaderboardRes.data || [];
         setLeaderboard(Array.isArray(leaderboardData) ? leaderboardData : []);
       }
+      
       if (myScoreRes.success && myScoreRes.data) {
         setMyScore(myScoreRes.data);
       }
+      
+      // Fix: Handle both array and object response for badges
       if (badgesRes.success) {
         const badgesData = badgesRes.data?.badges || badgesRes.data || [];
-        setAllBadges(Array.isArray(badgesData) ? badgesData : []);
+        const badgesArray = Array.isArray(badgesData) ? badgesData : [];
+        setAllBadges(badgesArray);
       }
+      
+      // Fix: Flatten nested badge structure from backend
       if (myBadgesRes.success) {
         const myBadgesData = myBadgesRes.data?.badges || myBadgesRes.data || [];
-        setMyBadges(Array.isArray(myBadgesData) ? myBadgesData : []);
+        const myBadgesArray = Array.isArray(myBadgesData) ? myBadgesData : [];
+        
+        // Flatten badge structure: backend returns { id, badge: { name, description, ... } }
+        // Frontend needs { id, name, description, ... }
+        const flattenedBadges = myBadgesArray.map(ub => ({
+          id: ub.badge_id || ub.id,
+          badge_id: ub.badge_id,
+          user_badge_id: ub.id,
+          earned_at: ub.earned_at,
+          name: ub.badge?.name || ub.name,
+          description: ub.badge?.description || ub.description,
+          icon_url: ub.badge?.icon_url || ub.icon_url,
+          rarity: ub.badge?.rarity || ub.rarity,
+          points: ub.badge?.points || ub.points
+        }));
+        
+        setMyBadges(flattenedBadges);
       }
       
       // Load AI features
@@ -247,6 +271,19 @@ const Leaderboard = () => {
                   <p className="mt-4 text-gray-600">Loading leaderboard...</p>
                 </CardContent>
               </Card>
+            ) : leaderboard.length === 0 ? (
+              <Card>
+                <CardContent className="py-20 text-center">
+                  <Trophy className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No Leaderboard Data Yet</h3>
+                  <p className="text-gray-500 mb-4">
+                    Be the first to contribute and climb the leaderboard!
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Start by completing your profile, attending events, or participating in forums.
+                  </p>
+                </CardContent>
+              </Card>
             ) : (
               <div className="space-y-3" data-testid="leaderboard-list">
                 {leaderboard.map((entry, idx) => {
@@ -311,17 +348,25 @@ const Leaderboard = () => {
           <TabsContent value="badges">
             <div className="space-y-6">
               {/* My Badges */}
-              {myBadges.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Your Badges ({myBadges.length})</CardTitle>
-                    <CardDescription>Badges you've earned</CardDescription>
-                  </CardHeader>
-                  <CardContent>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Badges ({myBadges.length})</CardTitle>
+                  <CardDescription>Badges you've earned</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {myBadges.length === 0 ? (
+                    <div className="py-12 text-center">
+                      <Award className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                      <h3 className="text-lg font-semibold text-gray-700 mb-2">No Badges Earned Yet</h3>
+                      <p className="text-gray-500 text-sm">
+                        Start contributing to earn your first badge!
+                      </p>
+                    </div>
+                  ) : (
                     <div className="grid md:grid-cols-3 gap-4">
                       {myBadges.map(badge => (
                         <div
-                          key={badge.id}
+                          key={badge.user_badge_id || badge.id}
                           className={`p-6 rounded-lg text-white ${getBadgeRarityColor(badge.rarity)}`}
                           data-testid={`my-badge-${badge.id}`}
                         >
@@ -336,9 +381,9 @@ const Leaderboard = () => {
                         </div>
                       ))}
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                  )}
+                </CardContent>
+              </Card>
 
               {/* All Badges */}
               <Card>
@@ -347,42 +392,73 @@ const Leaderboard = () => {
                   <CardDescription>Complete challenges to unlock these badges</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {allBadges.map(badge => {
-                      const isUnlocked = myBadges.some(b => b.id === badge.id);
-                      return (
-                        <div
-                          key={badge.id}
-                          className={`p-6 rounded-lg relative ${
-                            isUnlocked
-                              ? `${getBadgeRarityColor(badge.rarity)} text-white`
-                              : 'bg-gray-100 text-gray-400'
-                          }`}
-                          data-testid={`badge-${badge.id}`}
-                        >
-                          {!isUnlocked && (
-                            <div className="absolute top-3 right-3">
-                              <Lock className="h-5 w-5" />
+                  {allBadges.length === 0 ? (
+                    <div className="py-20 text-center">
+                      <Award className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-gray-700 mb-2">No Badges Available</h3>
+                      <p className="text-gray-500">
+                        Badges will appear here once they're added to the system.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid md:grid-cols-3 gap-4">
+                      {allBadges.map(badge => {
+                        // Fix: Compare badge_id from myBadges with id from allBadges
+                        const isUnlocked = myBadges.some(b => b.badge_id === badge.id || b.id === badge.id);
+                        
+                        // Format requirements as readable string
+                        const formatRequirement = (requirements) => {
+                          if (typeof requirements === 'string') return requirements;
+                          if (!requirements || typeof requirements !== 'object') return 'Complete specific actions';
+                          
+                          const { type, count, completion, sessions, rank } = requirements;
+                          if (type === 'login') return `Login ${count || 1} time(s)`;
+                          if (type === 'profile') return `Complete ${completion || 100}% of profile`;
+                          if (type === 'mentorship') return `Complete ${sessions || count || 1} mentorship session(s)`;
+                          if (type === 'job_applications') return `Apply to ${count || 1} job(s)`;
+                          if (type === 'forum_posts') return `Create ${count || 1} forum post(s)`;
+                          if (type === 'events') return `Attend ${count || 1} event(s)`;
+                          if (type === 'capsules') return `Create ${count || 1} knowledge capsule(s)`;
+                          if (type === 'leaderboard') return `Reach top ${rank || 10} on leaderboard`;
+                          return 'Complete specific actions';
+                        };
+                        
+                        return (
+                          <div
+                            key={badge.id}
+                            className={`p-6 rounded-lg relative ${
+                              isUnlocked
+                                ? `${getBadgeRarityColor(badge.rarity)} text-white`
+                                : 'bg-gray-100 text-gray-400'
+                            }`}
+                            data-testid={`badge-${badge.id}`}
+                          >
+                            {!isUnlocked && (
+                              <div className="absolute top-3 right-3">
+                                <Lock className="h-5 w-5" />
+                              </div>
+                            )}
+                            <div className="flex items-start justify-between mb-3">
+                              <Award className="h-8 w-8" />
+                              <Badge className={isUnlocked ? 'bg-white/20 text-white' : 'bg-gray-300'} >
+                                {badge.rarity}
+                              </Badge>
                             </div>
-                          )}
-                          <div className="flex items-start justify-between mb-3">
-                            <Award className="h-8 w-8" />
-                            <Badge className={isUnlocked ? 'bg-white/20 text-white' : 'bg-gray-300'} >
-                              {badge.rarity}
-                            </Badge>
+                            <h3 className="font-bold text-lg mb-2">{badge.name}</h3>
+                            <p className="text-sm mb-3 opacity-90">{badge.description}</p>
+                            <p className="text-xs opacity-75">
+                              Requirement: {badge.requirement || formatRequirement(badge.requirements)}
+                            </p>
+                            {badge.unlocked_by !== undefined && (
+                              <p className="text-xs mt-2 opacity-75">
+                                Unlocked by {badge.unlocked_by} alumni
+                              </p>
+                            )}
                           </div>
-                          <h3 className="font-bold text-lg mb-2">{badge.name}</h3>
-                          <p className="text-sm mb-3 opacity-90">{badge.description}</p>
-                          <p className="text-xs opacity-75">
-                            Requirement: {badge.requirement}
-                          </p>
-                          <p className="text-xs mt-2 opacity-75">
-                            Unlocked by {badge.unlocked_by} alumni
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
