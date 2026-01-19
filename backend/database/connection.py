@@ -1,5 +1,5 @@
 """Database connection management"""
-import aiomysql
+
 import pymysql
 import os
 from typing import Optional
