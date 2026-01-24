@@ -502,7 +502,16 @@ const AlumniCard = () => {
                               </Badge>
                             </div>
                             
-                            
+                            <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                              <span className="text-sm text-gray-700">Expiry Status:</span>
+                              <Badge className={
+                                verificationResult.aiValidation.expiry_check === 'active' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }>
+                                {verificationResult.aiValidation.expiry_check}
+                              </Badge>
+                            </div>
                             
                             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
                               <span className="text-sm text-gray-700">AI Confidence:</span>
