@@ -1,4 +1,4 @@
-mport { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { alumniCardService } from '@/services';
 import MainLayout from '@/components/layout/MainLayout';
 import { QRCodeSVG } from 'qrcode.react';
