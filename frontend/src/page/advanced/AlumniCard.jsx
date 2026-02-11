@@ -510,7 +510,7 @@ const AlumniCard = () => {
                                   : 'bg-yellow-100 text-yellow-800'
                               }>
                                 {verificationResult.aiValidation.expiry_check}
-                              </Badge>
+                              </Badge
                             </div>
                             
                             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
