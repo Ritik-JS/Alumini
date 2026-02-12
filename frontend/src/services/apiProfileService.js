@@ -118,6 +118,33 @@ class ApiProfileService {
     }
   }
 
+  // Get mentor profile by user ID
+  async getMentorProfile(userId) {
+    try {
+      const response = await axios.get(`/api/mentors/user/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching mentor profile:', error);
+      return { success: false, message: error.message, data: null };
+    }
+  }
+
+  // Alias for compatibility
+  async getMentorProfileByUserId(userId) {
+    return this.getMentorProfile(userId);
+  }
+
+  // Get mentorship requests received by mentor
+  async getMentorshipRequestsByMentor(mentorId) {
+    try {
+      const response = await axios.get('/api/mentorship/requests/received');
+      return response.data.data || [];
+    } catch (error) {
+      console.error('Error fetching mentorship requests by mentor:', error);
+      return [];
+    }
+  }
+
   // Get jobs posted by user
   async getJobsByPoster(userId) {
     try {
