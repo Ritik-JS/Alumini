@@ -52,7 +52,7 @@ class CapsuleService:
             raise
     
     
-    staticmethod
+    @staticmethod
     async def get_capsule_by_id(capsule_id: str, user_id: Optional[str] = None) -> Optional[dict]:
         """Get capsule by ID with author details"""
         try:
