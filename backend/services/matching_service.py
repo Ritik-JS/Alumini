@@ -7,7 +7,7 @@ from typing import List, Dict, Optional, Tuple
 import math
 from collections import Counter
 
-logger = logging.getLogger(__name__)
+logger = logging.Logger(__name__)
 
 
 class MatchingService:
