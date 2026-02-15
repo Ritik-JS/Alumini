@@ -7,7 +7,7 @@ import json
 
 from database.connection import get_db_pool
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class AnalyticsService:
