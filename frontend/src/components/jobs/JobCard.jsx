@@ -21,7 +21,6 @@ const JobCard = ({ job, onApply }) => {
       }
 
       try {
-        // Get user's profile from service layer
         const profileData = await profileService.getProfileByUserId(currentUser.id);
         const userProfile = profileData?.data || profileData;
         
