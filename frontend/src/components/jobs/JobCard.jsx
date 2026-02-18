@@ -11,7 +11,7 @@ const JobCard = ({ job, onApply }) => {
   const navigate = useNavigate();
   const [matchData, setMatchData] = useState(null);
   
-  
+
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   
   useEffect(() => {
@@ -33,7 +33,7 @@ const JobCard = ({ job, onApply }) => {
         }
       } catch (error) {
         console.error('Error calculating job match:', error);
-        // Don't show match data if there's an error
+        setMatchData(null);
       }
     };
 
