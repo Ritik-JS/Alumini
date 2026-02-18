@@ -11,7 +11,7 @@ const JobCard = ({ job, onApply }) => {
   const navigate = useNavigate();
   const [matchData, setMatchData] = useState(null);
   
-  // Get current user
+  
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   
   useEffect(() => {
