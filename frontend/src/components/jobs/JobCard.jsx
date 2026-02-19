@@ -33,7 +33,6 @@ const JobCard = ({ job, onApply }) => {
         }
       } catch (error) {
         console.error('Error calculating job match:', error);
-        setMatchData(null);
       }
     };
 
