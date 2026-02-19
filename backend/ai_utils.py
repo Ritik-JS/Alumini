@@ -150,14 +150,17 @@ class SkillMatcher:
         if weights:
             weighted_score = 0.0
             total_weight = 0.0
+            
             for skill in required_skills_set:
-                skill_weight = weights.get(skill, 1.0)
-                total_weight += skill_weight
-                if skill in matching_skills:
-                    weighted_score += skill_weight
+                weight = weights.get(skill, 1.0)
+                total_weight += weight
+                
+                if skill in user_skills_set:
+                    weighted_score += weight
+            
+            if total_weight > 0:
+                match_score = weighted_score / total_weight
         
-        weighted_match_score = weighted_score / total_weight if total_weight > 0 else 0.0
-        final_score = (match_score + weighted_match_score) / 2
         return {
             'match_score': round(match_score, 4),
             'matching_skills': list(matching_skills),
