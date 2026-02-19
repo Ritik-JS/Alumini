@@ -407,4 +407,4 @@ class FeatureExtractor:
 
 # Initialize model directory
 AIConfig.MODEL_DIR.mkdir(parents=True, exist_ok=True)
-logger.info(f"✅ AI utilities initialized. Model directory: {AIConfig.MODEL_DIR}")
+logger.info(f" AI utilities initialized. Model directory: {AIConfig.MODEL_DIR}")
