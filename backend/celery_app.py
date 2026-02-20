@@ -99,9 +99,14 @@ app.conf.update(
 )
 
 # SSL/TLS Configuration for Redis connections (required for Upstash and other cloud providers)
-if broker_url.startswith('rediss://') or backend_url.startswith('rediss://'):
-    app.conf.broker_use_ssl = True
-    app.conf.redis_backend_use_ssl = True
+if broker_url.startswith('rediss://'):
+    app.conf.broker_use_ssl = {
+        'ssl_cert_reqs': None  # Disable SSL certificate verification for cloud providers
+    }
+if backend_url.startswith('rediss://'):
+    app.conf.redis_backend_use_ssl = {
+        'ssl_cert_reqs': None
+    }
 
 # Task classes for better organization
 class TaskConfig:
