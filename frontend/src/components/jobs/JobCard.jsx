@@ -11,7 +11,7 @@ const JobCard = ({ job, onApply }) => {
   const navigate = useNavigate();
   const [matchData, setMatchData] = useState(null);
   
-  // Get current user
+
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   
   useEffect(() => {
@@ -21,7 +21,6 @@ const JobCard = ({ job, onApply }) => {
       }
 
       try {
-        // Get user's profile from service layer
         const profileData = await profileService.getProfileByUserId(currentUser.id);
         const userProfile = profileData?.data || profileData;
         
@@ -34,7 +33,6 @@ const JobCard = ({ job, onApply }) => {
         }
       } catch (error) {
         console.error('Error calculating job match:', error);
-        // Don't show match data if there's an error
       }
     };
 
