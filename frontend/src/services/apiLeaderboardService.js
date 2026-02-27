@@ -6,9 +6,19 @@ class ApiLeaderboardService {
   async getLeaderboard(filters = {}) {
     try {
       const response = await axios.get('/api/engagement/leaderboard', { params: filters });
-      return response.data;
+      // Backend returns: { entries: [...], total_users: X, user_rank: Y }
+      // Standardize to: { success: true, data: { ... } }
+      return { 
+        success: true, 
+        data: response.data 
+      };
     } catch (error) {
-      return { success: false, message: error.message, data: [] };
+      console.error('Error fetching leaderboard:', error);
+      return { 
+        success: false, 
+        message: error.message, 
+        data: { entries: [], total_users: 0, user_rank: null } 
+      };
     }
   }
 
@@ -16,9 +26,17 @@ class ApiLeaderboardService {
   async getUserScore(userId) {
     try {
       const response = await axios.get(`/api/leaderboard/user/${userId}`);
-      return response.data;
+      return { 
+        success: true, 
+        data: response.data 
+      };
     } catch (error) {
-      return { success: false, message: error.message };
+      console.error('Error fetching user score:', error);
+      return { 
+        success: false, 
+        message: error.message,
+        data: null
+      };
     }
   }
 
@@ -26,9 +44,19 @@ class ApiLeaderboardService {
   async getAllBadges() {
     try {
       const response = await axios.get('/api/engagement/badges');
-      return response.data;
+      // Backend returns array of badges directly
+      // Standardize to: { success: true, data: [...] }
+      return { 
+        success: true, 
+        data: Array.isArray(response.data) ? response.data : [] 
+      };
     } catch (error) {
-      return { success: false, message: error.message, data: [] };
+      console.error('Error fetching badges:', error);
+      return { 
+        success: false, 
+        message: error.message, 
+        data: [] 
+      };
     }
   }
 
@@ -36,9 +64,19 @@ class ApiLeaderboardService {
   async getUserBadges(userId) {
     try {
       const response = await axios.get('/api/engagement/my-badges');
-      return response.data;
+      // Backend returns array of user badges directly
+      // Standardize to: { success: true, data: [...] }
+      return { 
+        success: true, 
+        data: Array.isArray(response.data) ? response.data : [] 
+      };
     } catch (error) {
-      return { success: false, message: error.message, data: [] };
+      console.error('Error fetching user badges:', error);
+      return { 
+        success: false, 
+        message: error.message, 
+        data: [] 
+      };
     }
   }
 
@@ -46,9 +84,17 @@ class ApiLeaderboardService {
   async getMyScore(userId) {
     try {
       const response = await axios.get('/api/engagement/my-score');
-      return { success: true, data: response.data };
+      return { 
+        success: true, 
+        data: response.data 
+      };
     } catch (error) {
-      return { success: false, message: error.message, data: { total_score: 0 } };
+      console.error('Error fetching my score:', error);
+      return { 
+        success: false, 
+        message: error.message, 
+        data: { total_score: 0, rank_position: null } 
+      };
     }
   }
 }
