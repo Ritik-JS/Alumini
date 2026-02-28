@@ -8,7 +8,7 @@ import { StaggerContainer, StaggerItem } from '@/components/animations/StaggerCh
 import { ArrowRight, Users, Briefcase, Calendar, Award, MessageSquare, UserCheck, Target, Heart, TrendingUp, Network, Route, Map, CreditCard, BookOpen, BarChart3, Sparkles } from 'lucide-react';
 
 const Home = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuth } = useAuth();
   const navigate = useNavigate();
 
   const stats = [
