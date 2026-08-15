@@ -41,11 +41,12 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password, rememberMe = false) => {
     try {
       const response = await authService.login(email, password);
+      const token = response.access_token || response.token;
       
-      // Check for successful login (backend returns access_token on success)
-      if (response.access_token && response.user) {
+      // Backend returns access_token; mock auth returns token.
+      if (token && response.user) {
         setUser(response.user);
-        localStorage.setItem('token', response.access_token);
+        localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(response.user));
         
         if (rememberMe) {

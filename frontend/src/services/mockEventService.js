@@ -56,6 +56,10 @@ class MockEventService {
     };
   }
 
+  async getAllEvents(filters = {}) {
+    return this.getEvents(filters);
+  }
+
   // Get single event by ID
   async getEventById(eventId) {
     await delay();

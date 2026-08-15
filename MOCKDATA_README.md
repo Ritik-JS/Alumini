@@ -40,7 +40,8 @@ mockData.users
 
 **Sample Users:**
 - Admin: admin@alumni.edu
-- Alumni: sarah.johnson@alumni.edu, michael.chen@alumni.edu, priya.patel@alumni.edu, lisa.anderson@alumni.edu
+- Alumni: 
+, michael.chen@alumni.edu, priya.patel@alumni.edu, lisa.anderson@alumni.edu
 - Students: emily.rodriguez@alumni.edu, james.wilson@alumni.edu, maria.garcia@alumni.edu
 - Recruiters: david.kim@techcorp.com, robert.taylor@startupventures.com
 

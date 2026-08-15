@@ -1,5 +1,5 @@
 # 🎓 AlumUnity
-
+// $env:Path += ";C:\Users\admin\AppData\Roaming\npm"
 <div align="center">
 
 ![AlumUnity](https://img.shields.io/badge/AlumUnity-blue?style=for-the-badge)

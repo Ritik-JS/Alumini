@@ -15,7 +15,7 @@ const mentorshipService = {
    */
   filterMentors: async (params) => {
     try {
-      const response = await api.post('/api/mentors/filter', params);
+      const response = await api.post('/api/mentors/filter', { filter_params: params });
       return response.data;
     } catch (error) {
       console.error('Error filtering mentors:', error);

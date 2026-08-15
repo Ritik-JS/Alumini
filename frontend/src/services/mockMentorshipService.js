@@ -647,7 +647,13 @@ export default {
     }
   },
   sortMentors,
-  getMentorByUserId,
+  getMentorByUserId: async (userId) => {
+    try {
+      return { success: true, data: getMentorByUserId(userId) || null };
+    } catch (error) {
+      return { success: false, error: error.message, data: null };
+    }
+  },
   getUniqueExpertiseAreas: async () => {
     // Wrap the synchronous getUniqueExpertiseAreas with async and proper response format
     try {
@@ -665,26 +671,86 @@ export default {
       };
     }
   },
-  getMentorStats,
+  getMentorStats: async (mentorId) => {
+    try {
+      return { success: true, data: getMentorStats(mentorId) };
+    } catch (error) {
+      return { success: false, error: error.message, data: null };
+    }
+  },
   registerAsMentor,
   updateMentorProfile,
 
   // Requests
-  getStudentRequests,
-  getMentorRequests,
-  getRequestById,
+  getStudentRequests: async (studentId) => {
+    try {
+      return { success: true, data: getStudentRequests(studentId) };
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  },
+  getMentorRequests: async (mentorId) => {
+    try {
+      return { success: true, data: getMentorRequests(mentorId) };
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  },
+  getRequestById: async (requestId) => {
+    try {
+      return { success: true, data: getRequestById(requestId) || null };
+    } catch (error) {
+      return { success: false, error: error.message, data: null };
+    }
+  },
   createMentorshipRequest,
   acceptMentorshipRequest,
   rejectMentorshipRequest,
   cancelMentorshipRequest,
-  getActiveMentorships,
-  getActiveMentees,
+  getActiveMentorships: async (studentId) => {
+    try {
+      return { success: true, data: getActiveMentorships(studentId) };
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  },
+  getActiveMentees: async (mentorId) => {
+    try {
+      return { success: true, data: getActiveMentees(mentorId) };
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  },
 
   // Sessions
-  getSessionsByRequestId,
-  getSessionById,
-  getUpcomingSessions,
-  getPastSessions,
+  getSessionsByRequestId: async (requestId) => {
+    try {
+      return { success: true, data: getSessionsByRequestId(requestId) };
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  },
+  getSessionById: async (sessionId) => {
+    try {
+      return { success: true, data: getSessionById(sessionId) || null };
+    } catch (error) {
+      return { success: false, error: error.message, data: null };
+    }
+  },
+  getUpcomingSessions: async (userId) => {
+    try {
+      return { success: true, data: getUpcomingSessions(userId) };
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  },
+  getPastSessions: async (userId) => {
+    try {
+      return { success: true, data: getPastSessions(userId) };
+    } catch (error) {
+      return { success: false, error: error.message, data: [] };
+    }
+  },
   createSession,
   updateSession,
   completeSession,

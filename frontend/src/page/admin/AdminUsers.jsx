@@ -94,8 +94,11 @@ const AdminUsers = () => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       try {
-        await adminService.deleteUser(userId);
-        setUsers(users.filter((u) => u.id !== userId));
+        const result = await adminService.deleteUser(userId);
+        if (result?.success === false) {
+          throw new Error(result.error || result.message || 'Delete failed');
+        }
+        await loadUsers();
         toast.success('User deleted successfully');
       } catch (error) {
         console.error('Error deleting user:', error);
@@ -139,11 +142,28 @@ const AdminUsers = () => {
     );
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (window.confirm(`Are you sure you want to delete ${selectedUsers.length} users?`)) {
-      setUsers(users.filter((u) => !selectedUsers.includes(u.id)));
-      setSelectedUsers([]);
-      toast.success(`${selectedUsers.length} users deleted`);
+      try {
+        const results = await Promise.allSettled(
+          selectedUsers.map((userId) => adminService.deleteUser(userId))
+        );
+        const failed = results.filter(
+          (result) => result.status === 'rejected' || result.value?.success === false
+        );
+
+        await loadUsers();
+        setSelectedUsers([]);
+
+        if (failed.length > 0) {
+          toast.error(`${failed.length} user(s) could not be deleted`);
+        } else {
+          toast.success(`${selectedUsers.length} users deleted`);
+        }
+      } catch (error) {
+        console.error('Error deleting selected users:', error);
+        toast.error('Unable to delete selected users. Please try again.');
+      }
     }
   };
 
