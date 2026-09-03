@@ -117,6 +117,9 @@ SHOW TRIGGERS WHERE `Table` IN ('post_likes', 'comment_likes', 'forum_comments')
 -- Fix post likes counts
 -- UPDATE forum_posts p
 -- SET likes_count = (
+--     SELECT COUNT(*) FROM comment_likes cl WHERE cl.comment_id = c.id
+-- );
+-- SET likes_count = (
 --     SELECT COUNT(*) FROM post_likes pl WHERE pl.post_id = p.id
 -- );
 
